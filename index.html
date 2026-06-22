@@ -3023,7 +3023,7 @@ select,
 
   function localProfileFromAuthRow(row,user,meta){
     row=row||{}; user=user||{}; meta=meta||{};
-    var authId=String(user.id||row.user_id||currentAuthUserId||'');
+    var authId=String(user.id||row.auth_user_id||row.user_id||currentAuthUserId||'');
     var rowId=String(row.id||'');
     var email=(user.email||row.email||meta.email||'').toLowerCase();
     var userMeta=user.user_metadata||{};
@@ -3161,6 +3161,7 @@ select,
     var userMeta=user.user_metadata||{};
     var base={
       user_id:user.id,
+      auth_user_id:user.id,
       email:(user.email||'').toLowerCase(),
       name:pickRealProfileText(meta.name,userMeta.full_name,userMeta.name,userMeta.display_name,emailName(user.email),''),
       nom:pickRealProfileText(meta.name,userMeta.full_name,userMeta.name,userMeta.display_name,emailName(user.email),''),
@@ -3207,18 +3208,24 @@ select,
     }
     function readRemoteProfile(){
       var email=(base.email||user.email||'').toLowerCase();
-      return readProfileBy('user_id',user.id).then(function(row){return row||readProfileBy('auth_user_id',user.id)})
+      return readProfileBy('auth_user_id',user.id).then(function(row){return row||readProfileBy('user_id',user.id)})
         .then(function(row){return row||readProfileBy('id',user.id)})
         .then(function(row){return row||readProfileBy('email',email)});
     }
     function candidateRows(){
       return [
         base,
-        {user_id:base.user_id,email:base.email,name:base.name,nom:base.nom,profession:base.profession,pays:base.pays,bio:base.bio,avatar_url:base.avatar_url,cover_url:base.cover_url,updated_at:base.updated_at},
+        {user_id:base.user_id,auth_user_id:base.auth_user_id,email:base.email,name:base.name,nom:base.nom,profession:base.profession,pays:base.pays,bio:base.bio,avatar_url:base.avatar_url,cover_url:base.cover_url,updated_at:base.updated_at},
+        {auth_user_id:base.auth_user_id,email:base.email,name:base.name,nom:base.nom,profession:base.profession,pays:base.pays,bio:base.bio,avatar_url:base.avatar_url,cover_url:base.cover_url,updated_at:base.updated_at},
+        {auth_user_id:base.auth_user_id,email:base.email,name:base.name,profession:base.profession,location:base.location,bio:base.bio,avatar_url:base.avatar_url,cover_url:base.cover_url,updated_at:base.updated_at},
         {user_id:base.user_id,email:base.email,name:base.name,profession:base.profession,location:base.location,bio:base.bio,avatar_url:base.avatar_url,cover_url:base.cover_url,updated_at:base.updated_at},
+        {auth_user_id:base.auth_user_id,email:base.email,nom:base.nom,profession:base.profession,pays:base.pays,bio:base.bio,updated_at:base.updated_at},
         {user_id:base.user_id,email:base.email,nom:base.nom,profession:base.profession,pays:base.pays,bio:base.bio,updated_at:base.updated_at},
+        {auth_user_id:base.auth_user_id,email:base.email,name:base.name,profession:base.profession,updated_at:base.updated_at},
         {user_id:base.user_id,email:base.email,name:base.name,profession:base.profession,updated_at:base.updated_at},
+        {auth_user_id:base.auth_user_id,email:base.email,nom:base.nom,updated_at:base.updated_at},
         {user_id:base.user_id,email:base.email,nom:base.nom,updated_at:base.updated_at},
+        {auth_user_id:base.auth_user_id,email:base.email,created_at:iso(),updated_at:base.updated_at},
         {user_id:base.user_id,email:base.email,created_at:iso(),updated_at:base.updated_at}
       ];
     }
@@ -3595,12 +3602,15 @@ select,
     var publicEmail=String(r.email||r.auth_email||r.user_email||'').toLowerCase();
     var realName=pickRealProfileText(r.name,r.nom,r.full_name,r.display_name,r.username,publicEmail?emailName(publicEmail):'', 'Membre Nexora');
     var realJob=pickRealProfileText(r.profession,r.job,r.headline,r.service,r.domaine,r.categorie,'Membre Nexora');
-    /* NEXORA STEP44 — rows venant de profiles_public : aucune colonne sensible ne doit être réinjectée dans le cache public. */
+    /* NEXORA STEP44 — rows venant de profiles_public : aucune colonne sensible ne doit être réinjectée dans le cache public.
+       Correction identité : on conserve auth_user_id/user_id quand ils existent afin que le fil relie authorId au bon profil. */
     return normalizeProfileObject({
       id:authId,
-      user_id:authId,
+      user_id:String(r.user_id||r.auth_user_id||authId||''),
+      auth_user_id:String(r.auth_user_id||r.user_id||authId||''),
       profile_row_id:String(r.id||''),
       remote_profile_id:String(r.id||''),
+      profile_id:String(r.profile_id||''),
       name:realName,
       nom:realName,
       full_name:realName,
@@ -3621,9 +3631,16 @@ select,
   }
   function postFromRow(r){
     r=r||{};
+    var authorId=String(r.user_id||r.auth_user_id||r.author_id||r.profile_id||'');
     return normalizePostObject({
       id:String(r.id||r.local_id||uid('post')),
-      authorId:String(r.user_id||r.author_id||r.profile_id||''),
+      authorId:authorId,
+      user_id:String(r.user_id||''),
+      auth_user_id:String(r.auth_user_id||''),
+      author_id:String(r.author_id||''),
+      profile_id:String(r.profile_id||''),
+      authorName:pickRealProfileText(r.author_name,r.authorName,r.profile_name,r.nom,r.name,''),
+      authorJob:pickRealProfileText(r.author_job,r.authorJob,r.profession,r.job,r.headline,''),
       theme:r.theme||'talent',
       text:r.text||r.content||r.body||'',
       media_url:r.media_url||'',
@@ -3816,7 +3833,7 @@ select,
 
   var EGRESS_COLUMNS={
     profiles:'id,user_id,auth_user_id,name,nom,ville,pays,country,categorie,domaine,service,job,headline,bio,description,photo_url,avatar,profile_photo_url,cover_url,cover,cover_photo_url,online_status,last_seen,is_verified,created_at,updated_at',
-    posts:'id,user_id,author_id,profile_id,theme,text,content,body,media_url,media_type,page_id,business_page_id,company_page_id,author_type,published_as,page_name,page_avatar_url,status,visibility,created_at,updated_at',
+    posts:'id,user_id,auth_user_id,author_id,profile_id,theme,text,content,body,media_url,media_type,page_id,business_page_id,company_page_id,author_type,published_as,page_name,page_avatar_url,status,visibility,created_at,updated_at',
     comments:'id,post_id,user_id,author_id,profile_id,text,content,body,created_at,updated_at',
     reactions:'id,post_id,user_id,profile_id,author_id,type,reaction_type,created_at,updated_at',
     notifications:'id,user_id,recipient_id,profile_id,actor_id,from_user_id,post_id,page_id,conversation_id,message_id,ad_id,target_type,target_id,type,icon,title,text,body,message,is_read,read,created_at,updated_at',
@@ -3869,6 +3886,55 @@ select,
       throw err;
     }).catch(function(err){syncWarning('lecture '+kind,err); return null});
   }
+
+  /* NEXORA — Correction identité fil d'actualité.
+     Le fil stocke généralement l'auteur d'une publication avec l'UID Supabase Auth
+     (user_id / auth_user_id). Selon les anciennes versions SQL, la liste publique
+     des profils peut exposer seulement id + nom. Dans ce cas, le réseau affiche le nom,
+     mais le fil ne peut pas relier author_id -> profil et retombe sur "Membre Nexora".
+     Cette lecture ciblée charge les profils des auteurs présents dans le fil, avec
+     plusieurs colonnes possibles, sans télécharger toute la base. */
+  function mergeRemoteProfileRows(base,extra){
+    var map={}, out=[];
+    function keyFor(row){
+      row=row||{};
+      return String(row.user_id||row.auth_user_id||row.owner_id||row.profile_id||row.id||uid('profile-row'));
+    }
+    (Array.isArray(base)?base:[]).concat(Array.isArray(extra)?extra:[]).forEach(function(row){
+      if(!row||typeof row!=='object') return;
+      var key=keyFor(row);
+      map[key]=Object.assign({},map[key]||{},row);
+    });
+    Object.keys(map).forEach(function(k){out.push(map[k])});
+    return out;
+  }
+  function fetchAuthorProfilesForPosts(client,postRows){
+    if(!client) return Promise.resolve([]);
+    var ids={};
+    (postRows||[]).forEach(function(p){
+      [p&&p.user_id,p&&p.auth_user_id,p&&p.author_id,p&&p.profile_id].forEach(function(v){v=String(v||'').trim(); if(v) ids[v]=true;});
+    });
+    var authorIds=Object.keys(ids).slice(0,80);
+    if(!authorIds.length) return Promise.resolve([]);
+    function read(table,column,columns){
+      return sbTable(client,table).select(columns||EGRESS_COLUMNS.profiles||'*').in(column,authorIds).limit(authorIds.length).then(function(res){
+        if(res.error) throw res.error;
+        return res.data||[];
+      }).catch(function(err){
+        if(isSchemaError(err)&&columns!=='*') return read(table,column,'*');
+        return [];
+      });
+    }
+    var jobs=[];
+    ['profiles_public','profiles'].forEach(function(table){
+      ['user_id','auth_user_id','id','profile_id'].forEach(function(column){jobs.push(read(table,column));});
+    });
+    return Promise.all(jobs).then(function(parts){
+      var all=[];
+      parts.forEach(function(list){if(Array.isArray(list)) all=all.concat(list)});
+      return mergeRemoteProfileRows([],all);
+    }).catch(function(){return []});
+  }
   function readPullCache(){
     try{
       var raw=storageGet(EGRESS_PULL_CACHE_KEY);
@@ -3913,9 +3979,12 @@ select,
       var ok=successCount>0;
       lastSupabaseReachable=ok;
       if(!ok) return {ok:false,db:null,cached:false,partial:true,failedKinds:failedKinds,warnings:lastWriteWarnings.slice()};
-      var db=buildRemoteDB(finalRows);
-      writePullCache(db);
-      return {ok:true,db:db,cached:false,partial:failedKinds.length>0,failedKinds:failedKinds,warnings:lastWriteWarnings.slice()};
+      return fetchAuthorProfilesForPosts(client,finalRows.posts||[]).then(function(extraProfiles){
+        if(extraProfiles&&extraProfiles.length) finalRows.profiles=mergeRemoteProfileRows(finalRows.profiles||[],extraProfiles);
+        var db=buildRemoteDB(finalRows);
+        writePullCache(db);
+        return {ok:true,db:db,cached:false,partial:failedKinds.length>0,failedKinds:failedKinds,warnings:lastWriteWarnings.slice()};
+      });
     })
   }
   function uniqueRowsForUpsert(rows,onConflict){
@@ -3997,14 +4066,16 @@ select,
   function profileRows(db,variant){return (db.profiles||[]).filter(function(p){
     if(!currentAuthUserId) return false;
     if(isSystemProfile(p)) return false;
-    if(!(String(p.id||'')===String(currentAuthUserId)||String(p.user_id||'')===String(currentAuthUserId)||!!p.authAccount)) return false;
+    if(!(String(p.id||'')===String(currentAuthUserId)||String(p.user_id||'')===String(currentAuthUserId)||String(p.auth_user_id||'')===String(currentAuthUserId)||!!p.authAccount)) return false;
     var n=pickRealProfileText(p.name,p.nom,p.full_name,p.display_name,p.email?emailName(p.email):'','');
     return !isPlaceholderProfileText(n)&&!!compact(n);
   }).map(function(p){
-    var authId=String(p.user_id||currentAuthUserId||p.id||'');
+    var authId=String(p.auth_user_id||p.user_id||currentAuthUserId||p.id||'');
     var remoteId=String(p.profile_row_id||p.remote_profile_id||'');
     var safeName=pickRealProfileText(p.name,p.nom,p.full_name,p.display_name,p.email?emailName(p.email):'','');
-    var row={id:remoteId||remoteProfileId(authId),user_id:authId,email:p.email||'',name:safeName,nom:safeName,created_at:p.createdAt||p.created_at||iso()};
+    var row={id:remoteId||remoteProfileId(authId),email:p.email||'',name:safeName,nom:safeName,created_at:p.createdAt||p.created_at||iso()};
+    if(variant.indexOf('auth-id-only')>-1){ row.auth_user_id=authId; }
+    else { row.user_id=authId; row.auth_user_id=authId; }
     if(variant.indexOf('updated')>-1) row.updated_at=p.updatedAt||p.updated_at||p.createdAt||iso();
     if(variant.indexOf('location')>-1){ row.location=p.location||p.pays||''; row.pays=p.pays||p.location||''; }
     if(variant.indexOf('bio')>-1) row.bio=p.bio||'';
@@ -4016,7 +4087,12 @@ select,
     if(variant.indexOf('avatar-plain')>-1){row.avatar=p.avatar||p.avatar_url||''; row.cover=p.cover||p.cover_url||'';}
     return row})}
   function postRows(db,variant){return (db.posts||[]).map(function(p){
-    var row={id:String(p.id),user_id:p.authorId||'',created_at:p.createdAt||iso(),updated_at:p.updatedAt||p.createdAt||iso(),status:p.status||'active'};
+    var row={id:String(p.id),created_at:p.createdAt||iso(),updated_at:p.updatedAt||p.createdAt||iso(),status:p.status||'active'};
+    var postAuthorId=p.authorId||p.user_id||p.auth_user_id||p.author_id||p.profile_id||'';
+    if(variant.indexOf('auth-author')>-1) row.auth_user_id=postAuthorId;
+    else if(variant.indexOf('author-column')>-1) row.author_id=postAuthorId;
+    else if(variant.indexOf('profile-author')>-1) row.profile_id=postAuthorId;
+    else row.user_id=postAuthorId;
     var mediaData=(p.media&&p.media.data&&!isDataURL(p.media.data))?p.media.data:'';
     var ad=cleanAd(p.ad);
     if(variant.indexOf('theme')===0) row.theme=p.theme||'talent';
@@ -4185,8 +4261,8 @@ select,
     return Promise.all(jobs).then(function(results){return {ok:results.every(function(x){return x&&x.ok}),results:results}})
   }
   function pushToSupabase(client,db){db=normalizeDB(db); lastWriteWarnings=[]; return uploadLocalMediaToSupabase(client,db).then(function(mediaResult){if(mediaResult&&mediaResult.changed) saveDB(db,{silent:true}); var jobs=[
-      safeUpsert(client,'profiles',[profileRows(db,'location-bio-contact-profession-avatar-url'),profileRows(db,'location-bio-contact-avatar-url'),profileRows(db,'location-bio-avatar-url'),profileRows(db,'location-bio-contact-headline-avatar-url'),profileRows(db,'location-bio-contact-job-avatar-url'),profileRows(db,'location-bio-updated'),profileRows(db,'location-bio'),profileRows(db,'name-only')],'id'),
-      safeUpsert(client,'posts',[postRows(db,'theme-content-media-ad-json-page-columns'),postRows(db,'theme-text-media-ad-json-page-columns'),postRows(db,'theme-content-url-ad-json-page-columns'),postRows(db,'theme-content-media-ad-json'),postRows(db,'theme-text-media-ad-json'),postRows(db,'theme-content-url-ad-json'),postRows(db,'theme-content-media-ad-columns'),postRows(db,'theme-text-media-ad-columns'),postRows(db,'theme-content-url-ad-columns'),postRows(db,'theme-content-media'),postRows(db,'theme-text-media'),postRows(db,'theme-content-url'),postRows(db,'content'),postRows(db,'text'),postRows(db,'body')],'id'),
+      safeUpsert(client,'profiles',[profileRows(db,'location-bio-contact-profession-avatar-url'),profileRows(db,'location-bio-contact-avatar-url'),profileRows(db,'location-bio-avatar-url'),profileRows(db,'location-bio-contact-headline-avatar-url'),profileRows(db,'location-bio-contact-job-avatar-url'),profileRows(db,'location-bio-updated'),profileRows(db,'location-bio'),profileRows(db,'name-only'),profileRows(db,'location-bio-contact-profession-avatar-url-auth-id-only'),profileRows(db,'location-bio-contact-headline-avatar-url-auth-id-only'),profileRows(db,'location-bio-contact-job-avatar-url-auth-id-only'),profileRows(db,'location-bio-updated-auth-id-only'),profileRows(db,'name-only-auth-id-only')],'id'),
+      safeUpsert(client,'posts',[postRows(db,'theme-content-media-ad-json-page-columns'),postRows(db,'theme-text-media-ad-json-page-columns'),postRows(db,'theme-content-url-ad-json-page-columns'),postRows(db,'theme-content-media-ad-json'),postRows(db,'theme-text-media-ad-json'),postRows(db,'theme-content-url-ad-json'),postRows(db,'theme-content-media-ad-columns'),postRows(db,'theme-text-media-ad-columns'),postRows(db,'theme-content-url-ad-columns'),postRows(db,'theme-content-media'),postRows(db,'theme-text-media'),postRows(db,'theme-content-url'),postRows(db,'content'),postRows(db,'text'),postRows(db,'body'),postRows(db,'theme-content-url-auth-author'),postRows(db,'theme-text-media-auth-author'),postRows(db,'content-auth-author'),postRows(db,'theme-content-url-author-column'),postRows(db,'theme-text-media-author-column'),postRows(db,'content-author-column'),postRows(db,'theme-content-url-profile-author'),postRows(db,'content-profile-author')],'id'),
       safeUpsert(client,'pages',[pageRows(db,'full'),pageRows(db,'minimal'),pageRows(db,'owner-minimal')],'id'),
       safeUpsert(client,'ads',[adRows(db,'full'),adRows(db,'minimal')],'id'),
       safeUpsert(client,'comments',[commentRows(db,'uuid-profile-content'),commentRows(db,'uuid-profile-text'),commentRows(db,'uuid-profile-body'),commentRows(db,'uuid-content-updated'),commentRows(db,'uuid-text-updated'),commentRows(db,'uuid-body'),commentRows(db,'content-updated'),commentRows(db,'text-updated')],'id'),
@@ -4485,6 +4561,11 @@ select,
     if(!needle) return null;
     var exact=findProfileInList(list,needle);
     if(exact) return exact;
+    var remoteNeedle=remoteProfileId(needle);
+    var byRemote=(list||[]).find(function(p){
+      return profileIdentityKeys(p).some(function(k){return remoteProfileId(k)===remoteNeedle});
+    });
+    if(byRemote) return byRemote;
     if(currentAuthUserId&&needle===String(currentAuthUserId)){
       var cached=getCachedProfile(currentAuthUserId);
       if(cached) return cached;
@@ -5101,9 +5182,18 @@ select,
     items.push('<button type="button" class="post-more-action" data-action="report-post" data-post-id="'+escapeHTML(post.id)+'">🚩 Signaler la publication</button>');
     return '<details class="post-more"><summary aria-label="Options de publication" title="Options de publication">☰</summary><div class="post-more-menu">'+items.join('')+'</div></details>';
   }
+  function resolvePostAuthor(db,post,linkedPage){
+    if(linkedPage) return {id:linkedPage.id,name:linkedPage.name,job:(linkedPage.category||'Page')+' • Page',avatar:pageAvatar(linkedPage),avatar_url:pageAvatar(linkedPage)};
+    var ids=[post&&post.authorId,post&&post.user_id,post&&post.auth_user_id,post&&post.author_id,post&&post.profile_id].filter(Boolean);
+    for(var i=0;i<ids.length;i++){var p=getProfile(db,ids[i]); if(p) return p;}
+    var authorName=pickRealProfileText(post&&post.authorName,post&&post.author_name,post&&post.profile_name,'');
+    var authorJob=pickRealProfileText(post&&post.authorJob,post&&post.author_job,post&&post.profession,post&&post.job,'');
+    if(authorName&&!isPlaceholderProfileText(authorName)) return {id:String((post&&post.authorId)||''),name:authorName,job:authorJob,avatar:''};
+    return {name:'Membre Nexora',job:'',avatar:''};
+  }
   function renderPost(db,post){
     var linkedPage=getPostPage(db,post);
-    var author=linkedPage?{id:linkedPage.id,name:linkedPage.name,job:(linkedPage.category||'Page')+' • Page',avatar:pageAvatar(linkedPage),avatar_url:pageAvatar(linkedPage)}:(getProfile(db,post.authorId)||{name:'Membre Nexora',job:'',avatar:''});
+    var author=resolvePostAuthor(db,post,linkedPage);
     var theme=getTheme(post.theme);
     var liked=(post.likes||[]).indexOf(db.activeProfileId)>-1;
     var recommended=(post.recommends||[]).indexOf(db.activeProfileId)>-1;
@@ -5855,12 +5945,16 @@ select,
       }
       return null
     }).then(function(media){
-      var row={id:postId,user_id:currentAuthUserId,theme:normalizeThemeKey(selectedTheme||'talent'),content:text,media_url:media?media.data:null,media_type:media?media.type:null,visibility:'public',status:'active',created_at:iso(),updated_at:iso()};
+      var row={id:postId,user_id:currentAuthUserId,auth_user_id:currentAuthUserId,theme:normalizeThemeKey(selectedTheme||'talent'),content:text,media_url:media?media.data:null,media_type:media?media.type:null,visibility:'public',status:'active',created_at:iso(),updated_at:iso()};
       if(activePage){row.page_id=activePage.id; row.author_type='page'; row.published_as='page'; row.page_name=activePage.name; row.page_avatar_url=pageAvatar(activePage);}
       var minimal={id:postId,user_id:currentAuthUserId,theme:normalizeThemeKey(selectedTheme||'talent'),content:text,media_url:media?media.data:null,media_type:media?media.type:null,visibility:'public',status:'active',created_at:row.created_at,updated_at:row.updated_at};
+      var authMinimal=Object.assign({},minimal,{auth_user_id:currentAuthUserId}); delete authMinimal.user_id;
+      var authorMinimal=Object.assign({},minimal,{author_id:currentAuthUserId}); delete authorMinimal.user_id;
       return trySequential([
         function(){return sbTable(client,'posts').insert(row).select('*').single()},
-        function(){return sbTable(client,'posts').insert(minimal).select('*').single()}
+        function(){return sbTable(client,'posts').insert(minimal).select('*').single()},
+        function(){return sbTable(client,'posts').insert(authMinimal).select('*').single()},
+        function(){return sbTable(client,'posts').insert(authorMinimal).select('*').single()}
       ],'publication').then(function(res){return {row:(res&&res.data)||row,media:media}})
     }).then(function(result){
       var db=readDB();
@@ -6563,32 +6657,50 @@ select,
     function upsertProfileRemote(row){
       row=row||{};
       row.user_id=row.user_id||currentAuthUserId;
+      row.auth_user_id=row.auth_user_id||row.user_id||currentAuthUserId;
       row.email=row.email||me.email||'';
       function variantsFrom(source){
         return [
           source,
-          {user_id:source.user_id,email:source.email,name:source.name,nom:source.nom||source.name,profession:source.profession,location:source.location,pays:source.pays||source.location,bio:source.bio,contact:source.contact,avatar_url:source.avatar_url,cover_url:source.cover_url,updated_at:source.updated_at},
+          {user_id:source.user_id,auth_user_id:source.auth_user_id,email:source.email,name:source.name,nom:source.nom||source.name,profession:source.profession,location:source.location,pays:source.pays||source.location,bio:source.bio,contact:source.contact,avatar_url:source.avatar_url,cover_url:source.cover_url,updated_at:source.updated_at},
+          {auth_user_id:source.auth_user_id,email:source.email,name:source.name,nom:source.nom||source.name,profession:source.profession,location:source.location,pays:source.pays||source.location,bio:source.bio,contact:source.contact,avatar_url:source.avatar_url,cover_url:source.cover_url,updated_at:source.updated_at},
           {user_id:source.user_id,email:source.email,name:source.name,profession:source.profession,location:source.location,bio:source.bio,avatar_url:source.avatar_url,cover_url:source.cover_url,updated_at:source.updated_at},
+          {auth_user_id:source.auth_user_id,email:source.email,name:source.name,profession:source.profession,location:source.location,bio:source.bio,avatar_url:source.avatar_url,cover_url:source.cover_url,updated_at:source.updated_at},
           {user_id:source.user_id,email:source.email,nom:source.nom||source.name,profession:source.profession,pays:source.pays||source.location,bio:source.bio,updated_at:source.updated_at},
+          {auth_user_id:source.auth_user_id,email:source.email,nom:source.nom||source.name,profession:source.profession,pays:source.pays||source.location,bio:source.bio,updated_at:source.updated_at},
           {user_id:source.user_id,email:source.email,name:source.name,profession:source.profession,updated_at:source.updated_at},
+          {auth_user_id:source.auth_user_id,email:source.email,name:source.name,profession:source.profession,updated_at:source.updated_at},
           {user_id:source.user_id,email:source.email,nom:source.nom||source.name,updated_at:source.updated_at},
-          {user_id:source.user_id,email:source.email,updated_at:source.updated_at}
+          {auth_user_id:source.auth_user_id,email:source.email,nom:source.nom||source.name,updated_at:source.updated_at},
+          {user_id:source.user_id,email:source.email,updated_at:source.updated_at},
+          {auth_user_id:source.auth_user_id,email:source.email,updated_at:source.updated_at}
         ];
       }
-      function readExisting(){return sbTable(client,'profiles').select('*').eq('user_id',row.user_id).maybeSingle().then(function(res){if(res.error) throw res.error; return res.data||null})}
+      function readExisting(){
+        return sbTable(client,'profiles').select('*').eq('auth_user_id',row.auth_user_id).maybeSingle().then(function(res){if(res.error) throw res.error; return res.data||null})
+          .catch(function(err){if(isSchemaError(err)) return sbTable(client,'profiles').select('*').eq('user_id',row.user_id).maybeSingle().then(function(res){if(res.error) throw res.error; return res.data||null}); throw err;});
+      }
       var rows=variantsFrom(row);
+      var updateColumns=['auth_user_id','user_id'];
       var i=0;
       function tryUpdate(lastErr){
         if(i>=rows.length) return Promise.reject(lastErr||new Error('Profil non enregistré en ligne'));
         var candidate=rows[i++];
-        return sbTable(client,'profiles').update(candidate).eq('user_id',row.user_id).select('*').maybeSingle().then(function(res){
-          if(res.error) throw res.error;
-          if(res.data) return res.data;
-          return tryInsert(candidate);
-        }).catch(function(err){
-          if(isSchemaError(err)) return tryUpdate(err);
-          throw err;
-        });
+        var colIndex=0;
+        function byNextColumn(colErr){
+          if(colIndex>=updateColumns.length) throw (colErr||lastErr||new Error('Colonne profil indisponible'));
+          var col=updateColumns[colIndex++];
+          var value=(col==='auth_user_id')?row.auth_user_id:row.user_id;
+          return sbTable(client,'profiles').update(candidate).eq(col,value).select('*').maybeSingle().then(function(res){
+            if(res.error) throw res.error;
+            if(res.data) return res.data;
+            return tryInsert(candidate);
+          }).catch(function(err){
+            if(isSchemaError(err)) return byNextColumn(err);
+            throw err;
+          });
+        }
+        return byNextColumn(lastErr).catch(function(err){if(isSchemaError(err)) return tryUpdate(err); throw err;});
       }
       function tryInsert(seed){
         var insertRows=variantsFrom(seed||row);
@@ -6616,6 +6728,7 @@ select,
         var uploadedCover=values[1]||previousCover||'';
         var remoteRow={
           user_id:currentAuthUserId,
+          auth_user_id:currentAuthUserId,
           email:me.email||'',
           name:name,
           nom:name,
@@ -6644,6 +6757,7 @@ select,
         var cleanProfile=normalizeProfileObject({
           id:profileId,
           user_id:currentAuthUserId||profileId,
+          auth_user_id:currentAuthUserId||profileId,
           name:row.name||row.full_name||name,
           profession:row.profession||row.job||row.headline||job,
           location:row.location||location,
