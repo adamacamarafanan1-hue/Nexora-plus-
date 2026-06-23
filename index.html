@@ -4,9 +4,16 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
-<title>Nexora — Réseau social professionnel</title>
-<meta content="Nexora — thèmes de publication simplifiés." name="description"/>
+<title>Nexora</title>
+<meta content="Nexora" name="description"/>
 <meta content="#1D4ED8" name="theme-color"/>
+<meta name="application-name" content="Nexora"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Nexora"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="apple-touch-icon" href="/icons/icon-192.png"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
@@ -345,6 +352,9 @@ img,video{max-width:100%;display:block}
 .profile-stat-mini{border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,var(--surface-2),var(--surface));padding:12px;text-align:center;box-shadow:var(--shadow-xs)}
 .profile-stat-mini b{display:block;color:var(--blue);font-size:20px;font-weight:900;line-height:1;letter-spacing:-.025em}
 .profile-stat-mini span{display:block;margin-top:5px;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.055em;font-weight:900;line-height:1.25}
+.profile-follow-help{max-width:720px;margin:8px auto 0;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:12px;font-weight:850;line-height:1.4}
+.profile-follow-help span{border:1px solid var(--border);background:var(--surface-2);border-radius:999px;padding:6px 9px}
+.profile-follow-help b{color:var(--ink);font-weight:1000}
 .profile-info-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .profile-info-item{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);background:var(--surface-2);border-radius:18px;padding:12px;min-width:0}
 .profile-info-icon{width:38px;height:38px;border-radius:14px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:0 0 auto;font-size:18px}
@@ -2455,6 +2465,34 @@ select,
   background:radial-gradient(circle at 18% 15%,rgba(255,255,255,.34),transparent 26%),linear-gradient(135deg,#BE123C 0%,#F97316 56%,#FBBF24 120%)!important;
 }
 
+
+/* NEXORA SCÈNE — espace prestige en haut, sans surcharger le menu mobile */
+.top-mini-action.scene-shortcut{background:linear-gradient(135deg,rgba(217,119,6,.92),rgba(37,99,235,.86));border-color:rgba(255,255,255,.34);box-shadow:0 12px 28px rgba(217,119,6,.20),inset 0 1px 0 rgba(255,255,255,.20)}
+.top-mini-action.active,.top-mini-action.scene-shortcut.active{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.45);color:#fff;transform:translateY(-1px)}
+.scene-shell{display:grid;gap:14px;margin-top:14px}
+.scene-hero{position:relative;overflow:hidden;border-radius:var(--radius-xl);border:1px solid rgba(255,255,255,.18);background:radial-gradient(circle at 12% 0%,rgba(245,158,11,.34),transparent 30%),linear-gradient(135deg,#07152F 0%,#173EA8 52%,#D97706 130%);color:#fff;box-shadow:var(--shadow-md);padding:18px}
+.scene-hero::before{content:'';position:absolute;right:-80px;top:-90px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.13);pointer-events:none}
+.scene-hero::after{content:'';position:absolute;left:-42px;bottom:-70px;width:170px;height:170px;border-radius:50%;background:rgba(96,165,250,.16);pointer-events:none}
+.scene-hero-inner{position:relative;z-index:1;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.scene-kicker{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.23);font-size:11.5px;font-weight:1000;text-transform:uppercase;letter-spacing:.075em;color:rgba(255,255,255,.92);margin-bottom:9px}
+.scene-title{margin:0;color:#fff;font-size:clamp(24px,5vw,36px);line-height:1.08;font-weight:1000;letter-spacing:-.045em;max-width:760px}
+.scene-sub{margin:9px 0 0;color:rgba(255,255,255,.82);font-size:14px;font-weight:700;line-height:1.55;max-width:690px}
+.scene-actions{position:relative;z-index:1;display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.scene-actions .btn-soft{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);color:#fff}
+.scene-actions .btn-soft:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);color:#fff}
+.scene-metrics{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-width:250px;max-width:360px;width:36%}
+.scene-metric{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.12);border-radius:17px;padding:10px 11px;backdrop-filter:blur(10px)}
+.scene-metric b{display:block;color:#fff;font-size:19px;font-weight:1000;line-height:1;letter-spacing:-.03em}
+.scene-metric span{display:block;margin-top:6px;color:rgba(255,255,255,.74);font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;line-height:1.25}
+.scene-section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.scene-section-title{margin:0;color:var(--ink);font-size:20px;font-weight:1000;letter-spacing:-.035em;line-height:1.12}
+.scene-section-sub{margin:4px 0 0;color:var(--muted);font-size:13px;font-weight:750;line-height:1.45}
+.scene-feed-panel{display:grid;gap:12px}
+.scene-filter-note{border:1px solid #BFDBFE;background:linear-gradient(135deg,var(--blue-soft),var(--surface));border-radius:18px;padding:11px 12px;color:var(--text);font-size:13px;font-weight:800;line-height:1.45}
+.scene-badge-strong{background:linear-gradient(135deg,var(--gold-soft),var(--blue-soft));border-color:#FCD34D;color:#92400E}
+@media(max-width:760px){.scene-hero{padding:16px}.scene-hero-inner{display:block}.scene-metrics{width:100%;max-width:none;margin-top:14px}.scene-actions{display:grid}.scene-actions .btn{width:100%}.scene-section-head{display:block}.scene-section-head .btn{margin-top:10px;width:100%}}
+@media(max-width:430px){.scene-metrics{grid-template-columns:1fr}.scene-title{font-size:25px}}
+
 </style>
 </head>
 <body>
@@ -2462,7 +2500,7 @@ select,
 <section class="welcome-gate" id="welcomeGate" hidden>
   <div class="welcome-card">
     <div class="welcome-logo">NX</div>
-    <p class="welcome-kicker">Bienvenue sur Nexora</p>
+    
     <h1 class="welcome-title">Nexora</h1>
     
     
@@ -2515,6 +2553,9 @@ select,
       </div>
     </div>
     <div class="top-tools-mini">
+      <button type="button" class="top-mini-action scene-shortcut" data-action="go" data-screen="scene" aria-label="Ouvrir la Scène Nexora">
+        <span class="nav-icon">🎤</span><span>Scène</span>
+      </button>
       <button type="button" class="search-shortcut top-mini-action" data-action="go" data-screen="search">
         <span class="nav-icon">🔎</span><span>Recherche</span>
       </button>
@@ -2539,14 +2580,17 @@ select,
 </div>
 <div class="feed" data-feed=""></div>
 </section>
+<section class="screen" data-screen-panel="scene" id="screen-scene">
+<div data-scene-center=""></div>
+</section>
 <section class="screen" data-screen-panel="network" id="screen-network">
 <div class="card network-card-pro network-card-v2">
-<section class="network-hero-pro" aria-label="Présentation du réseau Nexora">
+<section class="network-hero-pro" aria-label="Réseau Nexora">
 <div class="network-head-pro">
 <div>
 <span class="network-kicker">Réseau</span>
-<h2 class="network-title-pro">Les bonnes connexions, au bon moment</h2>
-<p class="network-sub-pro">Recherche, présence et relation dans un espace clair.</p>
+<h2 class="network-title-pro">Réseau</h2>
+
 </div>
 <span class="network-live-pill"><span class="network-live-dot"></span><span data-network-online-count="">0 connecté</span></span>
 </div>
@@ -2561,11 +2605,7 @@ select,
 <span class="network-search-icon">🔎</span>
 <input class="input network-search-input" data-network-search="" placeholder="Rechercher par nom, métier, ville ou compétence" type="search" autocomplete="off"/>
 </div>
-<div class="network-guide-row network-guide-row-pro" aria-label="Repères réseau">
-<span>🟢 Actifs</span>
-<span>🤝 Relations</span>
-<span>🔎 Recherche</span>
-</div>
+
 </div>
 <div class="network-grid network-grid-pro" data-network-list=""></div>
 </div>
@@ -2605,8 +2645,8 @@ select,
 </main>
 <aside aria-label="Résumé Nexora" class="rightbar">
 <h2 class="section-title">Activité</h2>
-<div class="right-stat"><div class="stat-box"><div class="stat-num" data-count-posts="">0</div><div class="stat-label">Publications</div></div><div class="stat-box"><div class="stat-num" data-count-notifs="">0</div><div class="stat-label">Alertes</div></div><div class="stat-box"><div class="stat-num" data-count-profiles="">0</div><div class="stat-label">Profils</div></div><div class="stat-box"><div class="stat-num" data-count-follows="">0</div><div class="stat-label">Suivis</div></div><div class="stat-box"><div class="stat-num" data-count-ads="">0</div><div class="stat-label">Publicités</div></div></div>
-<div class="tip"></div><div class="tip">📣 Publicité claire.</div><div class="tip">👤 Profil complet.</div><div class="tip">🔔 Alertes claires.</div></div>
+<div class="right-stat"><div class="stat-box"><div class="stat-num" data-count-posts="">0</div><div class="stat-label">Publications</div></div><div class="stat-box"><div class="stat-num" data-count-notifs="">0</div><div class="stat-label">Alertes</div></div><div class="stat-box"><div class="stat-num" data-count-profiles="">0</div><div class="stat-label">Profils</div></div><div class="stat-box"><div class="stat-num" data-count-follows="">0</div><div class="stat-label">Je suis</div></div><div class="stat-box"><div class="stat-num" data-count-ads="">0</div><div class="stat-label">Publicités</div></div></div>
+
 </aside>
 </div>
 <nav aria-label="Navigation mobile" class="mobile-nav"><div class="mobile-nav-inner" data-nav-mobile="">
@@ -2622,14 +2662,14 @@ select,
 <div class="drawer-body composer-body composer-body-pro">
 <div class="composer-author-pro">
 <div class="avatar round composer-author-avatar" data-current-avatar=""></div>
-<div class="composer-author-copy"><strong>Publier sur Nexora</strong><span>Texte, photo ou vidéo — clair, utile et professionnel.</span></div>
+<div class="composer-author-copy"><strong>Publier sur Nexora</strong><span></span></div>
 </div>
 <div class="theme-grid composer-theme-grid" data-composer-themes=""></div>
 <div aria-live="polite" class="canvas composer-canvas" data-composer-canvas="">
 <div class="canvas-head"><div><h3 class="canvas-title" data-canvas-title="">Contenu</h3></div><span class="pill" data-selected-theme-pill="">Talent</span></div>
 <textarea class="textarea post-textarea" data-post-text="" maxlength="1400" placeholder="Que veux-tu publier ?"></textarea>
 <div class="post-bg-tools" data-post-bg-tools="">
-  <div class="post-bg-head"><div><strong>Fond de publication</strong><span>Pour un texte plus visible. La photo/vidéo reste séparée.</span></div></div>
+  <div class="post-bg-head"><div><strong>Fond de publication</strong><span></span></div></div>
   <div class="post-bg-options" aria-label="Choisir un fond de publication">
     <button class="post-bg-option active" data-action="set-post-background" data-post-bg="none" aria-pressed="true" title="Sans fond" type="button"><span class="post-bg-swatch">A</span></button>
     <button class="post-bg-option" data-action="set-post-background" data-post-bg="blue" aria-pressed="false" title="Fond bleu" type="button"><span class="post-bg-swatch">Aa</span></button>
@@ -2642,7 +2682,7 @@ select,
 </div>
 <label class="media-picker composer-media-picker composer-media-pro" for="postMediaInput">
 <span class="composer-media-icon">📷</span>
-<span class="composer-media-copy"><strong>Ajouter une photo ou une vidéo</strong><em>Visible dans le fil, avec aperçu avant publication.</em></span>
+<span class="composer-media-copy"><strong>Ajouter une photo ou une vidéo</strong><em></em></span>
 <span class="composer-media-action">Choisir</span>
 <input accept="image/*,video/*" data-post-media="" hidden="" id="postMediaInput" type="file"/>
 </label>
@@ -2674,7 +2714,7 @@ select,
 <div class="modal-body">
 <div class="account-hero">
 <div class="account-hero-icon">📣</div>
-<div><strong data-ad-post-title="">Publication à sponsoriser</strong><span data-ad-sponsor-note="">Validation par Nexora Ads avant diffusion.</span></div>
+<div><strong data-ad-post-title="">Publication à sponsoriser</strong><span data-ad-sponsor-note=""></span></div>
 </div>
 
 <div class="ad-form-block"><h3 class="ad-form-title">Publicité</h3>
@@ -2780,15 +2820,15 @@ select,
 <div class="modal-body">
 <input type="hidden" data-page-id=""/>
 <div class="page-identity-register page-editor-media-priority">
-<div class="page-identity-head"><div><h3 class="page-identity-title">Identité visuelle</h3><span class="page-identity-sub">Ajoute une photo de profil claire et une couverture large pour identifier correctement la page.</span></div><span class="page-identity-badge">Visuel de page</span></div>
+<div class="page-identity-head"><div><h3 class="page-identity-title">Identité visuelle</h3><span class="page-identity-sub"></span></div><span class="page-identity-badge">Visuel</span></div>
 <div class="page-identity-preview">
 <div class="page-identity-cover" data-action="pick-page-cover" data-page-cover-preview="" role="button" tabindex="0" title="Choisir la photo de couverture"><span class="page-cover-empty"><b>Photo de couverture</b><small>Format large</small></span></div>
 <div class="page-identity-main">
 <div class="page-identity-logo" data-action="pick-page-avatar" data-page-avatar-preview="" role="button" tabindex="0" title="Choisir la photo de profil"><span class="page-logo-empty-icon">🏢</span><span class="page-logo-empty-title">Photo</span><span class="page-logo-empty-help">profil</span></div>
-<div class="page-identity-copy"><strong data-page-preview-name="">Nom de la page</strong><span data-page-preview-meta="">Catégorie • Guinée</span><span class="page-preview-plan" data-page-preview-plan="">Page gratuite</span><div class="page-identity-mini-stats"><em>Présence officielle</em><em>Contact public</em><em>Publicité possible</em></div></div>
+<div class="page-identity-copy"><strong data-page-preview-name="">Nom de la page</strong><span data-page-preview-meta="">Catégorie • Guinée</span><span class="page-preview-plan" data-page-preview-plan="">Page gratuite</span></div>
 </div>
 </div>
-<div class="page-identity-actions"><button class="page-editor-media-btn primary" data-action="pick-page-avatar" type="button"><span class="media-btn-icon">🖼️</span><span><b>Photo de profil</b><small>Logo, visage ou marque</small></span></button><button class="page-editor-media-btn secondary" data-action="pick-page-cover" type="button"><span class="media-btn-icon">🌄</span><span><b>Photo de couverture</b><small>Bannière large</small></span></button></div>
+<div class="page-identity-actions"><button class="page-editor-media-btn primary" data-action="pick-page-avatar" type="button"><span class="media-btn-icon">🖼️</span><span><b>Photo de profil</b><small></small></span></button><button class="page-editor-media-btn secondary" data-action="pick-page-cover" type="button"><span class="media-btn-icon">🌄</span><span><b>Photo de couverture</b><small></small></span></button></div>
 <input accept="image/*" data-page-avatar-input="" id="pageAvatarInput" style="display:none" type="file"/><input accept="image/*" data-page-cover-input="" id="pageCoverInput" style="display:none" type="file"/>
 </div>
 <div class="form-grid"><div class="field"><span class="label">Nom de la page</span><input class="input" data-page-name="" placeholder="Ex : CAFI, Mini pelle location, Formation digitale"/></div><div class="field"><span class="label">Catégorie</span><input class="input" data-page-category="" placeholder="Entreprise, projet, formation, service"/></div></div>
@@ -2804,8 +2844,8 @@ select,
 </div>
 <div class="field"><span class="label">Description</span><textarea class="textarea" data-page-bio="" maxlength="240" placeholder=""></textarea></div>
 <div class="page-pro-panel">
-  <h3 class="page-pro-title">Offres Pages Nexora</h3>
-  <p class="page-pro-text">Page gratuite : active immédiatement. Pages payantes : envoyées à l’admin et visibles publiquement seulement après validation.</p>
+  <h3 class="page-pro-title">Formules Pages Nexora</h3>
+  
   <div class="form-grid">
     <div class="field"><span class="label">Formule annuelle</span><select class="select" data-page-plan=""><option value="free">Page gratuite — 0 GNF / an</option><option value="pro_simple">Page Pro Simple — 500 000 GNF / an</option><option value="pro_business">Page Pro Business — 1 000 000 GNF / an</option><option value="institution">Page Institutionnelle — 3 000 000 GNF / an</option></select></div>
     <div class="field"><span class="label">Paiement</span><input type="hidden" data-page-billing="" value="yearly"/><div class="page-billing-annual-lock">🔒 Paiement annuel uniquement</div></div>
@@ -2814,12 +2854,12 @@ select,
   <div class="page-plan-benefit-list" data-page-plan-benefits=""></div>
   <div class="page-plan-section-title">Avantages par formule annuelle</div>
   <div class="page-plan-grid" data-page-plan-grid=""></div>
-  <div class="page-pro-kpis"><div class="page-pro-kpi"><b>Paiement annuel</b><span>Une seule formule par an, sans paiement mensuel</span></div><div class="page-pro-kpi"><b>Validation Nexora</b><span>Les pages payantes sont contrôlées avant activation</span></div><div class="page-pro-kpi"><b>Publicité</b><span>Les campagnes restent gérées séparément après validation</span></div></div>
+  
   <div class="page-payment-row">
     <div class="field"><span class="label">Moyen de paiement</span><select class="select" data-page-payment-method=""><option value="">À choisir</option><option value="orange_money">Orange Money</option><option value="mobile_money">Mobile Money</option><option value="virement">Virement bancaire</option><option value="cash">Paiement direct</option><option value="autre">Autre</option></select></div>
     <div class="field"><span class="label">Référence paiement / preuve</span><input class="input" data-page-payment-ref="" placeholder="Référence, numéro transaction ou reçu"/></div>
   </div>
-  <p class="page-payment-helper">La page payante est enregistrée en attente. Elle devient publiable dans le fil seulement après validation admin.</p>
+  
   <p class="page-pro-note" data-page-pro-price-note="">Page gratuite : 0 GNF / an. Paiement annuel uniquement.</p>
 </div>
 
@@ -2844,7 +2884,7 @@ select,
     anonKey:'sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY',
     // Renseigne ici tes vraies informations Supabase ou définis window.NEXORA_SUPABASE avant ce script.
     // Supabase devient la source officielle quand url + anonKey sont renseignés.
-    tables:{profiles:'profiles',posts:'posts',comments:'comments',reactions:'reactions',notifications:'notifications',follows:'follows',pages:'pages',ads:'ads',friend_requests:'friend_requests',friendships:'friendships',conversations:'conversations',messages:'messages',blocks:'blocks',user_privacy:'user_privacy',support_tickets:'support_tickets',reports:'reports'},
+    tables:{profiles:'profiles',posts:'posts',comments:'comments',reactions:'reactions',notifications:'notifications',follows:'followers',pages:'pages',ads:'ads',friend_requests:'friend_requests',friendships:'friendships',conversations:'conversations',messages:'messages',blocks:'blocks',user_privacy:'user_privacy',support_tickets:'support_tickets',reports:'reports'},
     storage:{bucket:'nexora-media'},
     snapshotTable:'nexora_local_snapshots'
   };
@@ -2866,6 +2906,9 @@ select,
   var lastWriteWarnings=[];
   var lastSyncReport=null;
   var currentScreen='home';
+  /* NEXORA FIX RÈGLES — onglet légal par défaut.
+     Sans cette variable, l'ouverture du centre des règles pouvait rester vide. */
+  var legalTab='privacy';
   var selectedTheme='talent';
   var selectedMedia=null;
   var selectedPostBackground='none';
@@ -2970,13 +3013,15 @@ select,
   var postAuthWelcomeMode=null;
 
   var THEMES={
-    talent:{emoji:'✨',label:'Talent',desc:'Savoir-faire, compétence, création.',placeholder:'Présente ton talent, ton savoir-faire ou ce que tu sais faire concrètement.',help:''},
-    realisation:{emoji:'🏆',label:'Réalisation',desc:'Projet fini, résultat concret.',placeholder:'Présente ce que tu as réalisé, le résultat obtenu et ce que cela prouve.',help:''},
-    opportunite:{emoji:'🚀',label:'Opportunité',desc:'Emploi, stage, formation, concours.',placeholder:'Partage une offre, une formation, un stage, un concours ou une annonce utile.',help:''},
-    initiative:{emoji:'🌍',label:'Initiative',desc:'Projet, idée, action à impact.',placeholder:'Explique ton idée, ton projet, l’action menée et l’impact attendu.',help:''}
+    scene:{emoji:'🎤',label:'Scène Nexora',desc:'',placeholder:'Écris ta publication Scène.',help:''},
+    talent:{emoji:'✨',label:'Talent',desc:'',placeholder:'Écris ta publication.',help:''},
+    realisation:{emoji:'🏆',label:'Réalisation',desc:'',placeholder:'Écris ta réalisation.',help:''},
+    opportunite:{emoji:'🚀',label:'Opportunité',desc:'',placeholder:'Écris ton opportunité.',help:''},
+    initiative:{emoji:'🌍',label:'Initiative',desc:'',placeholder:'Écris ton initiative.',help:''}
   };
-  var COMPOSER_THEME_ORDER=['talent','realisation','opportunite','initiative'];
+  var COMPOSER_THEME_ORDER=['scene','talent','realisation','opportunite','initiative'];
   var THEME_ALIASES={
+    scene:'scene',scène:'scene',stage:'scene',sur_scene:'scene',sur_scène:'scene',nexora_scene:'scene',nexora_scène:'scene',clip:'scene',clips:'scene',defi:'scene',défi:'scene',challenge:'scene',challenges:'scene',
     competence:'talent',competencepro:'talent',skill:'talent',skills:'talent',talents:'talent',
     formation:'opportunite',formations:'opportunite',training:'opportunite',apprentissage:'opportunite',
     opportunites:'opportunite',opportunity:'opportunite',opportunities:'opportunite',
@@ -2995,10 +3040,10 @@ select,
   var AD_OBJECTIVES={notoriete:'Faire connaître',contacts:'Recevoir des contacts',profil:'Attirer vers un profil',opportunite:'Promouvoir une opportunité',reservation:'Vendre ou réserver'};
 
   var PAGE_PLANS={
-    free:{label:'Page gratuite',shortLabel:'Gratuite',monthly:0,yearly:0,desc:'Présence simple pour démarrer',benefits:['Page publique avec nom, catégorie et description','Photo de profil et couverture sur fond blanc','Coordonnées de base visibles','Publication directe dans le fil d’actualité'],stats:['Publications','Contacts','Abonnés']},
-    pro_simple:{label:'Page Pro Simple',shortLabel:'Pro Simple',monthly:0,yearly:500000,desc:'Pour indépendants, formations, services et petites structures',benefits:['Badge Page Pro visible dans le fil et la recherche','Coordonnées complètes : téléphone, email, lien et ville','Statistiques simples de page : vues, contacts, publications','Base adaptée pour publier puis sponsoriser'],stats:['Vues','Contacts','Publications','Abonnés']},
-    pro_business:{label:'Page Pro Business',shortLabel:'Pro Business',monthly:0,yearly:1000000,desc:'Pour entreprises, marques, projets actifs et organisations en croissance',benefits:['Badge Pro Business plus distinctif','Statistiques renforcées : vues, contacts, abonnés, publications','Présentation complète pour attirer clients et partenaires','Priorité de vérification avant campagnes publicitaires'],stats:['Vues','Contacts','Abonnés','Campagnes']},
-    institution:{label:'Page Institutionnelle',shortLabel:'Institution',monthly:0,yearly:3000000,desc:'Pour État, institutions, ONG, ambassades, grandes entreprises et partenaires',benefits:['Badge institutionnel clairement affiché','Validation renforcée par Nexora avant diffusion','Format adapté aux communiqués et annonces publiques','Statistiques de crédibilité pour citoyens, partenaires et bailleurs'],stats:['Vues','Contacts','Abonnés','Annonces']}
+    free:{label:'Page gratuite',shortLabel:'Gratuite',monthly:0,yearly:0,desc:'Page publique simple',benefits:['Nom, catégorie et description','Photo de profil et couverture sur fond blanc','Coordonnées de base','Publication dans le fil d’actualité'],stats:['Publications','Contacts','Abonnés']},
+    pro_simple:{label:'Page Pro Simple',shortLabel:'Pro Simple',monthly:0,yearly:500000,desc:'Indépendants, services et petites structures',benefits:['Badge Page Pro','Téléphone, email, lien et ville','Statistiques : vues, contacts, publications','Publication au nom de la page'],stats:['Vues','Contacts','Publications','Abonnés']},
+    pro_business:{label:'Page Pro Business',shortLabel:'Pro Business',monthly:0,yearly:1000000,desc:'Entreprises, marques et organisations',benefits:['Badge Pro Business','Statistiques : vues, contacts, abonnés, publications','Présentation complète de la page','Vérification prioritaire avant campagne'],stats:['Vues','Contacts','Abonnés','Campagnes']},
+    institution:{label:'Page Institutionnelle',shortLabel:'Institution',monthly:0,yearly:3000000,desc:'Institutions, ONG, ambassades et grandes structures',benefits:['Badge institutionnel','Validation renforcée avant diffusion','Format adapté aux communiqués et annonces publiques','Statistiques de consultation'],stats:['Vues','Contacts','Abonnés','Annonces']}
   };
   function normalizePagePlan(value){var k=String(value||'free').toLowerCase().replace(/[^a-z0-9]+/g,'_'); return PAGE_PLANS[k]?k:'free'}
   function normalizeBilling(value){return 'yearly'}
@@ -3070,7 +3115,7 @@ select,
     var posts=(db.posts||[]).filter(function(p){return String(p.pageId||p.page_id||'')===String(page.id)});
     var likes=0,recommends=0,comments=0,views=0;
     posts.forEach(function(p){likes+=(p.likes||[]).length; recommends+=(p.recommends||[]).length; comments+=(p.comments||[]).length; var ad=(typeof cleanAd==='function')?cleanAd(p.ad):p.ad; if(ad){views+=Number(ad.impressions||0)||0;}});
-    var followers=(db.follows||[]).filter(function(f){return String(f.to)===String(page.id)||String(f.pageId||f.page_id||'')===String(page.id)}).length;
+    var followers=countFollowersTo(db,page.id,'page');
     var contacts=[page.phone,page.email,page.website,page.contact].filter(function(v){return !!compact(v)}).length;
     var campaigns=(db.posts||[]).filter(function(p){return String(p.pageId||p.page_id||'')===String(page.id)&&p.ad}).length;
     views=views||Math.max(0,posts.length*120+likes*8+comments*12+recommends*10);
@@ -3079,7 +3124,7 @@ select,
   function niceNumber(value){var n=Number(value||0); if(!isFinite(n)) n=0; if(n>=1000000) return (Math.round(n/100000)/10)+'M'; if(n>=1000) return (Math.round(n/100)/10)+'k'; return String(Math.round(n));}
   function pageStatsHtml(db,page){
     var stats=pageStatsFor(db,page);
-    return '<div class="page-stats-grid"><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.views))+'</b><span>Vues</span></div><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.posts))+'</b><span>Publications</span></div><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.contacts))+'</b><span>Contacts</span></div><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.followers))+'</b><span>Abonnés</span></div></div>';
+    return '<div class="page-stats-grid"><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.views))+'</b><span>Vues</span></div><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.posts))+'</b><span>Publications</span></div><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.contacts))+'</b><span>Contacts</span></div><div class="page-stat-card"><b>'+escapeHTML(niceNumber(stats.followers))+'</b><span>Suivent la page</span></div></div>';
   }
   function pageStatusFlowHtml(page){
     page=normalizePageObject(Object.assign({},page||{}));
@@ -3516,7 +3561,7 @@ select,
     displaySyncStatus=status;
     updateSyncStatus();
   }
-  function getSupabaseConfig(){var cfg=window.NEXORA_SUPABASE||SUPABASE_CONFIG; cfg.tables=cfg.tables||{}; cfg.tables.profiles=cfg.tables.profiles||'profiles'; cfg.tables.profiles_public=cfg.tables.profiles_public||'profiles_public'; cfg.tables.posts=cfg.tables.posts||'posts'; cfg.tables.comments=cfg.tables.comments||'comments'; cfg.tables.reactions=cfg.tables.reactions||'reactions'; cfg.tables.notifications=cfg.tables.notifications||'notifications'; cfg.tables.follows=cfg.tables.follows||'follows'; cfg.tables.pages=cfg.tables.pages||'pages'; cfg.tables.ads=cfg.tables.ads||'ads'; return cfg}
+  function getSupabaseConfig(){var cfg=window.NEXORA_SUPABASE||SUPABASE_CONFIG; cfg.tables=cfg.tables||{}; cfg.tables.profiles=cfg.tables.profiles||'profiles'; cfg.tables.profiles_public=cfg.tables.profiles_public||'profiles_public'; cfg.tables.posts=cfg.tables.posts||'posts'; cfg.tables.comments=cfg.tables.comments||'comments'; cfg.tables.reactions=cfg.tables.reactions||'reactions'; cfg.tables.notifications=cfg.tables.notifications||'notifications'; cfg.tables.follows=cfg.tables.follows||'followers'; cfg.tables.pages=cfg.tables.pages||'pages'; cfg.tables.ads=cfg.tables.ads||'ads'; return cfg}
   function getSupabaseClient(){var cfg=getSupabaseConfig(); if(supabaseClient) return supabaseClient; if(!cfg||!cfg.url||!cfg.anonKey) return null; if(!window.supabase||typeof window.supabase.createClient!=='function') return null; try{supabaseClient=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}); try{setTimeout(function(){setupSupabaseRealtime(supabaseClient)},60)}catch(e){} return supabaseClient}catch(err){console.error('Supabase indisponible',err); return null}}
 
   /* NEXORA STEP33 — Connexion Auth réelle : ne plus confondre Internet avec Supabase/CDN.
@@ -3682,6 +3727,37 @@ select,
     if(cls){text.classList.add('has-bg',cls); resizeComposerBackgroundPreview();}
     else{resetComposerBackgroundSizing();}
   }
+
+  /* NEXORA FIX LIKES SYNC — les réactions ne doivent jamais être remplacées par une ancienne version locale.
+     Chaque téléphone peut avoir un cache différent : on fusionne donc les identifiants uniques. */
+  function uniqueReactionIds(list){
+    var out=[];
+    var seen={};
+    (Array.isArray(list)?list:[]).forEach(function(value){
+      var id=String(value||'').trim();
+      if(!id||seen[id]) return;
+      seen[id]=true;
+      out.push(id);
+    });
+    return out;
+  }
+  function mergeReactionIds(a,b){return uniqueReactionIds((Array.isArray(a)?a:[]).concat(Array.isArray(b)?b:[]))}
+  function mergePostComments(a,b){return mergeArray(Array.isArray(a)?a:[],Array.isArray(b)?b:[]).sort(function(x,y){return new Date(x.createdAt||x.created_at||0)-new Date(y.createdAt||y.created_at||0)})}
+  function normalizeReactionType(value){
+    value=String(value||'like').toLowerCase();
+    if(value==='recommend'||value==='recommandation'||value==='valorisation'||value==='valoriser') return 'recommend';
+    return 'like';
+  }
+  function viewerReactionIds(db){
+    db=db||readDB();
+    var me=getActiveProfile(db)||{};
+    return uniqueReactionIds([currentAuthUserId,db.activeProfileId,me.id,me.user_id,me.auth_user_id,me.profile_id]);
+  }
+  function hasViewerReaction(list,db){
+    var ids=viewerReactionIds(db);
+    var map={}; ids.forEach(function(id){map[String(id)]=true});
+    return (Array.isArray(list)?list:[]).some(function(id){return !!map[String(id)]});
+  }
   function normalizePostObject(post){
     post=post&&typeof post==='object'?post:{};
     if(!post.media&&(post.media_url||post.media_type)){
@@ -3695,8 +3771,8 @@ select,
       post.media_type=post.media_type||'';
     }
     post.theme=normalizeThemeKey(post.theme||'talent');
-    post.likes=Array.isArray(post.likes)?post.likes:[];
-    post.recommends=Array.isArray(post.recommends)?post.recommends:[];
+    post.likes=uniqueReactionIds(post.likes);
+    post.recommends=uniqueReactionIds(post.recommends);
     post.comments=Array.isArray(post.comments)?post.comments:[];
     post.background=normalizePostBackground(post.background||post.post_background||post.postBg||post.bg||post.background_key||'none');
     post.post_background=post.background;
@@ -4419,6 +4495,8 @@ select,
   function timeValue(item){var t=new Date((item&&item.updatedAt)||(item&&item.createdAt)||'1970-01-01T00:00:00.000Z').getTime(); return isNaN(t)?0:t}
   function newer(a,b){return timeValue(a)>=timeValue(b)?a:b}
   function mergeArray(local,remote){var map={}; (local||[]).forEach(function(x){if(x&&x.id) map[x.id]=x}); (remote||[]).forEach(function(x){if(!x||!x.id)return; map[x.id]=map[x.id]?newer(map[x.id],x):x}); return Object.keys(map).map(function(k){return map[k]})}
+  function followPairKey(f){f=normalizeFollowObject(f); return [f.from,normalizeFollowTargetType(f.targetType),f.to].join('::')}
+  function mergeFollows(local,remote){var map={}; (local||[]).concat(remote||[]).forEach(function(f){f=normalizeFollowObject(f); if(!f.from||!f.to) return; var key=followPairKey(f); map[key]=map[key]?newer(map[key],f):f;}); return Object.keys(map).map(function(k){var f=normalizeFollowObject(map[k]); f.id=followStableId(f.from,f.to,f.targetType); return f})}
   function isRemoteAdApproved(row){
     if(!row||typeof row!=='object') return false;
     var status=String(row.status||row.ad_status||'').toLowerCase();
@@ -4444,19 +4522,29 @@ select,
   function mergePosts(local,remote){
     var map={};
     function keyOf(x){return String((x&&x.id)||'')}
-    (local||[]).forEach(function(x){var k=keyOf(x); if(k) map[k]=x});
+    function mergePostPair(existing,incoming){
+      existing=normalizePostObject(Object.assign({},existing||{}));
+      incoming=normalizePostObject(Object.assign({},incoming||{}));
+      var preferred=newer(existing,incoming);
+      var secondary=preferred===existing?incoming:existing;
+      var merged=Object.assign({},secondary||{},preferred||{});
+      /* Correction centrale : les compteurs sociaux sont des données enfants.
+         Une publication locale plus récente ne doit pas écraser les likes/commentaires reçus de Supabase. */
+      merged.likes=mergeReactionIds(existing.likes,incoming.likes);
+      merged.recommends=mergeReactionIds(existing.recommends,incoming.recommends);
+      merged.comments=mergePostComments(existing.comments,incoming.comments);
+      return normalizePostObject(merged);
+    }
+    (local||[]).forEach(function(x){var k=keyOf(x); if(k) map[k]=normalizePostObject(x)});
     (remote||[]).forEach(function(x){
       var k=keyOf(x); if(!k) return;
       var existing=map[k];
-      if(!existing){map[k]=x; return;}
+      if(!existing){map[k]=normalizePostObject(x); return;}
       /* Supabase gagne toujours pour les décisions de validation :
          approved/rejected ne doit jamais être écrasé par un ancien cache local pending. */
-      if(hasApprovedAdState(x)&&!hasApprovedAdState(existing)){map[k]=x; return;}
-      if(hasRejectedAdState(x)&&!hasRejectedAdState(existing)){map[k]=x; return;}
-      if((hasApprovedAdState(x)&&hasApprovedAdState(existing))||(hasRejectedAdState(x)&&hasRejectedAdState(existing))){
-        map[k]=newer(existing,x); return;
-      }
-      map[k]=newer(existing,x);
+      if(hasApprovedAdState(x)&&!hasApprovedAdState(existing)){map[k]=mergePostPair(existing,x); return;}
+      if(hasRejectedAdState(x)&&!hasRejectedAdState(existing)){map[k]=mergePostPair(existing,x); return;}
+      map[k]=mergePostPair(existing,x);
     });
     return Object.keys(map).map(function(k){return map[k]})
   }
@@ -4517,7 +4605,7 @@ select,
       pages:mergePages(local.pages||[],remote.pages||[]),
       ads:ads,
       notifications:mergeArray(local.notifications,remote.notifications),
-      follows:mergeArray(local.follows,remote.follows),
+      follows:mergeFollows(local.follows,remote.follows),
       friendRequests:mergeArray(local.friendRequests,remote.friendRequests),
       friendships:mergeArray(local.friendships,remote.friendships),
       conversations:mergeArray(local.conversations,remote.conversations),
@@ -4642,7 +4730,10 @@ select,
     });
   }
   function commentFromRow(r){return {id:String(r.id||r.local_id||uid('comment')),postId:String(r.post_id||r.postId||''),authorId:String(r.user_id||r.author_id||r.profile_id||''),text:r.text||r.content||r.body||'',createdAt:r.created_at||r.createdAt||iso(),updatedAt:r.updated_at||r.updatedAt||r.created_at||'1970-01-01T00:00:00.000Z'}}
-  function followFromRow(r){return {id:String(r.id||uid('follow')),from:String(r.follower_id||r.from_user_id||r.from||r.user_id||''),to:String(r.following_id||r.to_user_id||r.to||r.target_id||''),createdAt:r.created_at||r.createdAt||iso(),updatedAt:r.updated_at||r.updatedAt||r.created_at||'1970-01-01T00:00:00.000Z'}}
+  function normalizeFollowTargetType(value){value=String(value||'profile').toLowerCase(); return value==='page'?'page':'profile'}
+  function followStableId(from,to,targetType){return remoteRowId('follow-'+normalizeFollowTargetType(targetType)+'-'+String(from||'')+'-'+String(to||''))}
+  function normalizeFollowObject(f){f=f&&typeof f==='object'?f:{}; var targetType=normalizeFollowTargetType(f.targetType||f.target_type||(f.pageId||f.page_id?'page':'profile')); var from=String(f.from||f.follower_id||f.from_user_id||f.user_id||''); var to=String(f.to||f.following_id||f.to_user_id||f.target_id||f.pageId||f.page_id||''); return {id:String(f.id||followStableId(from,to,targetType)||uid('follow')),from:from,to:to,targetType:targetType,pageId:targetType==='page'?to:'',createdAt:f.createdAt||f.created_at||iso(),updatedAt:f.updatedAt||f.updated_at||f.createdAt||f.created_at||'1970-01-01T00:00:00.000Z'}}
+  function followFromRow(r){r=r||{}; var targetType=normalizeFollowTargetType(r.target_type||(r.page_id?'page':'profile')); var targetId=String(r.target_id||r.following_id||r.to_user_id||r.to||r.page_id||''); return normalizeFollowObject({id:r.id||followStableId(r.follower_id||r.from_user_id||r.from||r.user_id,targetId,targetType),from:r.follower_id||r.from_user_id||r.from||r.user_id,to:targetId,targetType:targetType,pageId:targetType==='page'?targetId:'',createdAt:r.created_at||r.createdAt||iso(),updatedAt:r.updated_at||r.updatedAt||r.created_at||'1970-01-01T00:00:00.000Z'})}
   function notifFromRow(r){return normalizeNotificationObject(r)}
   function normalizeNotificationObject(n){
     n=n&&typeof n==='object'?n:{};
@@ -4703,7 +4794,7 @@ select,
     var postMap={};
     db.posts.forEach(function(p){p.comments=[]; p.likes=[]; p.recommends=[]; postMap[p.id]=p});
     (rows.comments||[]).map(commentFromRow).forEach(function(c){if(postMap[c.postId]) postMap[c.postId].comments.push(c)});
-    (rows.reactions||[]).forEach(function(r){var p=postMap[String(r.post_id||r.postId||'')]; var uid=String(r.user_id||r.profile_id||r.author_id||''); var type=String(r.type||r.reaction_type||'like'); if(p&&uid){if(type==='recommend'||type==='recommandation') p.recommends.push(uid); else p.likes.push(uid)}});
+    (rows.reactions||[]).forEach(function(r){var p=postMap[String(r.post_id||r.postId||'')]; var uid=String(r.user_id||r.profile_id||r.author_id||r.auth_user_id||'').trim(); var type=normalizeReactionType(r.type||r.reaction_type||'like'); if(p&&uid){if(type==='recommend') p.recommends=mergeReactionIds(p.recommends,[uid]); else p.likes=mergeReactionIds(p.likes,[uid])}});
     db.notifications=(rows.notifications||[]).map(notifFromRow);
     db.follows=(rows.follows||[]).map(followFromRow);
     db.friendRequests=(rows.friend_requests||[]).map(friendRequestFromRow);
@@ -4798,7 +4889,7 @@ select,
     comments:'id,post_id,user_id,author_id,profile_id,text,content,body,created_at,updated_at',
     reactions:'id,post_id,user_id,profile_id,author_id,type,reaction_type,created_at,updated_at',
     notifications:'id,user_id,recipient_id,profile_id,actor_id,from_user_id,post_id,page_id,conversation_id,message_id,ad_id,target_type,target_id,type,icon,title,text,body,message,is_read,read,created_at,updated_at',
-    follows:'id,follower_id,following_id,from_user_id,to_user_id,user_id,target_id,created_at,updated_at',
+    follows:'id,follower_id,following_id,from_user_id,to_user_id,user_id,target_type,target_id,page_id,created_at,updated_at',
     pages:'id,user_id,owner_id,owner_profile_id,owner_auth_id,name,title,page_name,category,type,activity,location,city,pays,contact,phone,email,website,bio,description,about,avatar_url,logo_url,photo_url,cover_url,cover_photo_url,banner_url,plan,page_plan,billing,billing_cycle,payment_status,payment_ref,page_status,status,verified,is_verified,paid_until,created_at,updated_at',
     ads:'id,user_id,profile_id,author_id,post_id,status,title,message,advertiser,photo_url,media_url,media_type,target_count,duration_days,price,zone,contact,payment_ref,created_at,updated_at,validated_at,expires_at,ad_status,ad_objective,ad_pack,ad_zone,ad_cta,ad_target,ad_budget,ad_duration,ad_reach,ad_placement,ad_created_at,ad_requested_at,ad_reviewed_at,ad_reviewed_by,ad_rejection_reason,ad_ends_at,ad_impressions,ad_clicks',
     friend_requests:'id,from_id,to_id,sender_id,receiver_id,from_profile_id,to_profile_id,status,created_at,updated_at',
@@ -4826,7 +4917,8 @@ select,
       else if(kind==='user_privacy'&&currentAuthUserId) query=query.eq('user_id',currentAuthUserId).limit(limit);
       else if(kind==='support_tickets'&&currentAuthUserId) query=query.eq('user_id',currentAuthUserId).order('updated_at',{ascending:false}).limit(limit);
       else if(kind==='reports'&&currentAuthUserId) query=query.eq('reporter_id',currentAuthUserId).order('updated_at',{ascending:false}).limit(limit);
-      else if(kind==='pages'||kind==='profiles'||kind==='follows') query=query.order('updated_at',{ascending:false}).limit(limit);
+      else if(kind==='follows') query=query.order('created_at',{ascending:false}).limit(limit);
+      else if(kind==='pages'||kind==='profiles') query=query.order('updated_at',{ascending:false}).limit(limit);
       else query=query.limit(limit);
     }catch(_e){try{query=query.limit(limit)}catch(__e){}}
     return query;
@@ -5120,7 +5212,7 @@ select,
     if(variant.indexOf('recipient-only')>-1){delete row.user_id; delete row.is_read;}
     return row;
   })}
-  function followRows(db,variant){return (db.follows||[]).map(function(f){var row={id:String(f.id),follower_id:f.from,following_id:f.to,created_at:f.createdAt||iso()}; if(variant==='updated') row.updated_at=f.updatedAt||f.createdAt||iso(); return row})}
+  function followRows(db,variant){return mergeFollows(db.follows||[],[]).map(function(f){f=normalizeFollowObject(f); var targetType=normalizeFollowTargetType(f.targetType); var baseId=followStableId(f.from,f.to,targetType); if(variant==='legacy'){var legacy={id:baseId,follower_id:f.from,following_id:f.to,created_at:f.createdAt||iso(),updated_at:f.updatedAt||f.createdAt||iso()}; return legacy;} var row={id:baseId,follower_id:f.from,target_type:targetType,target_id:f.to,created_at:f.createdAt||iso()}; if(variant==='updated') row.updated_at=f.updatedAt||f.createdAt||iso(); return row})}
   function friendRequestRows(db,variant){return (db.friendRequests||[]).map(function(r){var row={id:variant==='uuid'?remoteRowId(r.id):String(r.id),from_user_id:remoteProfileId(r.from),to_user_id:remoteProfileId(r.to),status:String(r.status||'pending'),created_at:r.createdAt||iso(),updated_at:r.updatedAt||r.createdAt||iso()}; if(variant==='plain'){row.from_user_id=r.from; row.to_user_id=r.to;} return row})}
   function friendshipRows(db,variant){return (db.friendships||[]).map(function(f){var a=f.a||f.user1||f.from||f.profile_a,b=f.b||f.user2||f.to||f.profile_b; var row={id:variant==='uuid'?remoteRowId(f.id||friendshipIdFor(a,b)):String(f.id||friendshipIdFor(a,b)),profile_a:remoteProfileId(a),profile_b:remoteProfileId(b),status:String(f.status||'active'),created_at:f.createdAt||iso(),updated_at:f.updatedAt||f.createdAt||iso()}; if(variant==='plain'){row.profile_a=a; row.profile_b=b;} return row})}
   function conversationRows(db,variant){return (db.conversations||[]).map(normalizeConversationObject).map(function(c){var a=(c.participants||[])[0]||'', b=(c.participants||[])[1]||''; var rid=c.remoteId||remoteRowId(c.id); var row={id:variant==='uuid'?rid:String(c.id),conversation_key:String(c.id),participant_a:remoteProfileId(a),participant_b:remoteProfileId(b),last_message:c.lastMessage||'',created_at:c.createdAt||iso(),updated_at:c.updatedAt||c.createdAt||iso()}; if(variant==='plain'){row.participant_a=a; row.participant_b=b;} return row})}
@@ -5230,7 +5322,7 @@ select,
       safeUpsert(client,'comments',[commentRows(db,'uuid-profile-content'),commentRows(db,'uuid-profile-text'),commentRows(db,'uuid-profile-body'),commentRows(db,'uuid-content-updated'),commentRows(db,'uuid-text-updated'),commentRows(db,'uuid-body'),commentRows(db,'content-updated'),commentRows(db,'text-updated')],'id'),
       safeUpsert(client,'reactions',[reactionRows(db,'uuid-user-reaction-type'),reactionRows(db,'uuid-profile-type'),reactionRows(db,'uuid-profile-reaction-type'),reactionRows(db,'profile-type'),reactionRows(db,'uuid-user-type'),reactionRows(db,'user-type')],'id'),
       safeUpsert(client,'notifications',[notifRows(db,'uuid-both-read'),notifRows(db,'uuid-user-only'),notifRows(db,'uuid-recipient-only')],'id'),
-      safeUpsert(client,'follows',[followRows(db,'plain'),followRows(db,'updated')],'id'),
+      safeUpsert(client,'follows',[followRows(db,'plain'),followRows(db,'updated'),followRows(db,'legacy')],'id'),
       safeUpsert(client,'friend_requests',[friendRequestRows(db,'uuid'),friendRequestRows(db,'plain')],'id'),
       safeUpsert(client,'friendships',[friendshipRows(db,'uuid'),friendshipRows(db,'plain')],'id'),
       safeUpsert(client,'conversations',[conversationRows(db,'uuid'),conversationRows(db,'plain')],'id'),
@@ -5801,6 +5893,7 @@ select,
     safeRenderStep('navigation',function(){renderNav(db)});
     safeRenderStep('publication rapide',function(){renderComposerStrip()});
     safeRenderStep('fil',function(){renderFeed(db)});
+    safeRenderStep('scène',function(){renderScene(db)});
     safeRenderStep('réseau',function(){renderNetwork(db)});
     safeRenderStep('recherche',function(){renderGlobalSearch(db)});
     safeRenderStep('notifications',function(){renderNotifications(db)});
@@ -5821,7 +5914,7 @@ select,
     return (db.messages||[]).map(normalizeMessageObject).filter(function(m){return String(m.to)===myId&&String(m.from)!==myId&&!m.read});
   }
   function unreadMessageCount(db){return unreadMessagesForActiveProfile(db).length}
-  function renderNav(db){var unread=visibleNotifications(db).filter(function(n){return !n.read}).length; var unreadMessages=unreadMessageCount(db); $all('[data-notif-badge]').forEach(function(b){b.textContent=String(unread); b.hidden=unread===0}); $all('[data-message-badge]').forEach(function(b){b.textContent=String(unreadMessages); b.hidden=unreadMessages===0}); $all('.nav-btn[data-screen]').forEach(function(btn){btn.classList.toggle('active',btn.getAttribute('data-screen')===currentScreen)});}
+  function renderNav(db){var unread=visibleNotifications(db).filter(function(n){return !n.read}).length; var unreadMessages=unreadMessageCount(db); $all('[data-notif-badge]').forEach(function(b){b.textContent=String(unread); b.hidden=unread===0}); $all('[data-message-badge]').forEach(function(b){b.textContent=String(unreadMessages); b.hidden=unreadMessages===0}); $all('.nav-btn[data-screen]').forEach(function(btn){btn.classList.toggle('active',btn.getAttribute('data-screen')===currentScreen)}); $all('.top-mini-action[data-screen]').forEach(function(btn){btn.classList.toggle('active',btn.getAttribute('data-screen')===currentScreen)});}
   function renderCurrentAvatar(db){
     var me=getActiveProfile(db)||{name:'NX',avatar_url:'',avatar:''};
     var src=profileAvatar(me);
@@ -5836,7 +5929,7 @@ select,
     var first=me&&me.name?compact(me.name).split(' ')[0]:'';
     var title=first?'Fil Nexora — '+escapeHTML(first):'Fil Nexora';
     return '<section class="feed-empty-pro" aria-label="Fil Nexora vide">'+
-      '<div class="feed-empty-head"><div class="feed-empty-icon-pro">✍️</div><div><p class="feed-empty-kicker">Publication</p><h2 class="feed-empty-title">'+title+'</h2></div></div>'+
+      '<div class="feed-empty-head"><div class="feed-empty-icon-pro">✍️</div><div><h2 class="feed-empty-title">'+title+'</h2></div></div>'+
       '<div class="feed-empty-actions"><button type="button" class="btn btn-primary" data-action="open-composer" data-theme="talent">Publier</button><button type="button" class="btn btn-soft" data-action="open-profile-editor">Profil</button></div>'+
     '</section>';
   }
@@ -5877,11 +5970,25 @@ select,
     return base+boost;
   }
   function renderFeed(db){var feed=$('[data-feed]'); if(!feed) return; var me=getActiveProfile(db); var posts=(db.posts||[]).filter(function(p){return postVisibleInMainFeed(db,p)&&(!me||!relationshipBlocked(db,me.id,p.authorId))}).slice().sort(function(a,b){return feedPostScore(db,b,me)-feedPostScore(db,a,me)}); if(!posts.length){feed.innerHTML=renderFeedEmptyState(db); return} var shown=Math.min(feedRenderLimit,posts.length); feed.innerHTML=posts.slice(0,shown).map(function(post){return renderPost(db,post)}).join('')+renderLoadMoreButton('load-more-feed',shown,posts.length,'publications')}
+  function scenePostScore(post){post=post||{}; var likes=(post.likes||[]).length, comments=(post.comments||[]).length, recommends=(post.recommends||[]).length; return likes*4+comments*6+recommends*5+(new Date(post.createdAt||post.created_at||0).getTime()/1000000000000)}
+  /* Scène Nexora : espace sponsor/publicité retiré de cette version. */
+  function renderScene(db){
+    var box=$('[data-scene-center]'); if(!box) return;
+    db=normalizeDB(db||readDB());
+    var me=getActiveProfile(db);
+    var scenePosts=(db.posts||[]).filter(function(p){return normalizeThemeKey(p.theme)==='scene'&&postVisibleInMainFeed(db,p)&&(!me||!relationshipBlocked(db,me.id,p.authorId))}).slice().sort(function(a,b){return scenePostScore(b)-scenePostScore(a)});
+    var applause=0, comments=0, recommends=0;
+    scenePosts.forEach(function(p){applause+=(p.likes||[]).length; comments+=(p.comments||[]).length; recommends+=(p.recommends||[]).length});
+    var feedHtml=scenePosts.length?scenePosts.map(function(post){return renderPost(db,post)}).join(''):renderEmptyPro({icon:'🎤',kicker:'Scène Nexora',title:'Aucune prestation sur la Scène pour le moment.',compact:true,actions:[{label:'Monter sur la Scène',action:'open-composer',variant:'btn-primary',attrs:'data-theme="scene"'}]});
+    box.innerHTML='<div class="scene-shell"><section class="scene-hero"><div class="scene-hero-inner"><div><span class="scene-kicker">🎤 La Scène Nexora</span><h2 class="scene-title">Monte sur scène. Montre ton talent. Fais parler ton idée.</h2><p class="scene-sub">La Scène est l’espace prestige de Nexora : talents, humour propre, projets, éloquence, création et prestations. Ici, on ne publie que sur la Scène. Chaque publication reste dans la Scène, circule dans le fil et reste sur le profil.</p><div class="scene-actions"><button type="button" class="btn btn-gold" data-action="open-composer" data-theme="scene">🎤 Monter sur la Scène</button></div></div><div class="scene-metrics"><div class="scene-metric"><b>'+escapeHTML(niceNumber(scenePosts.length))+'</b><span>Prestations</span></div><div class="scene-metric"><b>'+escapeHTML(niceNumber(applause))+'</b><span>Applaudissements</span></div><div class="scene-metric"><b>'+escapeHTML(niceNumber(recommends))+'</b><span>Valorisations</span></div></div></div></section><section class="scene-feed-panel"><div class="scene-section-head"><div><h3 class="scene-section-title">Publications de la Scène</h3><p class="scene-section-sub">Une seule publication : elle reste ici, circule dans le fil d’actualité et reste sur le profil de l’auteur.</p></div><button type="button" class="btn btn-soft btn-sm" data-action="go" data-screen="home">Voir le fil</button></div><div class="scene-filter-note">🎤 Les publications “Scène Nexora” sont automatiquement identifiées par une étiquette spéciale dans le fil d’actualité.</div>'+feedHtml+'</section></div>';
+  }
   function normalizeProfileTab(tab){tab=String(tab||'posts'); return ['posts','about','photos','pages','friends','settings'].indexOf(tab)>-1?tab:'posts'}
   function setProfileTab(tab){currentProfileTab=normalizeProfileTab(tab); if(currentProfileTab!=='pages') currentViewingPageId=null; resetRenderWindows(currentProfileTab==='pages'?'page':'profile'); renderProfile(readDB())}
   function renderProfileTabs(){var tabs=[['posts','Publications'],['about','À propos'],['photos','Photos'],['pages','Pages']]; return '<div class="profile-tabs">'+tabs.map(function(item){var active=normalizeProfileTab(currentProfileTab)===item[0]; return '<button class="profile-tab '+(active?'active':'')+'" data-action="set-profile-tab" data-profile-tab="'+item[0]+'" type="button">'+item[1]+'</button>'}).join('')+'</div>'}
   function profileInfoItem(icon,label,value,empty){var v=compact(value)||empty||'Non renseigné'; return '<div class="profile-info-item"><span class="profile-info-icon">'+icon+'</span><span><span class="profile-info-label">'+escapeHTML(label)+'</span><span class="profile-info-value">'+escapeHTML(v)+'</span></span></div>'}
-  function profileStats(db,profile){var posts=(db.posts||[]).filter(function(p){return p.authorId===profile.id}); var photos=profileMediaItems(db,profile).length; var following=(db.follows||[]).filter(function(f){return f.from===profile.id}).length; var followers=(db.follows||[]).filter(function(f){return f.to===profile.id}).length; return '<div class="profile-stat-mini-grid"><div class="profile-stat-mini"><b>'+posts.length+'</b><span>Publications</span></div><div class="profile-stat-mini"><b>'+photos+'</b><span>Photos</span></div><div class="profile-stat-mini"><b>'+following+'</b><span>Suivis</span></div><div class="profile-stat-mini"><b>'+followers+'</b><span>Abonnés</span></div></div>'}
+  function countFollowersTo(db,targetId,targetType){var seen={}; targetType=normalizeFollowTargetType(targetType); (mergeFollows((db&&db.follows)||[],[])||[]).forEach(function(f){f=normalizeFollowObject(f); if(String(f.to)===String(targetId)&&normalizeFollowTargetType(f.targetType)===targetType&&f.from) seen[String(f.from)]=true}); return Object.keys(seen).length}
+  function countFollowingFrom(db,profileId){var seen={}; (mergeFollows((db&&db.follows)||[],[])||[]).forEach(function(f){f=normalizeFollowObject(f); if(String(f.from)===String(profileId)&&normalizeFollowTargetType(f.targetType)==='profile'&&f.to) seen[String(f.to)]=true}); return Object.keys(seen).length}
+  function profileStats(db,profile){var posts=(db.posts||[]).filter(function(p){return p.authorId===profile.id}); var photos=profileMediaItems(db,profile).length; var following=countFollowingFrom(db,profile.id); var followers=countFollowersTo(db,profile.id,'profile'); return '<div class="profile-stat-mini-grid"><div class="profile-stat-mini"><b>'+posts.length+'</b><span>Publications</span></div><div class="profile-stat-mini"><b>'+followers+'</b><span>Me suivent</span></div><div class="profile-stat-mini"><b>'+following+'</b><span>Je suis</span></div><div class="profile-stat-mini"><b>'+photos+'</b><span>Photos</span></div></div><div class="profile-follow-help"><span><b>Me suivent</b> = personnes abonnées à ton profil</span><span><b>Je suis</b> = profils que tu suis</span></div>'}
   function profileSummaryItem(icon,label,value,empty){var v=compact(value)||empty||'Non renseigné'; return '<div class="profile-summary-item"><span>'+icon+'</span><b>'+escapeHTML(label)+'</b><em>'+escapeHTML(v)+'</em></div>'}
   function renderProfilePublicSummary(profile){var joined=profile.createdAt?formatDate(profile.createdAt):'Récemment'; return '<div class="profile-summary-grid">'+profileSummaryItem('💼','Talent',profile.job,'Membre Nexora')+profileSummaryItem('📍','Localisation',profile.location,'Guinée')+profileSummaryItem('📞','Contact',profile.contact,'Non renseigné')+profileSummaryItem('📅','Arrivée',joined,'Récemment')+'</div>'}
   function renderProfileAbout(db,profile){var joined=profile.createdAt?formatDate(profile.createdAt):'Récemment'; return '<section class="profile-panel-card"><div class="profile-panel-head"><div><h3 class="profile-panel-title">À propos</h3><p class="profile-panel-sub">Présentation publique, claire et cohérente du membre.</p></div></div>'+profileStats(db,profile)+'<div class="profile-info-list">'+profileInfoItem('💼','Métier',profile.job,'Membre Nexora')+profileInfoItem('📍','Pays / ville',profile.location,'Guinée')+profileInfoItem('📝','Bio',profile.bio,'')+profileInfoItem('📞','Contact',profile.contact,'Non renseigné')+profileInfoItem('✨','Statut','Profil Nexora actif','Profil Nexora actif')+profileInfoItem('📅','Arrivée sur Nexora',joined,'Récemment')+'</div></section>'}
@@ -5940,7 +6047,7 @@ select,
       '<div class="security-card"><h4>🤝 Qui peut m’ajouter ?</h4><p>Contrôle les invitations pour éviter le spam relationnel.</p>'+renderPrivacyOptions('invitations',privacy.invitations)+'</div>'+
       '<div class="security-card"><h4>👁️ Profil public</h4><p>Le profil reste visible pour faciliter la découverte des talents.</p><div class="privacy-options"><button class="privacy-pill active" type="button">Public</button></div></div>'+
       '<div class="security-card" style="grid-column:1 / -1"><h4>🚫 Profils bloqués</h4><p>Un profil bloqué ne peut plus t’écrire, t’ajouter ou interagir directement avec toi.</p><div class="blocked-list">'+blockedHtml+'</div></div>'+
-      '<div class="security-card" style="grid-column:1 / -1"><h4>📜 Règles rapides Nexora</h4><ul class="security-rule-list"><li>Pas de spam, arnaque, faux compte ou harcèlement.</li><li>Les opportunités doivent avoir un contact et des conditions claires.</li><li>Les publicités doivent rester professionnelles et validées par l’espace de validation.</li><li>Le signalement abusif peut être limité par la sécurité.</li></ul></div>'+
+      '<div class="security-card" style="grid-column:1 / -1;cursor:pointer" data-action="open-rules" data-legal-tab="community" role="button" tabindex="0" aria-label="Ouvrir les règles Nexora"><h4>📜 Règles rapides Nexora</h4><ul class="security-rule-list"><li>Pas de spam, arnaque, faux compte ou harcèlement.</li><li>Les opportunités doivent avoir un contact et des conditions claires.</li><li>Les publicités doivent rester professionnelles et validées par l’espace de validation.</li><li>Le signalement abusif peut être limité par la sécurité.</li></ul><div class="settings-mini-item" style="margin-top:10px"><b>Lire toutes les règles</b><span>Ouvrir →</span></div></div>'+
     '</div></section>';
   }
 
@@ -6028,7 +6135,7 @@ select,
     return [
       {label:'Compte actif',ok:!!(profile&&profile.id),text:(profile&&profile.id)?'OK':'À créer ou reconnecter'},
       {label:'Profil public',ok:complete,text:complete?'OK':'Nom, métier, bio et photo à compléter'},
-      {label:'Mode mobile',ok:true,text:'Navigation basse, boutons visibles et zones vides professionnelles'},
+      {label:'Mode mobile',ok:true,text:'Navigation basse et boutons visibles'},
       {label:'Médias',ok:true,text:'Photos et vidéos prêtes pour mobile'},
       {label:'Notifications',ok:true,text:'Routage vers publication, profil, message, page ou publicité'},
       {label:'Actions en attente',ok:outbox.length===0,text:outbox.length===0?'Aucune action en attente':outbox.length+' action(s) en attente'},
@@ -6095,7 +6202,7 @@ select,
     (db.posts||[]).filter(function(p){return p.authorId===profile.id&&p.media&&p.media.data&&String(p.media.type||'').indexOf('video/')!==0}).forEach(function(p){items.push({src:p.media.data,label:getTheme(p.theme).label})});
     return items
   }
-  function renderProfilePhotos(db,profile){var items=profileMediaItems(db,profile); if(!items.length){return '<section class="profile-panel-card">'+renderEmptyPro({icon:'🖼️',kicker:'Photos',title:'Aucune photo pour le moment.',compact:true,actions:[{label:'Ajouter photo',action:'open-profile-editor',variant:'btn-primary'}]})+'</section>'} return '<section class="profile-panel-card"><div class="profile-panel-head"><div><h3 class="profile-panel-title">Photos</h3><p class="profile-panel-sub">Photo de profil, couverture et images publiées.</p></div><span class="pill">'+items.length+' photo'+(items.length>1?'s':'')+'</span></div><div class="profile-media-grid">'+items.map(function(item){return '<div class="profile-media-card"><img src="'+escapeHTML(item.src)+'" alt="'+escapeHTML(item.label)+'"><span class="profile-media-label">'+escapeHTML(item.label)+'</span></div>'}).join('')+'</div></section>'}
+  function renderProfilePhotos(db,profile){var items=profileMediaItems(db,profile); if(!items.length){return '<section class="profile-panel-card">'+renderEmptyPro({icon:'🖼️',kicker:'Photos',title:'Aucune photo pour le moment.',compact:true,actions:[{label:'Ajouter photo',action:'open-profile-editor',variant:'btn-primary'}]})+'</section>'} return '<section class="profile-panel-card"><div class="profile-panel-head"><div><h3 class="profile-panel-title">Photos</h3></div><span class="pill">'+items.length+' photo'+(items.length>1?'s':'')+'</span></div><div class="profile-media-grid">'+items.map(function(item){return '<div class="profile-media-card"><img src="'+escapeHTML(item.src)+'" alt="'+escapeHTML(item.label)+'"><span class="profile-media-label">'+escapeHTML(item.label)+'</span></div>'}).join('')+'</div></section>'}
   function personMiniCard(p,button){return '<div class="person-card">'+avatarHTML(p,'round')+'<div class="person-info"><div class="person-name">'+escapeHTML(p.name||'Membre Nexora')+'</div><div class="person-meta">'+escapeHTML(p.job||'Membre Nexora')+(p.location?' • '+escapeHTML(p.location):'')+'</div></div>'+(button||'')+'</div>'}
   function renderPageCard(page,editable){
     page=normalizePageObject(page);
@@ -6113,12 +6220,12 @@ select,
     var posts=(db.posts||[]).filter(function(p){return String(p.pageId||p.page_id||'')===String(page.id)}).sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt)});
     var shown=Math.min(pageFeedRenderLimit,posts.length);
     var emptyActions=pageCanPublishToFeed(page)?[{label:'Publier',action:'publish-page',variant:'btn-primary',attrs:'data-page-id="'+escapeHTML(page.id)+'"'}]:(pagePaidExpired(page)?[{label:'Renouveler',action:'open-page-editor',variant:'btn-gold',attrs:'data-page-id="'+escapeHTML(page.id)+'"'}]:[]);
-    var postsHtml=posts.length?posts.slice(0,shown).map(function(post){return renderPost(db,post)}).join('')+renderLoadMoreButton('load-more-page-feed',shown,posts.length,'publications de page'):renderEmptyPro({icon:'🧾',kicker:'Page',title:'Aucune publication de page.',text:pageCanPublishToFeed(page)?'Publie au nom de cette page.':'La publication dans le fil sera disponible après validation admin.',compact:true,actions:emptyActions});
-    var commercial='<div class="page-detail-commercial"><h4 class="page-detail-commercial-title">Formule de page</h4><p class="page-detail-commercial-text">'+escapeHTML(pagePlanLabel(page))+' • '+escapeHTML(pageBillingLabel(page))+' • '+escapeHTML(pagePlanPriceText(page))+' • '+escapeHTML(pageValidationLabel(page))+'.</p>'+renderPageBadges(page)+'</div>'+pageMonetizationPanelHtml(db,page);
+    var postsHtml=posts.length?posts.slice(0,shown).map(function(post){return renderPost(db,post)}).join('')+renderLoadMoreButton('load-more-page-feed',shown,posts.length,'publications de page'):renderEmptyPro({icon:'🧾',kicker:'Page',title:'Aucune publication de page.',compact:true,actions:emptyActions});
+    var commercial='<div class="page-detail-commercial"><h4 class="page-detail-commercial-title">Formule</h4><p class="page-detail-commercial-text">'+escapeHTML(pagePlanLabel(page))+' • '+escapeHTML(pageBillingLabel(page))+' • '+escapeHTML(pagePlanPriceText(page))+' • '+escapeHTML(pageValidationLabel(page))+'.</p>'+renderPageBadges(page)+'</div>'+pageMonetizationPanelHtml(db,page);
     var proAction=!pageIsPro(page)?'<button class="btn btn-gold" data-action="open-page-editor" data-page-id="'+escapeHTML(page.id)+'" type="button">Passer en Page Pro</button>':'';
     var publishAction=pageCanPublishToFeed(page)?'<button class="btn btn-primary" data-action="publish-page" data-page-id="'+escapeHTML(page.id)+'" type="button">Publier en tant que page</button>':(pagePaidExpired(page)?'<button class="btn btn-gold" data-action="open-page-editor" data-page-id="'+escapeHTML(page.id)+'" type="button">Renouveler la page</button>':'<button class="btn btn-soft" disabled type="button">En attente de validation admin</button>');
     var validationNote=!pageCanPublishToFeed(page)?(pagePaidExpired(page)?'<div class="page-validation-note">Abonnement expiré : renouvelle la page, puis attends la validation admin avant de publier dans le fil.</div>':'<div class="page-validation-note">Cette page payante est enregistrée, mais elle ne peut pas publier dans le fil d’actualité avant validation par l’admin.</div>'):'';
-    return '<section class="profile-panel-card"><button class="btn btn-soft btn-sm" data-action="back-pages" type="button">← Mes pages</button><div class="page-detail-hero"><div class="page-detail-cover">'+(cv?'<img src="'+escapeHTML(cv)+'" alt="Couverture de page">':'')+'</div><div class="page-detail-main"><div class="page-detail-logo">'+(av?'<img src="'+escapeHTML(av)+'" alt="Logo de page">':escapeHTML(initials(page.name)))+'</div><h3 class="page-detail-name">'+escapeHTML(page.name)+'</h3><div class="page-detail-meta">'+escapeHTML(page.category||'Page')+(page.location?' • '+escapeHTML(page.location):'')+'</div>'+(page.bio?'<p class="page-detail-bio">'+escapeHTML(page.bio)+'</p>':'')+commercial+validationNote+'<div class="page-detail-actions">'+publishAction+proAction+'<button class="btn btn-soft" data-action="open-page-editor" data-page-id="'+escapeHTML(page.id)+'" type="button">Modifier la page</button></div></div></div><div class="profile-panel-head"><div><h3 class="profile-panel-title">Publications de la page</h3><p class="profile-panel-sub">Les publications payantes en attente restent invisibles dans le fil public.</p></div></div>'+postsHtml+'</section>';
+    return '<section class="profile-panel-card"><button class="btn btn-soft btn-sm" data-action="back-pages" type="button">← Mes pages</button><div class="page-detail-hero"><div class="page-detail-cover">'+(cv?'<img src="'+escapeHTML(cv)+'" alt="Couverture de page">':'')+'</div><div class="page-detail-main"><div class="page-detail-logo">'+(av?'<img src="'+escapeHTML(av)+'" alt="Logo de page">':escapeHTML(initials(page.name)))+'</div><h3 class="page-detail-name">'+escapeHTML(page.name)+'</h3><div class="page-detail-meta">'+escapeHTML(page.category||'Page')+(page.location?' • '+escapeHTML(page.location):'')+'</div>'+(page.bio?'<p class="page-detail-bio">'+escapeHTML(page.bio)+'</p>':'')+pageStatsHtml(db,page)+commercial+validationNote+'<div class="page-detail-actions">'+publishAction+proAction+'<button class="btn btn-soft" data-action="open-page-editor" data-page-id="'+escapeHTML(page.id)+'" type="button">Modifier la page</button></div></div></div><div class="profile-panel-head"><div><h3 class="profile-panel-title">Publications de la page</h3></div></div>'+postsHtml+'</section>';
   }
   function renderProfilePages(db,profile){
     var pages=pagesForProfile(db,profile&&profile.id);
@@ -6133,8 +6240,8 @@ select,
     var friends=friendsForProfile(db,profile.id);
     var incoming=own?incomingFriendRequests(db,profile.id):[];
     var outgoing=own?outgoingFriendRequests(db,profile.id):[];
-    var following=(db.follows||[]).filter(function(f){return f.from===profile.id}).map(function(f){return getProfile(db,f.to)}).filter(Boolean);
-    var followers=(db.follows||[]).filter(function(f){return f.to===profile.id}).map(function(f){return getProfile(db,f.from)}).filter(Boolean);
+    var following=mergeFollows(db.follows||[],[]).filter(function(f){f=normalizeFollowObject(f); return f.from===profile.id&&normalizeFollowTargetType(f.targetType)==='profile'}).map(function(f){return getProfile(db,normalizeFollowObject(f).to)}).filter(Boolean);
+    var followers=mergeFollows(db.follows||[],[]).filter(function(f){f=normalizeFollowObject(f); return f.to===profile.id&&normalizeFollowTargetType(f.targetType)==='profile'}).map(function(f){return getProfile(db,normalizeFollowObject(f).from)}).filter(Boolean);
     var reqHtml='';
     if(own&&(incoming.length||outgoing.length)){
       reqHtml='<div class="friend-request-panel">'+
@@ -6143,9 +6250,9 @@ select,
       '</div>';
     }
     if(!friends.length&&!following.length&&!followers.length&&!reqHtml){
-      return '<section class="profile-panel-card">'+renderEmptyPro({icon:'🤝',kicker:'Réseau',title:'Aucun lien pour le moment.',text:'Ajoute des amis ou suis des profils utiles pour construire ton réseau Nexora.',compact:true,actions:[{label:'Découvrir des profils',action:'go',variant:'btn-primary',attrs:'data-screen="network"'}],guide:[{title:'Suivre',text:'Reste informé des profils utiles.'},{title:'Ajouter',text:'Crée une relation plus directe.'},{title:'Message',text:'Écris seulement quand le profil est pertinent.'}]})+'</section>'
+      return '<section class="profile-panel-card">'+renderEmptyPro({icon:'🤝',kicker:'Réseau',title:'Aucun lien pour le moment.',compact:true,actions:[{label:'Découvrir des profils',action:'go',variant:'btn-primary',attrs:'data-screen="network"'}]})+'</section>'
     }
-    return '<section class="profile-panel-card"><div class="profile-panel-head"><div><h3 class="profile-panel-title">Amis et réseau</h3><p class="profile-panel-sub">Invitations, amis, suivis et abonnés sont regroupés ici.</p></div><button class="btn btn-soft btn-sm" data-action="go" data-screen="network" type="button">Réseau</button></div>'+reqHtml+'<div class="profile-section-split"><div><h4 class="friend-section-title">Amis</h4><div class="profile-people-grid">'+(friends.length?friends.map(function(p){return personMiniCard(p,'<button class="btn btn-soft btn-sm" data-action="start-message" data-profile-id="'+escapeHTML(p.id)+'" type="button">Message</button>')}).join(''):'<div class="empty-state"><b>Aucun ami confirmé.</b></div>')+'</div></div><div><h4 class="friend-section-title">Suivis</h4><div class="profile-people-grid">'+(following.length?following.map(function(p){return personMiniCard(p)}).join(''):'<div class="empty-state"><b>Aucun profil suivi.</b></div>')+'</div></div><div><h4 class="friend-section-title">Abonnés</h4><div class="profile-people-grid">'+(followers.length?followers.map(function(p){return personMiniCard(p)}).join(''):'<div class="empty-state"><b>Aucun abonné.</b></div>')+'</div></div></div></section>'
+    return '<section class="profile-panel-card"><div class="profile-panel-head"><div><h3 class="profile-panel-title">Amis et réseau</h3><p class="profile-panel-sub">Invitations, amis, profils que tu suis et personnes qui te suivent sont regroupés ici.</p></div><button class="btn btn-soft btn-sm" data-action="go" data-screen="network" type="button">Réseau</button></div>'+reqHtml+'<div class="profile-section-split"><div><h4 class="friend-section-title">Amis</h4><div class="profile-people-grid">'+(friends.length?friends.map(function(p){return personMiniCard(p,'<button class="btn btn-soft btn-sm" data-action="start-message" data-profile-id="'+escapeHTML(p.id)+'" type="button">Message</button>')}).join(''):'<div class="empty-state"><b>Aucun ami confirmé.</b></div>')+'</div></div><div><h4 class="friend-section-title">Je suis</h4><div class="profile-people-grid">'+(following.length?following.map(function(p){return personMiniCard(p)}).join(''):'<div class="empty-state"><b>Tu ne suis aucun profil.</b></div>')+'</div></div><div><h4 class="friend-section-title">Me suivent</h4><div class="profile-people-grid">'+(followers.length?followers.map(function(p){return personMiniCard(p)}).join(''):'<div class="empty-state"><b>Personne ne te suit encore.</b></div>')+'</div></div></div></section>'
   }
   function renderProfileFeed(db,profile){var box=$('[data-profile-feed]'); if(!box) return; var tab=normalizeProfileTab(currentProfileTab); if(tab==='about'){box.innerHTML=renderProfileAbout(db,profile); return} if(tab==='photos'){box.innerHTML=renderProfilePhotos(db,profile); return} if(tab==='pages'){box.innerHTML=renderProfilePages(db,profile); return} if(tab==='friends'){box.innerHTML=renderProfileFriends(db,profile); return} if(tab==='settings'){box.innerHTML=renderProfileSettings(db,profile); return} var posts=db.posts.filter(function(p){return p.authorId===profile.id}).sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt)}); if(!posts.length){box.innerHTML=renderEmptyPro({icon:'🧾',kicker:'Profil',title:'Aucune publication.',compact:true,actions:[{label:'Publier',action:'open-composer',variant:'btn-primary',attrs:'data-theme="talent"'},{label:'Profil',action:'open-profile-editor',variant:'btn-soft'}]}); return} var shown=Math.min(profileFeedRenderLimit,posts.length); box.innerHTML=posts.slice(0,shown).map(function(post){return renderPost(db,post)}).join('')+renderLoadMoreButton('load-more-profile-feed',shown,posts.length,'publications du profil')}
 
@@ -6174,8 +6281,12 @@ select,
     var linkedPage=getPostPage(db,post);
     var author=resolvePostAuthor(db,post,linkedPage);
     var theme=getTheme(post.theme);
-    var liked=(post.likes||[]).indexOf(db.activeProfileId)>-1;
-    var recommended=(post.recommends||[]).indexOf(db.activeProfileId)>-1;
+    var isScene=normalizeThemeKey(post.theme)==='scene';
+    var themePillClass=isScene?'scene-badge-strong':(post.theme==='opportunite'?'gold':post.theme==='initiative'?'green':'');
+    var likeStatLabel=isScene?'applaudissement':'J’aime';
+    var likeActionLabel=isScene?'👏 Applaudir':'👍 J’aime';
+    var liked=hasViewerReaction(post.likes,db);
+    var recommended=hasViewerReaction(post.recommends,db);
     var comments=post.comments||[];
     var media='';
     var hasMedia=!!(post.media&&post.media.data);
@@ -6203,11 +6314,11 @@ select,
     }else if(canPromote){
       promoRow='<div class="post-promo-row"><button class="ad-miniature-btn" data-action="open-promote-post" data-post-id="'+escapeHTML(post.id)+'" type="button"><span class="btn-icon">📣</span><span>Sponsoriser</span><small></small></button></div>';
     }
-    return '<article class="post '+(activeAd?'post-sponsored':'')+'" data-post-id="'+escapeHTML(post.id)+'">'+
-    '<div class="post-head">'+avatarHTML(author,'round')+'<div class="post-author"><div class="post-name">'+escapeHTML(author.name)+'</div><div class="post-meta"><span>'+escapeHTML(author.job||'Membre Nexora')+'</span><span>•</span><span>'+formatDate(post.createdAt)+'</span><span class="pill '+(post.theme==='opportunite'?'gold':post.theme==='initiative'?'green':'')+'">'+theme.emoji+' '+escapeHTML(theme.label)+'</span>'+pageMetaBadges+sponsoredMeta+'</div></div>'+postMenu+'</div>'+ 
+    return '<article class="post '+(activeAd?'post-sponsored ':'')+(isScene?'post-scene':'')+'" data-post-id="'+escapeHTML(post.id)+'">'+
+    '<div class="post-head">'+avatarHTML(author,'round')+'<div class="post-author"><div class="post-name">'+escapeHTML(author.name)+'</div><div class="post-meta"><span>'+escapeHTML(author.job||'Membre Nexora')+'</span><span>•</span><span>'+formatDate(post.createdAt)+'</span><span class="pill '+themePillClass+'">'+theme.emoji+' '+escapeHTML(theme.label)+'</span>'+pageMetaBadges+sponsoredMeta+'</div></div>'+postMenu+'</div>'+ 
     '<div class="post-body '+(!compact(post.text)?'empty':'')+(usePostBg?' has-bg '+postBackgroundClass(bg):'')+'">'+escapeHTML(post.text)+'</div>'+media+adBanner+
-    '<div class="post-stats"><span>'+((post.likes||[]).length)+' J’aime</span><span>'+comments.length+' commentaire'+(comments.length>1?'s':'')+' • '+((post.recommends||[]).length)+' valorisation'+((post.recommends||[]).length>1?'s':'')+'</span></div>'+ 
-    '<div class="post-actions"><button type="button" class="post-action '+(liked?'active':'')+'" data-action="like-post" data-post-id="'+escapeHTML(post.id)+'">👍 J’aime</button><button type="button" class="post-action" data-action="toggle-comments" data-post-id="'+escapeHTML(post.id)+'">💬 Commenter</button><button type="button" class="post-action '+(recommended?'active':'')+'" data-action="recommend-post" data-post-id="'+escapeHTML(post.id)+'">⭐ Valoriser</button></div>'+promoRow+
+    '<div class="post-stats"><span>'+((post.likes||[]).length)+' '+likeStatLabel+(((post.likes||[]).length>1&&isScene)?'s':'')+'</span><span>'+comments.length+' commentaire'+(comments.length>1?'s':'')+' • '+((post.recommends||[]).length)+' valorisation'+((post.recommends||[]).length>1?'s':'')+'</span></div>'+ 
+    '<div class="post-actions"><button type="button" class="post-action '+(liked?'active':'')+'" data-action="like-post" data-post-id="'+escapeHTML(post.id)+'">'+likeActionLabel+'</button><button type="button" class="post-action" data-action="toggle-comments" data-post-id="'+escapeHTML(post.id)+'">💬 Commenter</button><button type="button" class="post-action '+(recommended?'active':'')+'" data-action="recommend-post" data-post-id="'+escapeHTML(post.id)+'">⭐ Valoriser</button></div>'+promoRow+
     '<div class="comment-panel '+(openCommentsMap[post.id]?'open':'')+'" data-comments-panel="'+escapeHTML(post.id)+'">'+renderComments(db,post,!!openCommentsMap[post.id])+'<div class="comment-form"><input class="comment-input" data-comment-input="'+escapeHTML(post.id)+'" placeholder="Écrire un commentaire"><button type="button" class="btn btn-primary btn-sm" data-action="send-comment" data-post-id="'+escapeHTML(post.id)+'">Envoyer</button></div></div>'+ 
     '</article>'}
   function renderComments(db,post,expanded){var comments=post.comments||[]; if(!expanded){return '<div class="comment-lazy-note">Commentaires chargés seulement au clic pour garder le fil fluide. '+comments.length+' commentaire'+(comments.length>1?'s':'')+'.</div>'} if(!comments.length) return '<div class="section-sub" style="margin:0 0 8px">Aucun commentaire.</div>'; var limit=18; var visible=comments.slice(-limit); var note=comments.length>visible.length?'<p class="comment-limit-note">Affichage des '+visible.length+' derniers commentaires sur '+comments.length+'.</p>':''; return note+visible.map(function(c){var author=getProfile(db,c.authorId)||{name:'Membre'}; return '<div class="comment-row">'+avatarHTML(author,'round')+'<div class="comment-bubble"><div class="comment-author">'+escapeHTML(author.name)+'</div><div class="comment-text">'+escapeHTML(c.text)+'</div></div></div>'}).join('')}
@@ -6370,11 +6481,11 @@ select,
     var isMe=me&&me.id===profile.id;
     var followed=!!(me&&db.follows.some(function(f){return f.from===me.id&&f.to===profile.id}));
     var posts=(db.posts||[]).filter(function(p){return p.authorId===profile.id}).sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt)});
-    var following=(db.follows||[]).filter(function(f){return f.from===profile.id}).length;
-    var followers=(db.follows||[]).filter(function(f){return f.to===profile.id}).length;
+    var following=countFollowingFrom(db,profile.id);
+    var followers=countFollowersTo(db,profile.id,'profile');
     var avatar=profileAvatar(profile), cover=profileCover(profile);
     var postHtml=posts.length?posts.slice(0,3).map(function(post){return '<div class="public-post-mini"><strong>'+escapeHTML(getTheme(post.theme).emoji+' '+getTheme(post.theme).label)+' • '+escapeHTML(formatDate(post.createdAt))+'</strong><p>'+escapeHTML(post.text||'Publication avec média.')+'</p></div>'}).join(''):'<div class="empty-state"><b>Aucune publication publique.</b></div>';
-    body.innerHTML='<div class="public-profile-card"><div class="public-profile-cover">'+(cover?'<img src="'+escapeHTML(cover)+'" alt="Couverture">':'')+'</div><div class="public-profile-main"><div class="public-profile-photo">'+(avatar?'<img src="'+escapeHTML(avatar)+'" alt="Photo de profil">':escapeHTML(initials(profile.name||'NX')))+'</div><h2 class="public-profile-name">'+escapeHTML(profile.name||'Membre Nexora')+'</h2><div class="public-profile-meta">'+escapeHTML(profile.job||'Membre Nexora')+(profile.location?' • '+escapeHTML(profile.location):'')+'</div><p class="public-profile-bio">'+escapeHTML(profile.bio||'Profil Nexora.')+'</p><div class="public-profile-actions">'+(isMe?'<button type="button" class="btn btn-primary" data-action="go" data-screen="profile">Ouvrir mon profil</button>':'<button type="button" class="btn '+(followed?'btn-soft':'btn-primary')+'" data-action="toggle-follow" data-profile-id="'+escapeHTML(profile.id)+'">'+(followed?'Suivi':'Suivre')+'</button>'+friendActionHtml(db,profile.id,false)+blockButtonHtml(db,profile.id))+'<button type="button" class="btn btn-soft" data-action="close-public-profile">Fermer</button></div></div></div><div class="profile-stat-mini-grid"><div class="profile-stat-mini"><b>'+posts.length+'</b><span>Publications</span></div><div class="profile-stat-mini"><b>'+following+'</b><span>Suivis</span></div><div class="profile-stat-mini"><b>'+followers+'</b><span>Abonnés</span></div><div class="profile-stat-mini"><b>'+profileMediaItems(db,profile).length+'</b><span>Photos</span></div></div><section class="public-profile-section"><h3 class="public-profile-section-title">Publications récentes</h3><div class="public-profile-posts">'+postHtml+'</div></section>';
+    body.innerHTML='<div class="public-profile-card"><div class="public-profile-cover">'+(cover?'<img src="'+escapeHTML(cover)+'" alt="Couverture">':'')+'</div><div class="public-profile-main"><div class="public-profile-photo">'+(avatar?'<img src="'+escapeHTML(avatar)+'" alt="Photo de profil">':escapeHTML(initials(profile.name||'NX')))+'</div><h2 class="public-profile-name">'+escapeHTML(profile.name||'Membre Nexora')+'</h2><div class="public-profile-meta">'+escapeHTML(profile.job||'Membre Nexora')+(profile.location?' • '+escapeHTML(profile.location):'')+'</div><p class="public-profile-bio">'+escapeHTML(profile.bio||'Profil Nexora.')+'</p><div class="public-profile-actions">'+(isMe?'<button type="button" class="btn btn-primary" data-action="go" data-screen="profile">Ouvrir mon profil</button>':'<button type="button" class="btn '+(followed?'btn-soft':'btn-primary')+'" data-action="toggle-follow" data-profile-id="'+escapeHTML(profile.id)+'">'+(followed?'Je suis ce profil':'Suivre')+'</button>'+friendActionHtml(db,profile.id,false)+blockButtonHtml(db,profile.id))+'<button type="button" class="btn btn-soft" data-action="close-public-profile">Fermer</button></div></div></div><div class="profile-stat-mini-grid"><div class="profile-stat-mini"><b>'+posts.length+'</b><span>Publications</span></div><div class="profile-stat-mini"><b>'+following+'</b><span>Suit</span></div><div class="profile-stat-mini"><b>'+followers+'</b><span>Le suivent</span></div><div class="profile-stat-mini"><b>'+profileMediaItems(db,profile).length+'</b><span>Photos</span></div></div><section class="public-profile-section"><h3 class="public-profile-section-title">Publications récentes</h3><div class="public-profile-posts">'+postHtml+'</div></section>';
   }
 
   function openAdModal(postId){
@@ -6387,8 +6498,8 @@ select,
     var sponsorPage=getPostPage(db,post);
     var title=$('[data-ad-post-title]'); if(title) title.textContent=adPostShort(post);
     var previewTitle=$('[data-ad-post-preview-title]'); if(previewTitle) previewTitle.textContent=adPostShort(post);
-    var previewText=$('[data-ad-post-preview-text]'); if(previewText) previewText.textContent=sponsorPage?'Cette publicité sera portée par la page '+sponsorPage.name+' après validation Nexora Ads.':'Conseil : pour une entreprise, ONG ou institution, crée d’abord une page puis publie depuis cette page avant sponsorisation.';
-    var sponsorNote=$('[data-ad-sponsor-note]'); if(sponsorNote) sponsorNote.textContent=sponsorPage?('Annonceur : '+sponsorPage.name+' • '+pagePlanLabel(sponsorPage)):'Annonceur : profil personnel. Une page est recommandée pour les organisations.';
+    var previewText=$('[data-ad-post-preview-text]'); if(previewText) previewText.textContent='';
+    var sponsorNote=$('[data-ad-sponsor-note]'); if(sponsorNote) sponsorNote.textContent=sponsorPage?('Annonceur : '+sponsorPage.name+' • '+pagePlanLabel(sponsorPage)):'';
     var objective=$('[data-ad-objective]'), pack=$('[data-ad-pack]'), zone=$('[data-ad-zone]'), cta=$('[data-ad-cta]'), target=$('[data-ad-target]');
     if(objective) objective.value=ad.objective||'opportunite';
     if(pack) pack.value=ad.pack||'decouverte';
@@ -6657,7 +6768,7 @@ select,
     var box=$('[data-messages-dashboard]'); if(!box) return;
     db=normalizeDB(db||readDB());
     var me=getActiveProfile(db);
-    if(!me){box.innerHTML=renderEmptyPro({icon:'💬',kicker:'Messagerie',title:'Messagerie privée après connexion.',text:'Connecte-toi pour envoyer, recevoir et retrouver tes conversations Nexora.',compact:true,actions:[{label:'Se connecter',action:'open-account',variant:'btn-primary'}],guide:[{title:'Privé',text:'Les messages sont liés à ton compte.'},{title:'Réseau',text:'Ouvre un profil puis clique sur Message.'},{title:'Connexion',text:'Les messages seront envoyés quand la connexion sera stable.'}]}); return}
+    if(!me){box.innerHTML=renderEmptyPro({icon:'💬',kicker:'Messagerie',title:'Messagerie privée après connexion.',compact:true,actions:[{label:'Se connecter',action:'open-account',variant:'btn-primary'}]}); return}
     db.conversations=(db.conversations||[]).map(normalizeConversationObject).filter(function(c){return (c.participants||[]).indexOf(String(me.id))>-1});
     db.messages=(db.messages||[]).map(normalizeMessageObject);
     var convs=db.conversations.slice().sort(function(a,b){return new Date(b.updatedAt)-new Date(a.updatedAt)});
@@ -6682,9 +6793,9 @@ select,
     if(active){
       var other=otherParticipant(db,active,me)||{name:'Membre Nexora',job:'',avatar:''};
       var msgs=conversationMessages(db,active.id);
-      threadHtml='<div class="messages-thread-head">'+avatarHTML(other,'round')+'<div style="min-width:0;flex:1"><h3 class="messages-title">'+escapeHTML(other.name||'Membre Nexora')+'</h3><p class="messages-sub">'+escapeHTML(other.job||'Conversation privée')+'</p></div><button class="btn btn-soft btn-sm" data-action="view-public-profile" data-profile-id="'+escapeHTML(other.id||'')+'" type="button">Profil</button></div><div class="messages-body"><div class="thread-scroll">'+(msgs.length?msgs.map(function(m){var mine=String(m.from)===String(me.id); return '<div class="message-row '+(mine?'me':'other')+'"><div class="message-bubble"><p class="message-text">'+escapeHTML(m.text)+'</p><span class="message-date">'+formatDate(m.createdAt)+'</span></div></div>'}).join(''):renderEmptyPro({icon:'👋',kicker:'Nouveau message',title:'Commence la conversation.',text:'Écris un message clair, utile et professionnel. Le premier message donne le ton de l’échange.',compact:true}))+'</div><div class="message-composer"><textarea class="input message-input" data-message-input="" placeholder="Écris un message privé..." rows="1"></textarea><button type="button" class="btn btn-primary" data-action="send-message">Envoyer</button></div></div>';
+      threadHtml='<div class="messages-thread-head">'+avatarHTML(other,'round')+'<div style="min-width:0;flex:1"><h3 class="messages-title">'+escapeHTML(other.name||'Membre Nexora')+'</h3><p class="messages-sub">'+escapeHTML(other.job||'Conversation privée')+'</p></div><button class="btn btn-soft btn-sm" data-action="view-public-profile" data-profile-id="'+escapeHTML(other.id||'')+'" type="button">Profil</button></div><div class="messages-body"><div class="thread-scroll">'+(msgs.length?msgs.map(function(m){var mine=String(m.from)===String(me.id); return '<div class="message-row '+(mine?'me':'other')+'"><div class="message-bubble"><p class="message-text">'+escapeHTML(m.text)+'</p><span class="message-date">'+formatDate(m.createdAt)+'</span></div></div>'}).join(''):renderEmptyPro({icon:'👋',kicker:'Nouveau message',title:'Commence la conversation.',compact:true}))+'</div><div class="message-composer"><textarea class="input message-input" data-message-input="" placeholder="Écris un message privé..." rows="1"></textarea><button type="button" class="btn btn-primary" data-action="send-message">Envoyer</button></div></div>';
     }else{
-      threadHtml=renderEmptyPro({icon:'💬',kicker:'Messages',title:'Sélectionne une conversation.',text:'Les messages privés apparaîtront ici. Tu peux aussi commencer une nouvelle discussion depuis le Réseau.',compact:true,actions:[{label:'Nouveau message',action:'go',variant:'btn-primary',attrs:'data-screen="network"'}]});
+      threadHtml=renderEmptyPro({icon:'💬',kicker:'Messages',title:'Sélectionne une conversation.',compact:true,actions:[{label:'Nouveau message',action:'go',variant:'btn-primary',attrs:'data-screen="network"'}]});
     }
     box.innerHTML=unreadTopHtml+'<section class="messages-shell"><aside class="messages-sidebar"><div class="messages-sidebar-head"><div><h2 class="messages-title">Messages</h2><p class="messages-sub">Conversations privées</p></div><button class="btn btn-soft btn-sm" data-action="go" data-screen="network" type="button">Nouveau</button></div><div class="conversation-list">'+listHtml+'</div></aside><section class="messages-thread">'+threadHtml+'</section></section>';
     var activeConvId=currentConversationId;
@@ -6850,7 +6961,7 @@ select,
     if(input&&input.value!==globalSearchQuery) input.value=globalSearchQuery;
     $all('.search-tab').forEach(function(btn){btn.classList.toggle('active',btn.getAttribute('data-search-type')===globalSearchType)});
     if(!q){
-      box.innerHTML=renderEmptyPro({icon:'🔎',kicker:'Recherche',title:'Recherche intelligente prête.',text:'Écris un nom, un métier, une ville, une page, une publication ou une opportunité. Les résultats restent limités pour protéger la fluidité avec 50 000 comptes.',compact:true,guide:[{title:'Profils',text:'Trouve une personne par nom, métier ou ville.'},{title:'Pages',text:'Retrouve une entreprise, une initiative ou un projet.'},{title:'Opportunités',text:'Cherche une offre, une formation ou une annonce utile.'}]});
+      box.innerHTML=renderEmptyPro({icon:'🔎',kicker:'Recherche',title:'Recherche',compact:true});
       return;
     }
     var me=getActiveProfile(db);
@@ -6873,7 +6984,7 @@ select,
       parts.push(renderSearchSection('Opportunités',opps.length,opps.map(function(p){var author=getProfile(db,p.authorId)||{name:'Membre Nexora'}; return '<div class="search-item">'+avatarHTML(author,'round')+'<div class="search-item-body"><b class="search-item-title">💼 '+escapeHTML(p.pageName||author.name||'Opportunité')+'</b><span class="search-item-meta">'+escapeHTML(formatDate(p.createdAt))+'</span><p class="search-item-text">'+escapeHTML(p.text||'Opportunité publiée sur Nexora.')+'</p><div class="search-item-actions"><button class="btn btn-primary btn-sm" data-action="open-search-post" data-post-id="'+escapeHTML(p.id)+'" type="button">Voir l’opportunité</button></div></div></div>'}).join('')));
     }
     var html=parts.filter(Boolean).join('');
-    box.innerHTML=html||renderEmptyPro({icon:'🔎',kicker:'Aucun résultat',title:'Aucun élément ne correspond à ta recherche.',text:'Essaie un mot plus simple, un nom, une ville, un métier ou une opportunité.',compact:true,guide:[{title:'Exemple profil',text:'Adams, étudiant, mécanicien, Conakry.'},{title:'Exemple page',text:'Entreprise, formation, BTP, commerce.'},{title:'Exemple opportunité',text:'stage, concours, recrutement, location.'}]});
+    box.innerHTML=html||renderEmptyPro({icon:'🔎',kicker:'Aucun résultat',title:'Aucun élément ne correspond à ta recherche.',compact:true});
   }
   function openSearchPost(postId){
     if(!postId){toast('Publication introuvable.'); return}
@@ -7001,17 +7112,7 @@ select,
     return '<div class="onboarding-step '+(done?'done':'')+'"><div class="onboarding-step-icon">'+icon+'</div><b>'+escapeHTML(title)+'</b><p>'+escapeHTML(text)+'</p>'+(done?'<button class="btn btn-soft btn-sm" type="button" disabled>✓ Terminé</button>':'<button class="btn btn-primary btn-sm" data-action="'+escapeHTML(action)+'" '+(extra||'')+' type="button">'+escapeHTML(label)+'</button>')+'</div>';
   }
   function renderOnboardingCard(db,profile){
-    if(!profile||!profile.id) return '';
-    var st=onboardingStateFor(db,profile);
-    if(st.hidden&&st.done>=st.total) return '';
-    var steps=[
-      onboardingStep(st.profileDone,'👤','Compléter le profil','Nom, métier, ville et bio pour être crédible.','open-profile-editor','Compléter'),
-      onboardingStep(st.photoDone,'🖼️','Ajouter une photo','Photo de profil claire et couverture propre.','open-profile-editor','Ajouter'),
-      onboardingStep(st.postDone,'📝','Publier une première fois','Présente un talent, une réalisation ou une opportunité.','open-composer','Publier','data-theme="talent"'),
-      onboardingStep(st.networkDone,'🤝','Construire le réseau','Suis des profils utiles ou ajoute des contacts.','go','Découvrir','data-screen="network"'),
-      onboardingStep(st.rulesDone,'⚖️','Lire les règles','Comprendre confidentialité, sécurité et bon usage.','mark-onboarding-rules','Lire')
-    ];
-    return '<section class="onboarding-card application-onboarding"><div class="onboarding-head"><div><h3 class="onboarding-title">Démarrage Nexora</h3><p class="onboarding-sub">Parcours simple pour qu’un nouveau membre comprenne l’application en moins de 2 minutes : profil, photo, première publication, réseau et règles.</p></div><div class="onboarding-progress"><b>'+st.done+'/'+st.total+'</b><span>complété</span></div></div><div class="onboarding-steps">'+steps.join('')+'</div><button class="onboarding-dismiss" data-action="hide-onboarding" type="button">Masquer ce guide</button></section>';
+    return '';
   }
   function markOnboardingRules(){
     var db=readDB(); var me=getActiveProfile(db); if(!me) return;
@@ -7066,12 +7167,22 @@ select,
     var welcome=renderPostAuthWelcome(me);
     var coverHint=cover?'Changer la couverture':'Ajouter la couverture';
     var avatarHint=avatar?'Changer la photo':'Ajouter la photo';
-    box.innerHTML=welcome+'<section class="profile-card"><div class="profile-cover profile-cover-clickable" data-action="pick-profile-direct-cover" role="button" tabindex="0" aria-label="'+escapeHTML(coverHint)+'">'+(cover?'<img src="'+escapeHTML(cover)+'" alt="Couverture">':'')+'<span class="profile-media-hint cover">📷 '+escapeHTML(coverHint)+'</span></div><div class="profile-main"><div class="profile-photo profile-photo-clickable" data-action="pick-profile-direct-avatar" role="button" tabindex="0" aria-label="'+escapeHTML(avatarHint)+'">'+(avatar?'<img src="'+escapeHTML(avatar)+'" alt="Photo de profil">':escapeHTML(initials(safeName)))+'<span class="profile-media-hint avatar">📷 '+escapeHTML(avatarHint)+'</span></div><h2 class="profile-name">'+escapeHTML(safeName)+'</h2><div class="profile-meta-main">'+escapeHTML(me.job||'Membre Nexora')+(me.location?' • '+escapeHTML(me.location):'')+'</div><p class="profile-bio">'+escapeHTML(me.bio||'')+'</p>'+renderProfilePublicSummary(me)+'<div class="profile-actions"><button type="button" class="btn btn-primary" data-action="open-composer">+ Publier</button><button type="button" class="btn btn-soft" data-action="open-profile-editor">Modifier le profil</button></div><div class="profile-private-actions"><button type="button" class="profile-menu-pill '+(normalizeProfileTab(currentProfileTab)==='pages'?'active':'')+'" data-action="set-profile-tab" data-profile-tab="pages">🏢 Mes pages</button><button type="button" class="profile-menu-pill '+(normalizeProfileTab(currentProfileTab)==='friends'?'active':'')+'" data-action="set-profile-tab" data-profile-tab="friends">🤝 Réseau</button><button type="button" class="profile-menu-pill '+(normalizeProfileTab(currentProfileTab)==='settings'?'active':'')+'" data-action="set-profile-tab" data-profile-tab="settings">⚙️ Compte & réglages</button></div></div>'+renderProfileTabs()+'<input accept="image/*" data-profile-quick-avatar-input hidden type="file"/><input accept="image/*" data-profile-quick-cover-input hidden type="file"/></section>'+renderOnboardingCard(db,me);
+    box.innerHTML=welcome+'<section class="profile-card"><div class="profile-cover profile-cover-clickable" data-action="pick-profile-direct-cover" role="button" tabindex="0" aria-label="'+escapeHTML(coverHint)+'">'+(cover?'<img src="'+escapeHTML(cover)+'" alt="Couverture">':'')+'<span class="profile-media-hint cover">📷 '+escapeHTML(coverHint)+'</span></div><div class="profile-main"><div class="profile-photo profile-photo-clickable" data-action="pick-profile-direct-avatar" role="button" tabindex="0" aria-label="'+escapeHTML(avatarHint)+'">'+(avatar?'<img src="'+escapeHTML(avatar)+'" alt="Photo de profil">':escapeHTML(initials(safeName)))+'<span class="profile-media-hint avatar">📷 '+escapeHTML(avatarHint)+'</span></div><h2 class="profile-name">'+escapeHTML(safeName)+'</h2><div class="profile-meta-main">'+escapeHTML(me.job||'Membre Nexora')+(me.location?' • '+escapeHTML(me.location):'')+'</div><p class="profile-bio">'+escapeHTML(me.bio||'')+'</p>'+renderProfilePublicSummary(me)+profileStats(db,me)+'<div class="profile-actions"><button type="button" class="btn btn-primary" data-action="open-composer">+ Publier</button><button type="button" class="btn btn-soft" data-action="open-profile-editor">Modifier le profil</button></div><div class="profile-private-actions"><button type="button" class="profile-menu-pill '+(normalizeProfileTab(currentProfileTab)==='pages'?'active':'')+'" data-action="set-profile-tab" data-profile-tab="pages">🏢 Mes pages</button><button type="button" class="profile-menu-pill '+(normalizeProfileTab(currentProfileTab)==='friends'?'active':'')+'" data-action="set-profile-tab" data-profile-tab="friends">🤝 Réseau</button><button type="button" class="profile-menu-pill '+(normalizeProfileTab(currentProfileTab)==='settings'?'active':'')+'" data-action="set-profile-tab" data-profile-tab="settings">⚙️ Compte & réglages</button></div></div>'+renderProfileTabs()+'<input accept="image/*" data-profile-quick-avatar-input hidden type="file"/><input accept="image/*" data-profile-quick-cover-input hidden type="file"/></section>'+renderOnboardingCard(db,me);
     renderProfileFeed(db,me);
   }
   function renderRightbar(db){var posts=$('[data-count-posts]'),notifs=$('[data-count-notifs]'),profiles=$('[data-count-profiles]'),follows=$('[data-count-follows]'),ads=$('[data-count-ads]'); if(posts)posts.textContent=db.posts.length; if(notifs)notifs.textContent=visibleNotifications(db).filter(function(n){return !n.read}).length; if(profiles)profiles.textContent=db.profiles.length; if(follows)follows.textContent=db.follows.length; if(ads)ads.textContent=getPromotedPosts(db,true).filter(function(p){return isAdActive(p)}).length;}
 
-  function go(screen){currentScreen=screen||'home'; if(currentScreen==='home') resetRenderWindows('feed'); $all('[data-screen-panel]').forEach(function(s){s.classList.toggle('active',s.getAttribute('data-screen-panel')===currentScreen)}); renderNav(readDB()); window.scrollTo({top:0,behavior:'smooth'})}
+  function go(screen){
+    currentScreen=screen||'home';
+    if(currentScreen==='home') resetRenderWindows('feed');
+    if(currentScreen==='legal'){
+      legalTab=legalTab||'privacy';
+      renderLegalCenter(readDB());
+    }
+    $all('[data-screen-panel]').forEach(function(s){s.classList.toggle('active',s.getAttribute('data-screen-panel')===currentScreen)});
+    renderNav(readDB());
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
   function localPendingMedia(media){
     if(!media||!media.data) return null;
     var type=String(media.type||'');
@@ -7238,8 +7349,54 @@ select,
   }
   function toggleInArray(arr,value){var i=arr.indexOf(value); if(i>-1){arr.splice(i,1); return false} arr.push(value); return true}
   function updatePost(postId,mutator){var me=requireProfile(); if(!me) return; var db=readDB(); var post=db.posts.find(function(p){return p.id===postId}); if(!post) return; mutator(db,post,me); saveDB(db); render()}
-  function likePost(id,btn){var me=requireProfile(); var client=requireAuth(); if(!me||!client) return; var key='like-post:'+id; if(!lockAction(key,btn,'…')) return; var db=readDB(); var post=db.posts.find(function(p){return p.id===id}); if(!post){unlockAction(key,btn); return} var reactionUserId=currentAuthUserId||me.id; post.likes=Array.isArray(post.likes)?post.likes:[]; var active=toggleInArray(post.likes,reactionUserId); saveDB(db,{silent:true}); render(); upsertReactionRemote(client,id,reactionUserId,'like',active).then(function(res){if(res&&res.error) throw res.error; if(active&&post.authorId&&String(post.authorId)!==String(reactionUserId)){var notifId=remoteRowId('notif-like-'+id+'-'+reactionUserId); pushLocalNotification(db,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'like',icon:'👍',title:'Nouveau j’aime',message:(me.name||'Un membre Nexora')+' aime ta publication.',read:false,created_at:iso()}); saveDB(db,{silent:true}); insertRemoteNotification(client,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'like',title:'Nouveau j’aime',message:(me.name||'Un membre Nexora')+' aime ta publication.',read:false,created_at:iso()});} setSyncStatus('synced')}).catch(function(err){syncWarning('réaction like',err); setSyncStatus('pending'); toast('Réaction gardée en attente.')}).then(function(){unlockAction(key,btn)})}
-  function recommendPost(id,btn){var me=requireProfile(); var client=requireAuth(); if(!me||!client) return; var key='recommend-post:'+id; if(!lockAction(key,btn,'…')) return; var db=readDB(); var post=db.posts.find(function(p){return p.id===id}); if(!post){unlockAction(key,btn); return} var reactionUserId=currentAuthUserId||me.id; post.recommends=Array.isArray(post.recommends)?post.recommends:[]; var active=toggleInArray(post.recommends,reactionUserId); saveDB(db,{silent:true}); render(); upsertReactionRemote(client,id,reactionUserId,'recommend',active).then(function(res){if(res&&res.error) throw res.error; if(active&&post.authorId&&String(post.authorId)!==String(reactionUserId)){var notifId=remoteRowId('notif-recommend-'+id+'-'+reactionUserId); pushLocalNotification(db,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'recommend',icon:'⭐',title:'Nouvelle valorisation',message:(me.name||'Un membre Nexora')+' valorise ta publication.',read:false,created_at:iso()}); saveDB(db,{silent:true}); insertRemoteNotification(client,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'recommend',title:'Nouvelle valorisation',message:(me.name||'Un membre Nexora')+' valorise ta publication.',read:false,created_at:iso()});} setSyncStatus('synced')}).catch(function(err){syncWarning('réaction recommend',err); setSyncStatus('pending'); toast('Action gardée en attente.')}).then(function(){unlockAction(key,btn)})}
+  function likePost(id,btn){
+    var me=requireProfile(); var client=requireAuth(); if(!me||!client) return;
+    var key='like-post:'+id; if(!lockAction(key,btn,'…')) return;
+    var db=readDB(); var post=db.posts.find(function(p){return p.id===id});
+    if(!post){unlockAction(key,btn); return}
+    var reactionUserId=String(currentAuthUserId||me.id||'').trim();
+    post.likes=uniqueReactionIds(post.likes);
+    var active=toggleInArray(post.likes,reactionUserId);
+    post.likes=uniqueReactionIds(post.likes);
+    post.updatedAt=iso();
+    saveDB(db,{silent:true});
+    render();
+    upsertReactionRemote(client,id,reactionUserId,'like',active).then(function(res){
+      if(res&&res.error) throw res.error;
+      if(active&&post.authorId&&String(post.authorId)!==String(reactionUserId)){
+        var notifId=remoteRowId('notif-like-'+id+'-'+reactionUserId);
+        pushLocalNotification(db,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'like',icon:'👍',title:'Nouveau j’aime',message:(me.name||'Un membre Nexora')+' aime ta publication.',read:false,created_at:iso()});
+        saveDB(db,{silent:true});
+        insertRemoteNotification(client,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'like',title:'Nouveau j’aime',message:(me.name||'Un membre Nexora')+' aime ta publication.',read:false,created_at:iso()});
+      }
+      requestSync('reaction-like',900);
+      setSyncStatus('synced');
+    }).catch(function(err){syncWarning('réaction like',err); setSyncStatus('pending'); toast('Réaction gardée en attente.')}).then(function(){unlockAction(key,btn)})
+  }
+  function recommendPost(id,btn){
+    var me=requireProfile(); var client=requireAuth(); if(!me||!client) return;
+    var key='recommend-post:'+id; if(!lockAction(key,btn,'…')) return;
+    var db=readDB(); var post=db.posts.find(function(p){return p.id===id});
+    if(!post){unlockAction(key,btn); return}
+    var reactionUserId=String(currentAuthUserId||me.id||'').trim();
+    post.recommends=uniqueReactionIds(post.recommends);
+    var active=toggleInArray(post.recommends,reactionUserId);
+    post.recommends=uniqueReactionIds(post.recommends);
+    post.updatedAt=iso();
+    saveDB(db,{silent:true});
+    render();
+    upsertReactionRemote(client,id,reactionUserId,'recommend',active).then(function(res){
+      if(res&&res.error) throw res.error;
+      if(active&&post.authorId&&String(post.authorId)!==String(reactionUserId)){
+        var notifId=remoteRowId('notif-recommend-'+id+'-'+reactionUserId);
+        pushLocalNotification(db,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'recommend',icon:'⭐',title:'Nouvelle valorisation',message:(me.name||'Un membre Nexora')+' valorise ta publication.',read:false,created_at:iso()});
+        saveDB(db,{silent:true});
+        insertRemoteNotification(client,{id:notifId,recipient_id:post.authorId,actor_id:reactionUserId,post_id:id,type:'recommend',title:'Nouvelle valorisation',message:(me.name||'Un membre Nexora')+' valorise ta publication.',read:false,created_at:iso()});
+      }
+      requestSync('reaction-recommend',900);
+      setSyncStatus('synced');
+    }).catch(function(err){syncWarning('réaction recommend',err); setSyncStatus('pending'); toast('Action gardée en attente.')}).then(function(){unlockAction(key,btn)})
+  }
   function sendComment(id,btn){var input=$('[data-comment-input="'+cssSafe(id)+'"]'); var text=compact(input&&input.value); if(!text){toast('Écris un commentaire.'); return} var me=requireProfile(); var client=requireAuth(); if(!me||!client) return; if(!checkRateLimit('comment',{targetId:id})) return; var key='send-comment:'+id; if(!lockAction(key,btn,'Envoi…')) return; var remoteUserId=currentAuthUserId||me.id; var comment={id:createUuid(),postId:id,authorId:remoteUserId,text:text,createdAt:iso(),updatedAt:iso()}; insertCommentRemote(client,comment).then(function(row){var db=readDB(); var post=db.posts.find(function(p){return p.id===id}); if(post){post.comments=Array.isArray(post.comments)?post.comments:[]; post.comments.push(comment); if(post.authorId&&String(post.authorId)!==String(remoteUserId)){var notifId=remoteRowId('notif-comment-'+id+'-'+comment.id); pushLocalNotification(db,{id:notifId,recipient_id:post.authorId,actor_id:remoteUserId,post_id:id,type:'comment',icon:'💬',title:'Nouveau commentaire',message:(me.name||'Un membre Nexora')+' a commenté ta publication.',read:false,created_at:iso()}); insertRemoteNotification(client,{id:notifId,recipient_id:post.authorId,actor_id:remoteUserId,post_id:id,type:'comment',title:'Nouveau commentaire',message:(me.name||'Un membre Nexora')+' a commenté ta publication.',read:false,created_at:iso()});}} saveDB(db,{silent:true}); if(input) input.value=''; openCommentsMap[id]=true; render(); var panel=$('[data-comments-panel="'+cssSafe(id)+'"]'); if(panel) panel.classList.add('open'); setSyncStatus('synced'); toast('Commentaire publié.')}).catch(function(err){syncWarning('commentaire',err); setSyncStatus('pending'); toast('Commentaire gardé en attente. Réessaie dans quelques secondes.')}).then(function(){unlockAction(key,btn)})}
   function toggleComments(id){if(!id) return; openCommentsMap[id]=!openCommentsMap[id]; renderFeed(readDB()); if(openCommentsMap[id]) setTimeout(function(){var panel=$('[data-comments-panel="'+cssSafe(id)+'"]'); if(panel) panel.scrollIntoView({behavior:'smooth',block:'nearest'})},80)}
   function deletePost(id){
@@ -7280,7 +7437,14 @@ select,
   function closePublicProfile(){var modal=$('#publicProfileModal'); if(modal) modal.classList.remove('open'); publicProfileId=null}
   function canSyncFollowId(id){return !!(id&&isUuid(id))}
   function notifyFollowRemote(client,targetId,me){if(!client||!canSyncFollowId(targetId)||!canSyncFollowId(currentAuthUserId)) return Promise.resolve({skipped:true}); return sbTable(client,'notifications').insert({id:createUuid(),user_id:targetId,actor_id:currentAuthUserId,type:'follow',title:'Nouveau suivi',message:(me&&me.name?me.name:'Un membre Nexora')+' suit maintenant ton profil.',is_read:false,created_at:iso()})}
-  function syncFollowRemote(client,active,targetId,followId,me){if(!client||!canSyncFollowId(targetId)||!canSyncFollowId(currentAuthUserId)) return Promise.resolve({skipped:true}); if(active){return sbTable(client,'follows').upsert({id:followId,follower_id:currentAuthUserId,following_id:targetId,created_at:iso()},{onConflict:'follower_id,following_id'}).then(function(res){if(res.error) throw res.error; return notifyFollowRemote(client,targetId,me)})} return sbTable(client,'follows').delete().eq('follower_id',currentAuthUserId).eq('following_id',targetId).then(function(res){if(res.error) throw res.error; return res})}
+  function syncFollowRemote(client,active,targetId,followId,me,targetType){targetType=normalizeFollowTargetType(targetType); if(!client||!canSyncFollowId(targetId)||!canSyncFollowId(currentAuthUserId)) return Promise.resolve({skipped:true}); var stableId=followStableId(currentAuthUserId,targetId,targetType); if(active){var row={id:stableId,follower_id:currentAuthUserId,target_type:targetType,target_id:targetId,created_at:iso()}; return trySequential([
+      function(){return sbTable(client,'follows').upsert(row,{onConflict:'id'})},
+      function(){return sbTable(client,'follows').upsert({id:stableId,follower_id:currentAuthUserId,following_id:targetId,created_at:iso(),updated_at:iso()},{onConflict:'id'})}
+    ],'suivi').then(function(){return targetType==='profile'?notifyFollowRemote(client,targetId,me):{ok:true}}).catch(function(err){syncWarning('écriture suivi',err); return {error:err}})} return trySequential([
+      function(){return sbTable(client,'follows').delete().eq('follower_id',currentAuthUserId).eq('target_type',targetType).eq('target_id',targetId)},
+      function(){return sbTable(client,'follows').delete().eq('id',stableId)},
+      function(){return sbTable(client,'follows').delete().eq('follower_id',currentAuthUserId).eq('following_id',targetId)}
+    ],'retrait suivi').catch(function(err){syncWarning('suppression suivi',err); return {error:err}})}
 
 
   function setPrivacy(field,value){
@@ -7410,7 +7574,7 @@ select,
     finishLockedAction(key,btn,job);
   }
 
-  function toggleFollow(profileId,btn){var me=requireProfile(); if(!me) return; if(me.id===profileId){toast('Tu ne peux pas suivre ton propre profil.'); return} var dbForBlock=readDB(); if(relationshipBlocked(dbForBlock,me.id,profileId)){toast('Action impossible : blocage actif.'); return} var key='toggle-follow:'+profileId; if(!lockAction(key,btn,'…')) return; var db=readDB(); var idx=db.follows.findIndex(function(f){return f.from===me.id&&f.to===profileId}); var active=false; var followId=uid('follow'); if(idx>-1){followId=db.follows[idx].id||followId; db.follows.splice(idx,1); toast('Profil retiré des suivis.')}else{active=true; db.follows.push({id:followId,from:me.id,to:profileId,createdAt:iso()}); toast('Profil suivi.')} saveDB(db,{silent:true}); render(); if(publicProfileId) renderPublicProfileModal(readDB()); var client=getSupabaseClient(); syncFollowRemote(client,active,profileId,remoteRowId(followId),me).then(function(res){if(res&&res.error) throw res.error; setSyncStatus(client?'synced':syncStatus)}).catch(function(err){console.warn(err); setSyncStatus('pending'); toast(active?'Suivi enregistré sur ce téléphone. Mise à jour en attente.':'Retrait enregistré sur ce téléphone.')}).then(function(){unlockAction(key,btn)})}
+  function toggleFollow(profileId,btn){var me=requireProfile(); if(!me) return; if(me.id===profileId){toast('Tu ne peux pas suivre ton propre profil.'); return} var dbForBlock=readDB(); if(relationshipBlocked(dbForBlock,me.id,profileId)){toast('Action impossible : blocage actif.'); return} var key='toggle-follow:'+profileId; if(!lockAction(key,btn,'…')) return; var db=readDB(); var idx=db.follows.findIndex(function(f){f=normalizeFollowObject(f); return f.from===me.id&&f.to===profileId&&normalizeFollowTargetType(f.targetType)==='profile'}); var active=false; var followId=followStableId(me.id,profileId,'profile'); if(idx>-1){followId=db.follows[idx].id||followId; db.follows.splice(idx,1); toast('Profil retiré des suivis.')}else{active=true; db.follows.push({id:followId,from:me.id,to:profileId,targetType:'profile',createdAt:iso(),updatedAt:iso()}); toast('Profil suivi.')} db.follows=mergeFollows(db.follows,[]); saveDB(db,{silent:true}); render(); if(publicProfileId) renderPublicProfileModal(readDB()); var client=getSupabaseClient(); syncFollowRemote(client,active,profileId,followId,me,'profile').then(function(res){if(res&&res.error) throw res.error; setSyncStatus(client?'synced':syncStatus)}).catch(function(err){console.warn(err); setSyncStatus('pending'); toast(active?'Suivi enregistré sur ce téléphone. Mise à jour en attente.':'Retrait enregistré sur ce téléphone.')}).then(function(){unlockAction(key,btn)})}
   function markAllRead(){var db=readDB(); var ids=visibleNotifications(db).map(function(n){return n.id}); var visible=ids.reduce(function(map,id){map[id]=true; return map;},{}); db.notifications.forEach(function(n){if(visible[n.id]){n.read=true; n.updatedAt=iso();}}); saveDB(db); syncNotificationsReadRemote(ids,true); render(); toast('Notifications marquées comme lues.')}
   function notificationValue(n,keys){
     for(var i=0;i<keys.length;i++){
@@ -8649,10 +8813,19 @@ select,
   }
   function bindEvents(){
     document.addEventListener('click',function(e){var btn=e.target.closest('[data-action]'); if(!btn) return; var action=btn.getAttribute('data-action'); var screen=btn.getAttribute('data-screen'); var postId=btn.getAttribute('data-post-id'); var profileId=btn.getAttribute('data-profile-id'); var notifId=btn.getAttribute('data-notif-id'); var theme=btn.getAttribute('data-theme'); var profileTab=btn.getAttribute('data-profile-tab');
-      if(action==='go'){closePublicProfile(); go(screen)} else if(action==='welcome-create') openAccountFromWelcome('create'); else if(action==='welcome-login') openAccountFromWelcome('login'); else if(action==='open-composer') openComposer(theme); else if(action==='close-composer') closeComposer(); else if(action==='select-theme') openCanvas(theme); else if(action==='set-post-background') setPostBackground(btn.getAttribute('data-post-bg')||'none'); else if(action==='publish-post') publishPost(btn); else if(action==='remove-media') clearMediaPreview(); else if(action==='like-post') likePost(postId,btn); else if(action==='recommend-post') recommendPost(postId,btn); else if(action==='toggle-comments') toggleComments(postId); else if(action==='send-comment') sendComment(postId,btn); else if(action==='delete-post') deletePost(postId); else if(action==='edit-post') editPost(postId); else if(action==='report-post') reportPost(postId); else if(action==='mark-onboarding-rules') markOnboardingRules(); else if(action==='hide-onboarding') hideOnboarding(); else if(action==='show-onboarding') showOnboarding(); else if(action==='send-support-ticket') sendSupportTicket(btn); else if(action==='set-legal-tab'){legalTab=btn.getAttribute('data-legal-tab')||'privacy'; renderLegalCenter(readDB())} else if(action==='set-privacy') setPrivacy(btn.getAttribute('data-privacy-field')||'',btn.getAttribute('data-privacy-value')||''); else if(action==='block-profile') blockProfile(profileId); else if(action==='unblock-profile') unblockProfile(profileId); else if(action==='send-friend-request') sendFriendRequest(profileId,btn); else if(action==='accept-friend-request') acceptFriendRequest(btn.getAttribute('data-request-id')||'',btn); else if(action==='reject-friend-request') rejectFriendRequest(btn.getAttribute('data-request-id')||'',btn); else if(action==='cancel-friend-request') cancelFriendRequest(btn.getAttribute('data-request-id')||'',btn); else if(action==='remove-friend') removeFriend(profileId,btn); else if(action==='toggle-follow') toggleFollow(profileId,btn); else if(action==='view-public-profile') openPublicProfile(profileId); else if(action==='close-public-profile') closePublicProfile(); else if(action==='set-profile-tab') setProfileTab(profileTab); else if(action==='mark-all-read') markAllRead(); else if(action==='set-search-type'){globalSearchType=btn.getAttribute('data-search-type')||'all'; renderGlobalSearch(readDB())} else if(action==='open-search-post') openSearchPost(postId); else if(action==='open-notification') openNotification(notifId); else if(action==='start-message') startMessage(profileId); else if(action==='open-conversation') openConversation(btn.getAttribute('data-conversation-id')||''); else if(action==='send-message') sendMessage(btn); else if(action==='open-profile-editor') openProfileEditor(); else if(action==='close-profile-editor') closeProfileEditor(); else if(action==='save-profile') saveProfile(btn); else if(action==='pick-profile-direct-avatar') openNativeFilePicker('[data-profile-quick-avatar-input]'); else if(action==='pick-profile-direct-cover') openNativeFilePicker('[data-profile-quick-cover-input]'); else if(action==='pick-profile-avatar') openNativeFilePicker('[data-profile-avatar-input]'); else if(action==='pick-profile-cover') openNativeFilePicker('[data-profile-cover-input]'); else if(action==='open-account') openAccountModal(currentAuthUserId?'account':'create'); else if(action==='set-account-mode') openAccountModal(btn.getAttribute('data-account-mode-target')||'create'); else if(action==='close-account') closeAccountModal(); else if(action==='view-page') openManagedPage(btn.getAttribute('data-page-id')||''); else if(action==='back-pages') backToPages(); else if(action==='publish-page') openPageComposer(btn.getAttribute('data-page-id')||'','talent'); else if(action==='open-page-editor') openPageEditor(btn.getAttribute('data-page-id')||''); else if(action==='pick-page-avatar') openNativeFilePicker('[data-page-avatar-input]'); else if(action==='pick-page-cover') openNativeFilePicker('[data-page-cover-input]'); else if(action==='close-page-editor') closePageEditor(); else if(action==='save-page') savePage(btn); else if(action==='delete-page') deletePage(btn.getAttribute('data-page-id')||''); else if(action==='switch-account') switchAccount(profileId); else if(action==='delete-account') deleteAccount(profileId); else if(action==='create-account') createAccount(btn); else if(action==='login-account') loginAccount(btn); else if(action==='logout-account') logoutAccount(btn); else if(action==='toggle-theme') setThemeMode(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); else if(action==='sync-now') syncNowFromButton(btn); else if(action==='run-prelaunch-check') runPrelaunchCheck(btn); else if(action==='dismiss-post-auth-welcome'){postAuthWelcomeMode=null; render()} else if(action==='start-first-profile'){postAuthWelcomeMode=null; render(); openProfileEditor()} else if(action==='start-first-post'){postAuthWelcomeMode=null; render(); openComposer('talent')} else if(action==='open-promote-post') openAdModal(postId); else if(action==='close-ad-modal') closeAdModal(); else if(action==='save-promotion') savePromotion(btn); else if(action==='stop-promotion') stopPromotion(postId); else if(action==='ad-click') adClick(postId); else if(action==='clear-pending') clearLocalPending(btn); else if(action==='load-more-feed'){feedRenderLimit+=FEED_PAGE_SIZE; renderFeed(readDB()); if(feedRenderLimit%36===0) requestSync('feed-more',500)} else if(action==='load-more-profile-feed'){profileFeedRenderLimit+=PROFILE_FEED_PAGE_SIZE; renderProfile(readDB())} else if(action==='load-more-page-feed'){pageFeedRenderLimit+=PAGE_FEED_PAGE_SIZE; renderProfile(readDB())}
+      if(action==='go'){closePublicProfile(); go(screen)} else if(action==='open-rules'){closePublicProfile(); legalTab=btn.getAttribute('data-legal-tab')||'privacy'; go('legal'); renderLegalCenter(readDB())} else if(action==='welcome-create') openAccountFromWelcome('create'); else if(action==='welcome-login') openAccountFromWelcome('login'); else if(action==='open-composer') openComposer(theme); else if(action==='close-composer') closeComposer(); else if(action==='select-theme') openCanvas(theme); else if(action==='set-post-background') setPostBackground(btn.getAttribute('data-post-bg')||'none'); else if(action==='publish-post') publishPost(btn); else if(action==='remove-media') clearMediaPreview(); else if(action==='like-post') likePost(postId,btn); else if(action==='recommend-post') recommendPost(postId,btn); else if(action==='toggle-comments') toggleComments(postId); else if(action==='send-comment') sendComment(postId,btn); else if(action==='delete-post') deletePost(postId); else if(action==='edit-post') editPost(postId); else if(action==='report-post') reportPost(postId); else if(action==='mark-onboarding-rules') markOnboardingRules(); else if(action==='hide-onboarding') hideOnboarding(); else if(action==='show-onboarding') showOnboarding(); else if(action==='send-support-ticket') sendSupportTicket(btn); else if(action==='set-legal-tab'){legalTab=btn.getAttribute('data-legal-tab')||'privacy'; renderLegalCenter(readDB())} else if(action==='set-privacy') setPrivacy(btn.getAttribute('data-privacy-field')||'',btn.getAttribute('data-privacy-value')||''); else if(action==='block-profile') blockProfile(profileId); else if(action==='unblock-profile') unblockProfile(profileId); else if(action==='send-friend-request') sendFriendRequest(profileId,btn); else if(action==='accept-friend-request') acceptFriendRequest(btn.getAttribute('data-request-id')||'',btn); else if(action==='reject-friend-request') rejectFriendRequest(btn.getAttribute('data-request-id')||'',btn); else if(action==='cancel-friend-request') cancelFriendRequest(btn.getAttribute('data-request-id')||'',btn); else if(action==='remove-friend') removeFriend(profileId,btn); else if(action==='toggle-follow') toggleFollow(profileId,btn); else if(action==='view-public-profile') openPublicProfile(profileId); else if(action==='close-public-profile') closePublicProfile(); else if(action==='set-profile-tab') setProfileTab(profileTab); else if(action==='mark-all-read') markAllRead(); else if(action==='set-search-type'){globalSearchType=btn.getAttribute('data-search-type')||'all'; renderGlobalSearch(readDB())} else if(action==='open-search-post') openSearchPost(postId); else if(action==='open-notification') openNotification(notifId); else if(action==='start-message') startMessage(profileId); else if(action==='open-conversation') openConversation(btn.getAttribute('data-conversation-id')||''); else if(action==='send-message') sendMessage(btn); else if(action==='open-profile-editor') openProfileEditor(); else if(action==='close-profile-editor') closeProfileEditor(); else if(action==='save-profile') saveProfile(btn); else if(action==='pick-profile-direct-avatar') openNativeFilePicker('[data-profile-quick-avatar-input]'); else if(action==='pick-profile-direct-cover') openNativeFilePicker('[data-profile-quick-cover-input]'); else if(action==='pick-profile-avatar') openNativeFilePicker('[data-profile-avatar-input]'); else if(action==='pick-profile-cover') openNativeFilePicker('[data-profile-cover-input]'); else if(action==='open-account') openAccountModal(currentAuthUserId?'account':'create'); else if(action==='set-account-mode') openAccountModal(btn.getAttribute('data-account-mode-target')||'create'); else if(action==='close-account') closeAccountModal(); else if(action==='view-page') openManagedPage(btn.getAttribute('data-page-id')||''); else if(action==='back-pages') backToPages(); else if(action==='publish-page') openPageComposer(btn.getAttribute('data-page-id')||'','talent'); else if(action==='open-page-editor') openPageEditor(btn.getAttribute('data-page-id')||''); else if(action==='pick-page-avatar') openNativeFilePicker('[data-page-avatar-input]'); else if(action==='pick-page-cover') openNativeFilePicker('[data-page-cover-input]'); else if(action==='close-page-editor') closePageEditor(); else if(action==='save-page') savePage(btn); else if(action==='delete-page') deletePage(btn.getAttribute('data-page-id')||''); else if(action==='switch-account') switchAccount(profileId); else if(action==='delete-account') deleteAccount(profileId); else if(action==='create-account') createAccount(btn); else if(action==='login-account') loginAccount(btn); else if(action==='logout-account') logoutAccount(btn); else if(action==='toggle-theme') setThemeMode(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); else if(action==='sync-now') syncNowFromButton(btn); else if(action==='run-prelaunch-check') runPrelaunchCheck(btn); else if(action==='dismiss-post-auth-welcome'){postAuthWelcomeMode=null; render()} else if(action==='start-first-profile'){postAuthWelcomeMode=null; render(); openProfileEditor()} else if(action==='start-first-post'){postAuthWelcomeMode=null; render(); openComposer('talent')} else if(action==='open-promote-post') openAdModal(postId); else if(action==='close-ad-modal') closeAdModal(); else if(action==='save-promotion') savePromotion(btn); else if(action==='stop-promotion') stopPromotion(postId); else if(action==='ad-click') adClick(postId); else if(action==='clear-pending') clearLocalPending(btn); else if(action==='load-more-feed'){feedRenderLimit+=FEED_PAGE_SIZE; renderFeed(readDB()); if(feedRenderLimit%36===0) requestSync('feed-more',500)} else if(action==='load-more-profile-feed'){profileFeedRenderLimit+=PROFILE_FEED_PAGE_SIZE; renderProfile(readDB())} else if(action==='load-more-page-feed'){pageFeedRenderLimit+=PAGE_FEED_PAGE_SIZE; renderProfile(readDB())}
     });
     document.addEventListener('click',function(e){var btn=e.target.closest('[data-action]'); if(!btn) return; var action=btn.getAttribute('data-action'); if(action==='action-dialog-confirm'){e.preventDefault(); closeNexoraActionDialog(true)} else if(action==='action-dialog-cancel'){e.preventDefault(); closeNexoraActionDialog(false)}});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeNexoraActionDialog(false); closeComposer(); closeProfileEditor(); closeAccountModal(); closePageEditor(); closePublicProfile(); closeAdModal()}});
+    document.addEventListener('keydown',function(e){
+      if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.matches&&e.target.matches('[data-action="open-rules"]')){
+        e.preventDefault();
+        legalTab=e.target.getAttribute('data-legal-tab')||'privacy';
+        go('legal');
+        renderLegalCenter(readDB());
+        return;
+      }
+      if(e.key==='Escape'){closeNexoraActionDialog(false); closeComposer(); closeProfileEditor(); closeAccountModal(); closePageEditor(); closePublicProfile(); closeAdModal()}
+    });
     addSafeListener('#composerDrawer','click',function(e){if(e.target===this) closeComposer()});
     addSafeListener('#profileModal','click',function(e){if(e.target===this) closeProfileEditor()});
     addSafeListener('#accountModal','click',function(e){if(e.target===this) closeAccountModal()});
@@ -8685,8 +8858,30 @@ select,
 
   var realtimeChannel=null;
   var realtimeRefreshTimer=null;
-  function handleRealtimeChange(payload){if(syncInProgress) return; clearTimeout(realtimeRefreshTimer); realtimeRefreshTimer=setTimeout(function(){var client=getSupabaseClient(); if(!client) return; var before=readDB(); pullFromSupabase(client,{force:true}).then(function(remote){if(remote&&remote.ok&&remote.db){var merged=mergeDB(before,remote.db); saveDB(merged,{silent:true}); render(); notifyIncomingMessages(before,merged); setSyncStatus(remote.partial?'pending':(currentAuthUserId?'synced':'pending'))}}).catch(function(err){syncWarning('Realtime lecture',err)})},550)}
-  function setupSupabaseRealtime(client){client=client||getSupabaseClient(); if(!client||!client.channel||realtimeChannel) return; try{var cfg=getSupabaseConfig(); /* STEP30 : Realtime aligné avec les tables activées dans Supabase. Le pull reste paginé pour limiter l'egress. */ var tables=['profiles','posts','comments','reactions','notifications','pages','ads','conversations','messages','friend_requests','friendships','sync_health_events']; var channel=client.channel('nexora-sync-realtime-v109-step30'); tables.forEach(function(kind){channel=channel.on('postgres_changes',{event:'INSERT',schema:'public',table:(cfg.tables&&cfg.tables[kind])||kind},function(payload){handleRealtimeChange(payload)}).on('postgres_changes',{event:'UPDATE',schema:'public',table:(cfg.tables&&cfg.tables[kind])||kind},function(payload){handleRealtimeChange(payload)}).on('postgres_changes',{event:'DELETE',schema:'public',table:(cfg.tables&&cfg.tables[kind])||kind},function(payload){handleRealtimeChange(payload)})}); realtimeChannel=channel.subscribe(function(status){if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED') syncWarning('Realtime',status)})}catch(err){syncWarning('Realtime',err)}}
+  function applyRealtimeReaction(payload){
+    try{
+      var table=String(payload&&payload.table||'');
+      if(table!==((getSupabaseConfig().tables&&getSupabaseConfig().tables.reactions)||'reactions')) return false;
+      var row=(payload.eventType==='DELETE'?(payload.old||{}):(payload.new||{}));
+      var postId=String(row.post_id||row.postId||'');
+      var userId=String(row.user_id||row.profile_id||row.author_id||row.auth_user_id||'').trim();
+      if(!postId||!userId) return false;
+      var type=normalizeReactionType(row.type||row.reaction_type||'like');
+      var db=readDB();
+      var post=(db.posts||[]).find(function(p){return String(p.id)===postId});
+      if(!post) return false;
+      var field=type==='recommend'?'recommends':'likes';
+      post[field]=uniqueReactionIds(post[field]);
+      if(payload.eventType==='DELETE') post[field]=post[field].filter(function(id){return String(id)!==String(userId)});
+      else post[field]=mergeReactionIds(post[field],[userId]);
+      post.updatedAt=iso();
+      saveDB(db,{silent:true});
+      render();
+      return true;
+    }catch(err){syncWarning('Realtime réaction',err); return false}
+  }
+  function handleRealtimeChange(payload){if(syncInProgress) return; applyRealtimeReaction(payload); clearTimeout(realtimeRefreshTimer); realtimeRefreshTimer=setTimeout(function(){var client=getSupabaseClient(); if(!client) return; var before=readDB(); pullFromSupabase(client,{force:true}).then(function(remote){if(remote&&remote.ok&&remote.db){var merged=mergeDB(before,remote.db); saveDB(merged,{silent:true}); render(); notifyIncomingMessages(before,merged); setSyncStatus(remote.partial?'pending':(currentAuthUserId?'synced':'pending'))}}).catch(function(err){syncWarning('Realtime lecture',err)})},550)}
+  function setupSupabaseRealtime(client){client=client||getSupabaseClient(); if(!client||!client.channel||realtimeChannel) return; try{var cfg=getSupabaseConfig(); /* STEP30 : Realtime aligné avec les tables activées dans Supabase. Le pull reste paginé pour limiter l'egress. */ var tables=['profiles','posts','comments','reactions','notifications','follows','pages','ads','conversations','messages','friend_requests','friendships','sync_health_events']; var channel=client.channel('nexora-sync-realtime-v109-step30'); tables.forEach(function(kind){channel=channel.on('postgres_changes',{event:'INSERT',schema:'public',table:(cfg.tables&&cfg.tables[kind])||kind},function(payload){handleRealtimeChange(payload)}).on('postgres_changes',{event:'UPDATE',schema:'public',table:(cfg.tables&&cfg.tables[kind])||kind},function(payload){handleRealtimeChange(payload)}).on('postgres_changes',{event:'DELETE',schema:'public',table:(cfg.tables&&cfg.tables[kind])||kind},function(payload){handleRealtimeChange(payload)})}); realtimeChannel=channel.subscribe(function(status){if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED') syncWarning('Realtime',status)})}catch(err){syncWarning('Realtime',err)}}
   var lastRequestSyncAt=0;
   function requestSync(reason,delay){
     delay=typeof delay==='number'?delay:500;
@@ -8760,20 +8955,10 @@ select,
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',safeInit); else safeInit();
 })();
 
-<!-- NEXORA STEP63 : Création de page premium, identité visuelle renforcée, avantages visibles et paiement annuel uniquement. -->
-<!-- NEXORA STEP62 : Pages Pro intégrées sans casser la logique existante, sponsorisation guidée par page officielle. -->
-<!-- NEXORA STEP30 : notifications compatibles user_id+recipient_id, messagerie directe compatible RLS, realtime aligné STEP27. -->
 
 </script>
-<!-- NEXORA_SYNC_SUPABASE_STABLE_CONNEXION_FIX : stabilisation visuelle et technique du statut Supabase/Auth/Realtime sans modification du design ni de la logique publicité. -->
 
-<!-- NEXORA COMITÉ CONNEXION FINAL : indicateur stabilisé, Auth protégé, sync mobile débouncée, offline respecté. -->
-<!-- NEXORA BADGE FINAL : purge des anciennes attentes locales après succès Supabase, publicité non bloquée par mise à jour secondaire posts. -->
-<!-- NEXORA PAGE MODE FINAL : création d'un autre compte remplacée par la création d'une page liée au compte actif. -->
-<!-- NEXORA PHOTO PROFIL FIX : sélection photo de profil/couverture reliée explicitement au sélecteur natif mobile. -->
 
-<!-- NEXORA COMITÉ STABILITÉ 2026-06-18 : cache Supabase isolé par session, relecture forcée après écriture, badge de connexion honnête, création de compte non redirigée vers page. -->
-<!-- NEXORA AUDIT MYTHOS 2026-06-18 : validation/refus publicité synchronisés Supabase, promesses Supabase protégées, erreurs réseau non gérées capturées. -->
 
 <script>
 (function(){
@@ -8792,7 +8977,18 @@ select,
 })();
 </script>
 
+
+<script>
+(function(){
+  if('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('/service-worker.js').catch(function(err){
+        console.warn('Service worker Nexora non enregistré', err);
+      });
+    });
+  }
+})();
+</script>
 </body>
 </html>
 
-<!-- NEXORA_50K_COMITE_CORRIGE : cache local fenêtré, rendu progressif, boutons sécurisés, médias limités, préparation montée progressive 50 000 utilisateurs. -->
