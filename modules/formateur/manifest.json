@@ -1,0 +1,11 @@
+{
+  "id": "formateur",
+  "name": "Espaces formateurs structurés",
+  "version": "117",
+  "access": "Tout utilisateur connecté peut créer un espace. Le profil du formateur est visible, mais son code reste strictement privé.",
+  "content_types": ["text", "video", "image", "document"],
+  "levels": ["create_manage", "directory"],
+  "directory": true,
+  "private_code": true,
+  "direct_contact": ["telephone", "whatsapp"]
+}

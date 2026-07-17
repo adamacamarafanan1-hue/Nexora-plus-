@@ -1,0 +1,25 @@
+{
+  "id": "prise-parole",
+  "icon": "🎤",
+  "title": "Prise de parole",
+  "level": "Intermédiaire",
+  "duration": "30 min",
+  "category": "Professionnel",
+  "order": 11,
+  "duration_minutes": 30,
+  "intro": "Apprendre à préparer une intervention, organiser ses idées, maîtriser sa voix et son langage corporel, gérer le trac et dialoguer avec un public de manière claire et professionnelle.",
+  "theme_titles": [
+    "Comprendre la prise de parole en public",
+    "Définir son objectif et connaître son public",
+    "Construire une intervention claire",
+    "Développer ses arguments et ses exemples",
+    "Maîtriser la respiration, la voix et l’articulation",
+    "Utiliser le regard, la posture et les gestes",
+    "Gérer le trac et renforcer son assurance",
+    "Utiliser correctement les supports visuels",
+    "Répondre aux questions et gérer les imprévus",
+    "Préparer et présenter une intervention complète"
+  ],
+  "folder": "modules/formation/prise-parole/",
+  "course_file": "modules/formation/prise-parole/cours.json"
+}

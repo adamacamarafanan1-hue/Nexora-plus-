@@ -1,0 +1,25 @@
+{
+  "id": "gestion-projet",
+  "icon": "🗂️",
+  "title": "Gestion de projet",
+  "level": "Intermédiaire",
+  "duration": "30 min",
+  "category": "Professionnel",
+  "order": 5,
+  "duration_minutes": 30,
+  "intro": "À la fin du module, l’apprenant doit pouvoir préparer, organiser, exécuter, suivre et clôturer un projet simple de manière structurée et responsable.",
+  "theme_titles": [
+    "Comprendre ce qu’est un projet",
+    "Identifier le problème et le besoin",
+    "Définir un objectif clair",
+    "Déterminer le périmètre et les résultats attendus",
+    "Planifier les tâches et le calendrier",
+    "Organiser les ressources et le budget",
+    "Répartir les rôles et les responsabilités",
+    "Identifier et gérer les risques",
+    "Suivre l’avancement et communiquer",
+    "Clôturer, évaluer et capitaliser"
+  ],
+  "folder": "modules/formation/gestion-projet/",
+  "course_file": "modules/formation/gestion-projet/cours.json"
+}

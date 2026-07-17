@@ -1,0 +1,25 @@
+{
+  "id": "developpement-personnel",
+  "icon": "🌱",
+  "title": "Développement personnel",
+  "level": "Débutant",
+  "duration": "20 min",
+  "category": "Vie pratique",
+  "order": 7,
+  "duration_minutes": 20,
+  "intro": "À la fin du module, l’apprenant doit pouvoir mieux se connaître, fixer des objectifs, construire des habitudes utiles, gérer ses émotions et organiser un plan personnel de progression.",
+  "theme_titles": [
+    "Mieux se connaître",
+    "Développer la confiance en soi",
+    "Définir des objectifs personnels",
+    "Construire la discipline",
+    "Organiser son temps et ses priorités",
+    "Comprendre et gérer ses émotions",
+    "Développer la résilience",
+    "S’affirmer avec respect",
+    "Prendre de meilleures décisions",
+    "Construire son plan de progrès"
+  ],
+  "folder": "modules/formation/developpement-personnel/",
+  "course_file": "modules/formation/developpement-personnel/cours.json"
+}

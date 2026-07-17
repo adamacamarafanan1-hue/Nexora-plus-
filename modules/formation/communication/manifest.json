@@ -1,0 +1,25 @@
+{
+  "id": "communication",
+  "icon": "💬",
+  "title": "Communication",
+  "level": "Débutant",
+  "duration": "22 min",
+  "category": "Professionnel",
+  "order": 4,
+  "duration_minutes": 22,
+  "intro": "Ce module permet de mieux transmettre ses idées, réduire les malentendus, écouter les autres, adapter son message au public et construire des relations professionnelles plus solides.",
+  "theme_titles": [
+    "Comprendre la communication",
+    "Clarifier son message",
+    "Pratiquer l’écoute active",
+    "Maîtriser la communication verbale",
+    "Comprendre la communication non verbale",
+    "Prendre la parole en public",
+    "Écrire de manière professionnelle",
+    "Donner un retour et gérer une conversation difficile",
+    "Communiquer dans les outils numériques",
+    "Construire son plan personnel de communication"
+  ],
+  "folder": "modules/formation/communication/",
+  "course_file": "modules/formation/communication/cours.json"
+}

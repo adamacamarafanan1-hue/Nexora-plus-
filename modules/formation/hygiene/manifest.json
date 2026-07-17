@@ -1,0 +1,25 @@
+{
+  "id": "hygiene",
+  "icon": "🧼",
+  "title": "Hygiène",
+  "level": "Débutant",
+  "duration": "30 min",
+  "category": "Santé & sécurité",
+  "order": 17,
+  "duration_minutes": 30,
+  "intro": "Adopter des pratiques d’hygiène réalistes pour protéger la santé, l’eau, les aliments, les lieux de vie et la dignité de chacun, à la maison, à l’école, au travail et dans la communauté.",
+  "theme_titles": [
+    "Comprendre l’hygiène et la chaîne de transmission",
+    "Pratiquer une bonne hygiène des mains",
+    "Protéger l’eau de boisson",
+    "Utiliser et entretenir les toilettes et l’assainissement",
+    "Préparer et conserver les aliments en sécurité",
+    "Prendre soin du corps, de la bouche, du linge et des objets personnels",
+    "Nettoyer les lieux, gérer les déchets et utiliser les produits sans danger",
+    "Adopter une hygiène respiratoire dans les espaces partagés",
+    "Respecter l’hygiène menstruelle et intime avec dignité",
+    "Construire un plan d’hygiène durable"
+  ],
+  "folder": "modules/formation/hygiene/",
+  "course_file": "modules/formation/hygiene/cours.json"
+}

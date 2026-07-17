@@ -1,0 +1,25 @@
+{
+  "id": "employabilite",
+  "icon": "🤝",
+  "title": "Employabilité",
+  "level": "Débutant",
+  "duration": "24 min",
+  "category": "Emploi",
+  "order": 9,
+  "duration_minutes": 24,
+  "intro": "À la fin du module, l’apprenant doit pouvoir présenter son profil, préparer des candidatures ciblées, adopter les comportements professionnels attendus et organiser un plan d’insertion.",
+  "theme_titles": [
+    "Comprendre l’employabilité",
+    "Identifier ses compétences",
+    "Construire son projet professionnel",
+    "Préparer un CV efficace",
+    "Rédiger une candidature professionnelle",
+    "Chercher des opportunités avec méthode",
+    "Réussir un entretien d’embauche",
+    "Adopter les comportements professionnels",
+    "Développer son réseau professionnel",
+    "Construire son plan d’insertion et d’évolution"
+  ],
+  "folder": "modules/formation/employabilite/",
+  "course_file": "modules/formation/employabilite/cours.json"
+}

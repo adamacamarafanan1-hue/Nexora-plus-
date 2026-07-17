@@ -1,0 +1,9 @@
+{
+  "name": "nexora-academie-v212-secure-corrected",
+  "private": true,
+  "version": "212.0.0",
+  "scripts": {
+    "start": "npx serve .",
+    "vercel-build": "echo Nexora V211 secure encrypted content ready"
+  }
+}

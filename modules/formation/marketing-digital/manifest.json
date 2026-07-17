@@ -1,0 +1,25 @@
+{
+  "id": "marketing-digital",
+  "icon": "📣",
+  "title": "Marketing digital",
+  "level": "Intermédiaire",
+  "duration": "26 min",
+  "category": "Numérique",
+  "order": 6,
+  "duration_minutes": 26,
+  "intro": "À la fin de ce module, l’apprenant doit pouvoir préparer et améliorer une stratégie simple de marketing digital adaptée à son public, à son offre et à ses moyens.",
+  "theme_titles": [
+    "Comprendre le client",
+    "Clarifier l’offre",
+    "Choisir les canaux",
+    "Créer un message fort",
+    "Préparer les visuels",
+    "Publier avec méthode",
+    "Gérer la communauté",
+    "Analyser les résultats",
+    "Améliorer la campagne",
+    "Fidéliser après l’achat"
+  ],
+  "folder": "modules/formation/marketing-digital/",
+  "course_file": "modules/formation/marketing-digital/cours.json"
+}
