@@ -1,9 +1,11 @@
 {
-  "name": "nexora-academie-v212-secure-corrected",
+  "name": "nexora-v229-deploiement-telephone",
   "private": true,
-  "version": "212.0.0",
+  "version": "229.2.0",
   "scripts": {
-    "start": "npx serve .",
-    "vercel-build": "echo Nexora V211 secure encrypted content ready"
+    "build": "node -e \"const fs=require('fs'),path=require('path'),AdmZip=require('adm-zip');const a='NEXORA_V229_SITE_COMPLET.nxp',o='public';if(!fs.existsSync(a))throw new Error('Archive Nexora V229 introuvable');fs.rmSync(o,{recursive:true,force:true});fs.mkdirSync(o,{recursive:true});new AdmZip(a).extractAllTo(o,true);for(const i of ['index.html','assets','modules','manifest.webmanifest','service-worker.js','offline.html'])if(!fs.existsSync(path.join(o,i)))throw new Error('Element obligatoire manquant: '+i);console.log('Nexora V229 complet prepare avec assets et modules');\""
+  },
+  "dependencies": {
+    "adm-zip": "0.5.16"
   }
 }
