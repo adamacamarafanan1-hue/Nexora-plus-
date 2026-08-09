@@ -193,7 +193,7 @@ export default async function handler(request, response) {
 
     const subscription = await activeSubscription(url, publishableKey, token);
     if (!subscription) return response.status(403).json({ success: false, message: "Aucun abonnement Nexora actif." });
-
+delete body.public_key_jwk.key_ops;
     const publicKey = await webcrypto.subtle.importKey(
       "jwk",
       body.public_key_jwk,
