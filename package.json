@@ -1,11 +1,9 @@
 {
-  "name": "nexora-v229-deploiement-telephone",
+  "name": "nexora-v504-secure",
+  "version": "504.0.0",
   "private": true,
-  "version": "229.2.0",
+  "type": "module",
   "scripts": {
-    "build": "node -e \"const fs=require('fs'),path=require('path'),AdmZip=require('adm-zip');const a='NEXORA_V229_SITE_COMPLET.nxp',o='public';if(!fs.existsSync(a))throw new Error('Archive Nexora V229 introuvable');fs.rmSync(o,{recursive:true,force:true});fs.mkdirSync(o,{recursive:true});new AdmZip(a).extractAllTo(o,true);for(const i of ['index.html','assets','modules','manifest.webmanifest','service-worker.js','offline.html'])if(!fs.existsSync(path.join(o,i)))throw new Error('Element obligatoire manquant: '+i);console.log('Nexora V229 complet prepare avec assets et modules');\""
-  },
-  "dependencies": {
-    "adm-zip": "0.5.16"
+    "build": "node -e \"console.log('Nexora V504 prete pour Vercel')\""
   }
 }
