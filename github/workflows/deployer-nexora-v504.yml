@@ -1,1 +1,74 @@
+name: Deployer Nexora V504
 
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexora-v504-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Charger le depot
+        uses: actions/checkout@v4
+
+      - name: Assembler et verifier l archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          third_parts=(NEXORA_V504_PARTIE_03*.part)
+          test -f NEXORA_V504_PARTIE_01.part
+          test -f NEXORA_V504_PARTIE_02.part
+          test "${#third_parts[@]}" -eq 1
+          test -f "${third_parts[0]}"
+          cat NEXORA_V504_PARTIE_01.part NEXORA_V504_PARTIE_02.part "${third_parts[0]}" > "$RUNNER_TEMP/nexora-v504.zip"
+          echo "87f58846bd61282365c62dcaafaa9701b888d75a95a006602affddcf99ab9042  $RUNNER_TEMP/nexora-v504.zip" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/nexora-v504"
+          unzip -q "$RUNNER_TEMP/nexora-v504.zip" -d "$RUNNER_TEMP/nexora-v504"
+          for required in index.html api/content-key.js vercel.json service-worker.js manifest.json protected/manifest.json assets/icons/nexora-192.png; do
+            test -e "$RUNNER_TEMP/nexora-v504/$required"
+          done
+
+      - name: Preparer le depot Vercel
+        shell: bash
+        run: |
+          set -euo pipefail
+          stage="$RUNNER_TEMP/nexora-v504"
+          find . -mindepth 1 -maxdepth 1 ! -name .git ! -name .github -exec rm -rf -- {} +
+          mkdir -p api public
+          cp -a "$stage/api/." api/
+          cp "$stage/package.json" "$stage/vercel.json" .
+          cp "$stage/LISEZ-MOI_V504_FINAL.md" "$stage/RAPPORT_AUDIT_V504.md" .
+          cp "$stage/index.html" "$stage/manifest.json" "$stage/service-worker.js" "$stage/version.json" public/
+          cp "$stage/NEXORA_AUTONOME_V504.html" public/
+          cp -a "$stage/assets" "$stage/modules" "$stage/protected" public/
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          package_path = Path("package.json")
+          package = json.loads(package_path.read_text(encoding="utf-8"))
+          package["scripts"] = {**package.get("scripts", {}), "build": "node -e \"console.log('Nexora V504 prete pour Vercel')\""}
+          package_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+          vercel_path = Path("vercel.json")
+          vercel = json.loads(vercel_path.read_text(encoding="utf-8"))
+          vercel["buildCommand"] = "npm run build"
+          vercel["outputDirectory"] = "public"
+          vercel_path.write_text(json.dumps(vercel, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Publier la V504 dans la branche principale
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Deployer Nexora V504 finale auditee"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
