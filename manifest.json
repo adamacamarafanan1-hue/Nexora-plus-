@@ -1,0 +1,30 @@
+{
+  "name": "Nexora Académie",
+  "short_name": "Nexora",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#EDF0F2",
+  "theme_color": "#143B67",
+  "lang": "fr",
+  "description": "Cours, sujets d’examen, formations professionnelles et jeux éducatifs.",
+  "categories": [
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "/assets/icons/nexora-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/nexora-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

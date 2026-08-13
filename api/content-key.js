@@ -8,14 +8,7 @@ const RATE_LIMIT_MAX_REQUESTS = 20;
 const DEFAULT_SUPABASE_URL = "https://lzypxingcykvgxdifccq.supabase.co";
 const DEFAULT_PUBLISHABLE_KEY = "sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY";
 const rateLimitBuckets = new Map();
-const RPCS = [
-  ["nexora_my_subscription_status_v264", { p_product_code: "all" }],
-  ["nexora_my_subscription_status_v250", { p_product_code: "all" }],
-  ["nexora_my_subscription_status_v4", { p_product_code: "all" }],
-  ["nexora_my_subscription_status_v3", {}],
-  ["nexora_my_subscription_status_v2", {}],
-  ["nexora_my_subscription_status", {}]
-];
+const RPCS = [["nexora_my_subscription_status_v264", { p_product_code: "all" }]];
 
 function decodeResult(value) {
   let current = value;
@@ -193,10 +186,18 @@ export default async function handler(request, response) {
 
     const subscription = await activeSubscription(url, publishableKey, token);
     if (!subscription) return response.status(403).json({ success: false, message: "Aucun abonnement Nexora actif." });
-delete body.public_key_jwk.key_ops;
+
+    // Les navigateurs exportent la clé publique RSA avec key_ops=["wrapKey"]
+    // lorsque la paire locale sert à wrapKey/unwrapKey. Le chiffrement RSA-OAEP
+    // produit ici est néanmoins exactement le paquet que le navigateur déplie
+    // ensuite avec unwrapKey. Retirer uniquement cette indication d'usage avant
+    // l'import évite le rejet WebCrypto "Key operations and usage mismatch",
+    // sans modifier ni élargir les données cryptographiques de la clé publique.
+    const publicJwk = { ...body.public_key_jwk };
+    delete publicJwk.key_ops;
     const publicKey = await webcrypto.subtle.importKey(
       "jwk",
-      body.public_key_jwk,
+      publicJwk,
       { name: "RSA-OAEP", hash: "SHA-256" },
       false,
       ["encrypt"]

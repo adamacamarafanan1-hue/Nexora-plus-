@@ -1,9 +1,6 @@
 {
-  "name": "nexora-v504-secure",
-  "version": "504.0.0",
+  "name": "nexora-v522-final-vercel",
+  "version": "522.0.0",
   "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "node -e \"console.log('Nexora V504 prete pour Vercel')\""
-  }
+  "type": "module"
 }

@@ -1,0 +1,13 @@
+{
+  "version": "V522",
+  "message": "Nexora V522 : version finale Vercel avec ouverture rapide, création de compte épurée, activation de compte visible et cache actualisé.",
+  "critical": false,
+  "updated_at": "2026-08-13T00:00:00Z",
+  "update_system": "controlled-service-worker-v522-version-gated",
+  "subscription": "server-plan-id-required-v519.2-supabase-catalog-8-plans",
+  "primary_ce2": "reinforced-78-lessons-protected-api-v520.1",
+  "secure_content": "nxe-preserved-ce2-server-protected",
+  "ouverture": "head-14ko-lazy-groups-timers-260-2600-3200",
+  "account_creation": "essential-fields-first-no-overlay",
+  "subscription_cta": "activate-account-visible-v522"
+}
