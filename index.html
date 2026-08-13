@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<!-- Nexora V508 : deux espaces — élèves (maternelle, primaire, collège, lycée, sujets, romans)
-     et professionnel (les 22 modules). Aucune règle d’accès ni de contenu modifiée. -->
+<!-- Nexora V525 : deux espaces payants séparés — Élèves et Pro.
+     Le contenu pédagogique reste inchangé ; l’autorisation de lecture est contrôlée côté serveur. -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' blob:; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://lzypxingcykvgxdifccq.supabase.co; media-src 'self' data: blob: https://lzypxingcykvgxdifccq.supabase.co; connect-src 'self' https://lzypxingcykvgxdifccq.supabase.co wss://lzypxingcykvgxdifccq.supabase.co https://nexora-plus-beta.vercel.app; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' blob: https://nexora-plus-beta.vercel.app; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" http-equiv="Content-Security-Policy"/>
@@ -12,9 +12,9 @@
 <meta content="Nexora Académie — cours, sujets, romans, formations, communauté, Jeu Adams et défis éducatifs." name="description"/>
 <meta content="#143B67" name="theme-color"/>
 <meta content="Nexora Académie" name="application-name"/>
-<meta content="v525-acces-cours" name="nexora-build"/>
+<meta content="v525-acces-separes" name="nexora-build"/>
 <meta content="V525" name="nexora-release"/>
-<meta content="V525 — accès sécurisé aux cours corrigé" name="nexora-version"/>
+<meta content="V525 — accès Élèves / Pro séparés" name="nexora-version"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Nexora Académie" name="apple-mobile-web-app-title"/>
@@ -22873,7 +22873,7 @@ function renderTeacherRequestCenter(db){
   }
 
   function registerNexoraServiceWorker(){
-    navigator.serviceWorker.register('./service-worker.js?v=525.0',{scope:'./',updateViaCache:'none'})
+    navigator.serviceWorker.register('./service-worker.js?v=523.0',{scope:'./',updateViaCache:'none'})
       .then(function(registration){
         registrationRef=registration;
         watchInstalling(registration);

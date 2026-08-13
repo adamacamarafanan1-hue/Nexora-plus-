@@ -1,4 +1,4 @@
-/* Nexora V525 — coque d'ouverture rapide et mise à jour critique de l'accès.
+/* Nexora V525 — coque d'ouverture rapide et cache final cohérent.
    Le document n'est plus retéléchargé à chaque
    lancement. On lit d'abord version.json (467 octets, au plus une fois toutes
    les 6 heures) ; le document n'est repris que si le numéro de version a
@@ -17,11 +17,7 @@ const PUBLIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(PUBLIC_ASSETS))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PUBLIC_ASSETS)));
 });
 
 self.addEventListener("message", (event) => {
@@ -35,11 +31,6 @@ self.addEventListener("activate", (event) => {
         .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
         .map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: "window", includeUncontrolled: true }))
-      .then((clients) => Promise.all(clients.map((client) => {
-        if (typeof client.navigate !== "function") return null;
-        return client.navigate(client.url).catch(() => null);
-      })))
   );
 });
 
