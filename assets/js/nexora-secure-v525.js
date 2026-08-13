@@ -1,7 +1,5 @@
 
-/* NEXORA V525 — abonnement et contenu sécurisé, sans cache de cours/jeux.
-   Correction : la vérification locale ne déclenche plus une demande serveur
-   vide avant de connaître l'espace Élèves ou Pro. */
+/* NEXORA V525 — abonnements Élèves/Pro isolés + passerelle serveur de contenu sécurisé */
 /* ===== inline-7 ===== */
 (function(){
   'use strict';
@@ -16,16 +14,19 @@
      ================================================================== */
 
   /* --- V518 : declarations retrouvees dans le monolithe V504.1 --- */
-  var CACHE_KEY='nexora_subscription_snapshot_v7';
-  var LEGACY_CACHE_KEYS=['nexora_subscription_snapshot_v5','nexora_subscription_snapshot_v4','nexora_subscription_snapshot_v3'];
+  var ESPACE_COURANT='eleves';
+  var CACHE_PREFIX_V525='nexora_subscription_snapshot_v525_';
+  function paidSpace(value){return String(value||ESPACE_COURANT)==='pro'?'pro':'eleves';}
+  function subscriptionCacheKey(space){return CACHE_PREFIX_V525+paidSpace(space);}
+  var LEGACY_CACHE_KEYS=[];
   var CLOCK_ROLLBACK_TOLERANCE_MS=5*60*1000;
   var NOTICE_STORAGE_PREFIX='nexora_subscription_notice_v250_';
   var PENDING_ACCESS=null;
   var CATALOG=null;
   var CATALOG_PROMISE=null;
   var CURRENT_REQUEST=null;
-  var EXPIRY_TIMER=null;
-  var LAST_SERVER_CHECK=0;
+  var EXPIRY_TIMERS={eleves:null,pro:null};
+  var LAST_SERVER_CHECK={eleves:0,pro:0};
   var PAYMENT_UI_ERROR='';
   var PAYMENT_UI_PHASE='';
   var PENDING_CONTEXT='all';
@@ -33,7 +34,7 @@
   var REALTIME_CHANNEL=null;
   var SELECTED_PLAN=null;
   var SERVER_CACHE_MS=15000;
-  var STATUS_PROMISE=null;
+  var STATUS_PROMISE={eleves:null,pro:null};
 
   function esc(value){
       return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});
@@ -128,11 +129,10 @@
       return null;
     }
 
-  function readSnapshot(){
+  function readSnapshot(space){
       var data={authenticated:false,active:false,status:'inactive',ends_at:null,offline_eligible:false};
       try{
-        var raw=localStorage.getItem(CACHE_KEY);
-        if(!raw){for(var i=0;i<LEGACY_CACHE_KEYS.length&&!raw;i++)raw=localStorage.getItem(LEGACY_CACHE_KEYS[i]);}
+        var raw=localStorage.getItem(subscriptionCacheKey(space));
         if(raw)data=Object.assign(data,JSON.parse(raw)||{});
       }catch(_e){window.nxLog&&window.nxLog(_e)}
       var clock=subscriptionClock(data,true);
@@ -146,8 +146,7 @@
         data=markExpired(data,'expired');
       }
       try{
-        localStorage.setItem(CACHE_KEY,JSON.stringify(data));
-        LEGACY_CACHE_KEYS.forEach(function(key){localStorage.setItem(key,JSON.stringify(data));});
+        localStorage.setItem(subscriptionCacheKey(space),JSON.stringify(data));
       }catch(_persistError){window.nxLog&&window.nxLog(_persistError)}
       return data;
     }
@@ -227,12 +226,13 @@
       return snapshot;
     }
 
-  function enforceExpiredAccess(snapshot,announce){
-      snapshot=markExpired(snapshot||readSnapshot(),'expired');
-      writeSnapshot(snapshot);
+  function enforceExpiredAccess(snapshot,announce,space){
+      var target=paidSpace(space);
+      snapshot=markExpired(snapshot||readSnapshot(target),'expired');
+      writeSnapshot(snapshot,target);
       revokeSecureEntitlement('expired');
-      closePremiumViews();
-      if(announce){
+      if(target===paidSpace())closePremiumViews();
+      if(announce&&target===paidSpace()){
         try{if(typeof window.toast==='function')window.toast('Votre abonnement Nexora est arrivé à expiration. L’accès aux contenus payants est maintenant bloqué. Renouvelez votre abonnement pour continuer.');}catch(_e){window.nxLog&&window.nxLog(_e)}
       }
       return snapshot;
@@ -255,27 +255,13 @@
 
   /* ============ fin de la boite a outils retrouvee ============ */
 
-  var VERSION='v523-20260813-1';
-  var DB_NAME='nexora-secure-content-v211';
-  var DB_VERSION=1;
-  var ENTITLEMENT_ID='current';
-  var DEVICE_ID='rsa-device';
+  var VERSION='v525-20260813-1';
   var MANIFEST_URL='/protected/manifest.json';
-  var ROLLBACK_TOLERANCE=5*60*1000;
-  var memoryRecord=null;
   var manifestPromise=null;
-  var activationPromise=null;
   var authObserverReady=false;
-  var enc=new TextEncoder();
   var dec=new TextDecoder('utf-8');
+  var NX_SECURE_FETCH_TIMEOUT_MS=20000;
 
-  /* V506 : constantes explicites. Elles manquaient dans V505.1 et pouvaient interrompre le heartbeat d'abonnement. */
-  var RENEWAL_NOTICE_DAYS=7;
-  var STRICT_STATUS_INTERVAL_MS=5*60*1000;
-  var STRICT_HEARTBEAT_TIMER=null;
-  var STRICT_CHECK_PROMISE=null;
-  var POLL_TIMER=null;
-  var NX_SECURE_FETCH_TIMEOUT_MS=15000;
   function nxSecureFetchV506(url,options){
     options=options||{};
     var controller=typeof AbortController!=='undefined'?new AbortController():null;
@@ -285,72 +271,101 @@
   }
 
   function online(){return typeof navigator==='undefined'||navigator.onLine!==false;}
+  function normalizePath(path){return String(path||'').replace(/^https?:\/\/[^/]+\//i,'').replace(/^\.\//,'').replace(/^\//,'');}
+  function errorMessage(code){var e=new Error(code);e.code=code;return e;}
 
   async function clearLegacyContentCaches(){
     if(typeof caches==='undefined'||!caches.keys)return;
     try{var keys=await caches.keys();await Promise.all(keys.filter(function(k){return /^nexora-premium-encrypted-/i.test(k);}).map(function(k){return caches.delete(k);}));}catch(_e){window.nxLog&&window.nxLog(_e)}
   }
-  function normalizePath(path){return String(path||'').replace(/^https?:\/\/[^/]+\//i,'').replace(/^\.\//,'').replace(/^\//,'');}
-  function notify(message){try{if(typeof window.toast==='function'){window.toast(message);return;}}catch(_e){window.nxLog&&window.nxLog(_e)}try{console.info('[Nexora sécurisé]',message);}catch(_e2){window.nxLog&&window.nxLog(_e2)}}
-  function b64ToBytes(value){var s=String(value||'').replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';var bin=atob(s),out=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;}
-  function errorMessage(code){var e=new Error(code);e.code=code;return e;}
-  function openDb(){return new Promise(function(resolve,reject){var req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=function(){var db=req.result;if(!db.objectStoreNames.contains('entitlements'))db.createObjectStore('entitlements',{keyPath:'id'});if(!db.objectStoreNames.contains('device'))db.createObjectStore('device',{keyPath:'id'});};req.onsuccess=function(){resolve(req.result);};req.onerror=function(){reject(req.error||new Error('IndexedDB indisponible.'));};});}
-  async function dbGet(store,id){var db=await openDb();return new Promise(function(resolve,reject){var tx=db.transaction(store,'readonly'),req=tx.objectStore(store).get(id);req.onsuccess=function(){resolve(req.result||null);};req.onerror=function(){reject(req.error);};tx.oncomplete=function(){db.close();};});}
-  async function dbPut(store,value){var db=await openDb();return new Promise(function(resolve,reject){var tx=db.transaction(store,'readwrite');tx.objectStore(store).put(value);tx.oncomplete=function(){db.close();resolve(value);};tx.onerror=function(){db.close();reject(tx.error);};});}
-  async function dbDelete(store,id){var db=await openDb();return new Promise(function(resolve,reject){var tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(id);tx.oncomplete=function(){db.close();resolve();};tx.onerror=function(){db.close();reject(tx.error);};});}
 
-  async function getSession(){try{var c=window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;if(!c||!c.auth)return null;var r=await c.auth.getSession();return r&&r.data&&r.data.session||null;}catch(_e){return null;}}
-  async function setupAuthObserver(){if(authObserverReady)return;var c=null;for(var i=0;i<50&&!c;i++){try{c=window.NexoraApp&&window.NexoraApp.getSupabaseClient&&window.NexoraApp.getSupabaseClient();}catch(_e){window.nxLog&&window.nxLog(_e)}if(!c)await new Promise(function(r){setTimeout(r,150);});}if(!c||!c.auth||typeof c.auth.onAuthStateChange!=='function')return;authObserverReady=true;c.auth.onAuthStateChange(function(event){if(event==='SIGNED_OUT'||event==='USER_DELETED')revoke('logout');});}
-
-  function trustedClock(record,update){var deviceNow=Date.now(),verified=Number(record.verified_device_ms||0),server=Number(record.server_now_ms||0),lastDevice=Number(record.last_device_seen_ms||verified||0),lastTrusted=Number(record.last_trusted_now_ms||server||0);var rollback=!!(lastDevice&&deviceNow+ROLLBACK_TOLERANCE<lastDevice),estimated=deviceNow;if(server&&verified){var elapsed=deviceNow-verified;if(elapsed<0)elapsed=0;estimated=server+elapsed;}var now=Math.max(estimated,lastTrusted||0);if(update){record.last_device_seen_ms=Math.max(deviceNow,lastDevice||0);record.last_trusted_now_ms=Math.max(now,lastTrusted||0);}return {now:now,rollback:rollback};}
-  async function loadRecord(){if(memoryRecord)return memoryRecord;memoryRecord=await dbGet('entitlements',ENTITLEMENT_ID);return memoryRecord;}
-  async function validateRecord(record,checkUser){if(!record||record.version!==VERSION||!record.content_key||!record.ends_at_ms)return false;var clock=trustedClock(record,true);if(clock.rollback)return false;if(clock.now>=Number(record.ends_at_ms||0)){await revoke('expired');return false;}if(checkUser!==false){var session=await getSession();if(session&&session.user&&record.user_id&&String(session.user.id)!==String(record.user_id)){await revoke('account_changed');return false;}}await dbPut('entitlements',record);memoryRecord=record;return true;}
-
-  async function deviceKeys(){var saved=await dbGet('device',DEVICE_ID);if(saved&&saved.private_key&&saved.public_jwk)return saved;var pair=await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['wrapKey','unwrapKey']);var publicJwk=await crypto.subtle.exportKey('jwk',pair.publicKey);var privatePkcs8=await crypto.subtle.exportKey('pkcs8',pair.privateKey);var privateKey=await crypto.subtle.importKey('pkcs8',privatePkcs8,{name:'RSA-OAEP',hash:'SHA-256'},false,['unwrapKey']);saved={id:DEVICE_ID,private_key:privateKey,public_jwk:publicJwk,created_at:new Date().toISOString()};await dbPut('device',saved);return saved;}
-
-  async function loadManifest(){if(manifestPromise)return manifestPromise;manifestPromise=nxSecureFetchV506(MANIFEST_URL,{cache:'no-store',credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('Manifest sécurisé indisponible.');return r.json();}).then(function(m){if(!m||m.version!==VERSION||!Array.isArray(m.entries))throw new Error('Manifest sécurisé invalide.');m.byPath={};m.entries.forEach(function(e){m.byPath[normalizePath(e.path)]=e;});return m;}).catch(function(err){manifestPromise=null;throw err;});return manifestPromise;}
-
-  function secureAccessProduct(snapshot){
-    snapshot=snapshot&&typeof snapshot==='object'?snapshot:{};
-    var values=[snapshot.requested_product_code,snapshot.product_code,snapshot.plan_code,PENDING_CONTEXT];
-    for(var i=0;i<values.length;i++){
-      var value=String(values[i]||'').trim().toLowerCase();
-      if(['modules','pro','professional','professionnel'].indexOf(value)>-1)return 'pro';
-      if(['academy','orientation','subjects','novels','eleves','élèves','student'].indexOf(value)>-1)return 'eleves';
-      if(value==='adams')return 'adams';
-    }
-    return '';
+  async function getSession(){
+    try{
+      var c=window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;
+      if(!c||!c.auth)return null;
+      var r=await c.auth.getSession();
+      return r&&r.data&&r.data.session||null;
+    }catch(_e){return null;}
   }
 
-  async function issueKey(snapshot){var session=await getSession();if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour activer les contenus.');var product=secureAccessProduct(snapshot);if(!product)throw errorMessage('Espace Nexora non reconnu. Fermez cette fenêtre puis ouvrez de nouveau le cours.');var keys=await deviceKeys();var response=await nxSecureFetchV506('/api/content-key',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({public_key_jwk:keys.public_jwk,content_version:VERSION,product_code:product,device_id:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))})});var data={};try{data=await response.json();}catch(_e){window.nxLog&&window.nxLog(_e)}if(!response.ok||data.success!==true)throw errorMessage(data.message||'Abonnement non autorisé pour les contenus protégés.');var wrapped=b64ToBytes(data.wrapped_key);var contentKey=await crypto.subtle.unwrapKey('raw',wrapped,keys.private_key,{name:'RSA-OAEP'},{name:'AES-GCM'},false,['decrypt']);var serverNow=Date.parse(data.server_now||'')||Date.now(),ends=Date.parse(data.ends_at||'')||0;if(!ends||ends<=serverNow)throw errorMessage('La date d’expiration de l’abonnement est invalide.');var record={id:ENTITLEMENT_ID,version:VERSION,user_id:String(data.user_id||session.user.id),content_key:contentKey,starts_at:data.starts_at||null,ends_at:data.ends_at,ends_at_ms:ends,server_now_ms:serverNow,verified_device_ms:Date.now(),last_device_seen_ms:Date.now(),last_trusted_now_ms:serverNow,issued_at:new Date().toISOString()};await dbPut('entitlements',record);memoryRecord=record;window.dispatchEvent(new CustomEvent('nexora:premium-ready',{detail:{ends_at:record.ends_at}}));return record;}
+  async function setupAuthObserver(){
+    if(authObserverReady)return;
+    var c=null;
+    for(var i=0;i<50&&!c;i++){
+      try{c=window.NexoraApp&&window.NexoraApp.getSupabaseClient&&window.NexoraApp.getSupabaseClient();}catch(_e){window.nxLog&&window.nxLog(_e)}
+      if(!c)await new Promise(function(r){setTimeout(r,150);});
+    }
+    if(!c||!c.auth||typeof c.auth.onAuthStateChange!=='function')return;
+    authObserverReady=true;
+    c.auth.onAuthStateChange(function(event){if(event==='SIGNED_OUT'||event==='USER_DELETED')revoke('logout');});
+  }
 
-  async function activate(snapshot){if(activationPromise)return activationPromise;activationPromise=(async function(){var existing=await loadRecord();if(existing&&await validateRecord(existing,true)){var incomingEnd=Date.parse(snapshot&&snapshot.ends_at||'')||0;if(!incomingEnd||incomingEnd<=Number(existing.ends_at_ms||0))return existing;}if(!online())throw errorMessage('Connexion Internet nécessaire pour activer ce téléphone.');return issueKey(snapshot||{});})();try{return await activationPromise;}finally{activationPromise=null;}}
+  async function loadManifest(){
+    if(manifestPromise)return manifestPromise;
+    manifestPromise=nxSecureFetchV506(MANIFEST_URL,{cache:'no-store',credentials:'same-origin'})
+      .then(function(r){if(!r.ok)throw new Error('Manifest sécurisé indisponible.');return r.json();})
+      .then(function(m){
+        if(!m||m.version!==VERSION||!Array.isArray(m.entries))throw new Error('Manifest sécurisé invalide.');
+        m.byPath={};
+        m.entries.forEach(function(e){m.byPath[normalizePath(e.path)]=e;});
+        return m;
+      }).catch(function(err){manifestPromise=null;throw err;});
+    return manifestPromise;
+  }
 
-  async function entitlement(){var record=await loadRecord();if(record&&await validateRecord(record,true))return record;if(online())return activate({requested_product_code:PENDING_CONTEXT});throw errorMessage('Connexion Internet nécessaire pour ouvrir ce contenu premium.');}
-  async function hasValidEntitlement(){try{var record=await loadRecord();return !!(record&&await validateRecord(record,true));}catch(_e){return false;}}
+  async function requireSession(){
+    if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours.');
+    var session=await getSession();
+    if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour ouvrir ce contenu.');
+    return session;
+  }
 
-  async function encryptedBytes(entry){if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours ou ce jeu.');var target=/^https?:/i.test(String(entry.url||''))?entry.url:'/'+normalizePath(entry.url);var request=new Request(target,{credentials:'omit',cache:'no-store'});var response=await nxSecureFetchV506(request,{cache:'no-store',credentials:'same-origin'});if(!response||!response.ok)throw errorMessage('Chargement sécurisé impossible ('+(response&&response.status||0)+').');return new Uint8Array(await response.arrayBuffer());}
-  async function decrypt(path){path=normalizePath(path);var record=await entitlement(),manifest=await loadManifest(),entry=manifest.byPath[path];if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);var packed=await encryptedBytes(entry);if(packed.length<33||String.fromCharCode.apply(null,packed.slice(0,4))!=='NXE1')throw errorMessage('Paquet sécurisé invalide.');var iv=packed.slice(4,16),cipher=packed.slice(16),plain;try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(path)},record.content_key,cipher);}finally{try{packed.fill(0);cipher.fill(0);}catch(_wipeError){}}return new Uint8Array(plain);}
-  async function text(path){return dec.decode(await decrypt(path));}
+  async function authorizedBytes(path){
+    path=normalizePath(path);
+    var manifest=await loadManifest(),entry=manifest.byPath[path];
+    if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);
+    var session=await requireSession();
+    var response=await nxSecureFetchV506('/api/secure-content',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({content_version:VERSION,path:path})});
+    if(!response.ok){
+      var data={};try{data=await response.json();}catch(_e){window.nxLog&&window.nxLog(_e)}
+      var msg=data&&data.message?String(data.message):'Accès à ce contenu refusé.';
+      var err=errorMessage(msg);err.status=response.status;err.product_code=entry.product_code||'';throw err;
+    }
+    return new Uint8Array(await response.arrayBuffer());
+  }
+
+  async function activate(snapshot){
+    var session=await requireSession();
+    var record={version:VERSION,user_id:String(session.user.id),product_code:String(snapshot&&snapshot.product_code||''),ends_at:snapshot&&snapshot.ends_at||null,issued_at:new Date().toISOString()};
+    try{window.dispatchEvent(new CustomEvent('nexora:premium-ready',{detail:{product_code:record.product_code,ends_at:record.ends_at}}));}catch(_eventError){window.nxLog&&window.nxLog(_eventError)}
+    return record;
+  }
+
+  async function entitlement(){return activate({product_code:espaceCourant()});}
+  async function hasValidEntitlement(){try{await requireSession();return true;}catch(_e){return false;}}
+  async function decrypt(path){return authorizedBytes(path);}
+  async function text(path){return dec.decode(await authorizedBytes(path));}
   async function json(path){return JSON.parse(await text(path));}
-  async function execute(path){path=normalizePath(path);var marker='data-nexora-secure-script';var old=Array.prototype.slice.call(document.scripts||[]).some(function(x){return x.getAttribute&&x.getAttribute(marker)===path;});if(old)return true;var code=await text(path);return new Promise(function(resolve,reject){var blob=new Blob([code+'\n//# sourceURL='+path],{type:'text/javascript'}),url=URL.createObjectURL(blob),s=document.createElement('script');s.setAttribute(marker,path);s.src=url;s.onload=function(){URL.revokeObjectURL(url);resolve(true);};s.onerror=function(){URL.revokeObjectURL(url);s.remove();reject(new Error('Exécution sécurisée impossible.'));};document.head.appendChild(s);});}
-
+  async function execute(path){
+    path=normalizePath(path);
+    var marker='data-nexora-secure-script';
+    var old=Array.prototype.slice.call(document.scripts||[]).some(function(x){return x.getAttribute&&x.getAttribute(marker)===path;});
+    if(old)return true;
+    var code=await text(path);
+    return new Promise(function(resolve,reject){
+      var blob=new Blob([code+'\n//# sourceURL='+path],{type:'text/javascript'}),url=URL.createObjectURL(blob),script=document.createElement('script');
+      script.setAttribute(marker,path);script.src=url;
+      script.onload=function(){URL.revokeObjectURL(url);resolve(true);};
+      script.onerror=function(){URL.revokeObjectURL(url);script.remove();reject(new Error('Exécution sécurisée impossible.'));};
+      document.head.appendChild(script);
+    });
+  }
   async function preloadAll(){return {disabled:true,downloaded:0,total:0,pending:0};}
-
   async function revoke(reason){
-    memoryRecord=null;
-    try{await dbDelete('entitlements',ENTITLEMENT_ID);}catch(_deleteError){window.nxLog&&window.nxLog(_deleteError,'secure-revoke');}
     try{window.dispatchEvent(new CustomEvent('nexora:premium-revoked',{detail:{reason:String(reason||'revoked')}}));}catch(_eventError){window.nxLog&&window.nxLog(_eventError)}
     return true;
   }
-
-  function syncSnapshot(snapshot){
-    snapshot=snapshot&&typeof snapshot==='object'?snapshot:{};
-    if(snapshot.active===true&&snapshot.status==='active')return true;
-    var reason=String(snapshot.status||'inactive');
-    revoke(reason).catch(function(_promiseError){window.nxLog&&window.nxLog(_promiseError,'secure-sync');});
-    return false;
-  }
+  function syncSnapshot(snapshot){return !!(snapshot&&snapshot.active===true&&snapshot.status==='active');}
 
   window.NexoraSecureContent={
     version:VERSION,
@@ -389,26 +404,30 @@
     }catch(_e){window.nxLog&&window.nxLog(_e)}
   }
 
-  function scheduleExpiry(snapshot){
-    if(EXPIRY_TIMER){clearTimeout(EXPIRY_TIMER);EXPIRY_TIMER=null;}
+  function scheduleExpiry(snapshot,space){
+    var target=paidSpace(space);
+    var timer=EXPIRY_TIMERS[target];
+    if(timer){clearTimeout(timer);EXPIRY_TIMERS[target]=null;}
     if(!snapshot||snapshot.status!=='active'||!snapshot.ends_at)return;
     var delay=parseTime(snapshot.ends_at)-subscriptionClock(snapshot,false).now;
     if(!isFinite(delay)||delay<=0){
-      enforceExpiredAccess(snapshot,true);refreshSubscriptionUI();return;
+      enforceExpiredAccess(snapshot,true,target);if(target===paidSpace())refreshSubscriptionUI();return;
     }
-    EXPIRY_TIMER=setTimeout(function(){
-      var current=readSnapshot();
+    EXPIRY_TIMERS[target]=setTimeout(function(){
+      var current=readSnapshot(target);
       if(current.ends_at&&parseTime(current.ends_at)<=subscriptionClock(current,false).now){
-        enforceExpiredAccess(current,true);refreshSubscriptionUI();
+        enforceExpiredAccess(current,true,target);if(target===paidSpace())refreshSubscriptionUI();
       }else{
-        scheduleExpiry(current);
-        if(isOnline())fetchStatus(true).catch(function(_promiseError){window.nxLog&&window.nxLog(_promiseError,'promesse')});
+        scheduleExpiry(current,target);
+        if(isOnline())fetchStatus(true,target).catch(function(_promiseError){window.nxLog&&window.nxLog(_promiseError,'promesse')});
       }
     },Math.min(delay+250,2140000000));
   }
 
-  function writeSnapshot(snapshot){
+  function writeSnapshot(snapshot,space){
+    var target=paidSpace(space);
     snapshot=Object.assign({authenticated:false,active:false,status:'inactive',offline_eligible:false},snapshot||{});
+    snapshot.product_code=snapshot.product_code||target;
     var deviceNow=Date.now();
     if(snapshot.active===true&&snapshot.status==='active'){
       snapshot.offline_eligible=true;
@@ -424,16 +443,15 @@
       snapshot.offline_eligible=false;
     }
     try{
-      localStorage.setItem(CACHE_KEY,JSON.stringify(snapshot));
-      LEGACY_CACHE_KEYS.forEach(function(key){localStorage.setItem(key,JSON.stringify(snapshot));});
+      localStorage.setItem(subscriptionCacheKey(target),JSON.stringify(snapshot));
     }catch(_e){window.nxLog&&window.nxLog(_e)}
     try{if(window.NexoraSecureContent&&typeof window.NexoraSecureContent.syncSnapshot==='function')window.NexoraSecureContent.syncSnapshot(snapshot);}catch(_secureError){window.nxLog&&window.nxLog(_secureError)}
-    if(snapshot.active===true&&snapshot.status==='active')deliverRenewalNotice(snapshot);
+    if(snapshot.active===true&&snapshot.status==='active'&&target===paidSpace())deliverRenewalNotice(snapshot);
     if(snapshot.status==='expired'||snapshot.status==='revoked'){
       revokeSecureEntitlement(snapshot.status);
-      closePremiumViews();
+      if(target===paidSpace())closePremiumViews();
     }
-    scheduleExpiry(snapshot);
+    scheduleExpiry(snapshot,target);
     return snapshot;
   }
 
@@ -451,7 +469,6 @@
       status:normalizedStatus,
       authoritative:data.authoritative===true||data.version==='v250',
       source:data.source||'',
-      requested_product_code:data.requested_product_code||'',
       product_code:data.product_code||data.plan_code||'all',
       plan_code:data.plan_code||data.product_code||'',
       duration_months:Number(data.duration_months||0)||null,
@@ -477,36 +494,38 @@
     return snapshot;
   }
 
-  async function callStatus(client){
-    var canonical=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:'all'}),10000,'La vérification officielle de l’abonnement prend trop de temps.');
+  async function callStatus(client,space){
+    var target=paidSpace(space);
+    var canonical=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:target}),10000,'La vérification officielle de l’abonnement prend trop de temps.');
     if(canonical&&canonical.error)throw canonical.error;
     var raw=parseData(canonical&&canonical.data);
     raw.authoritative=true;raw.version='v264';
     return normalizeStatus(raw);
   }
 
-  async function fetchStatus(force){
-    if(!isOnline())return readSnapshot();
-    if(!force&&Date.now()-LAST_SERVER_CHECK<SERVER_CACHE_MS)return readSnapshot();
-    if(STATUS_PROMISE)return STATUS_PROMISE;
-    STATUS_PROMISE=(async function(){
+  async function fetchStatus(force,space){
+    var target=paidSpace(space);
+    if(!isOnline())return readSnapshot(target);
+    if(!force&&Date.now()-Number(LAST_SERVER_CHECK[target]||0)<SERVER_CACHE_MS)return readSnapshot(target);
+    if(STATUS_PROMISE[target])return STATUS_PROMISE[target];
+    STATUS_PROMISE[target]=(async function(){
       try{
         var client=await waitClient();
         var user=await currentUser(client);
         if(!user){
-          LAST_SERVER_CHECK=Date.now();
-          return writeSnapshot({authenticated:false,active:false,status:'not_connected',ends_at:null,server_verified_at:Date.now()});
+          LAST_SERVER_CHECK[target]=Date.now();
+          return writeSnapshot({authenticated:false,active:false,status:'not_connected',ends_at:null,server_verified_at:Date.now(),product_code:target},target);
         }
-        var status=await callStatus(client);
-        LAST_SERVER_CHECK=Date.now();
-        return writeSnapshot(status);
+        var status=await callStatus(client,target);
+        LAST_SERVER_CHECK[target]=Date.now();
+        return writeSnapshot(status,target);
       }catch(err){
-        var cached=cachedAccessStatus();
+        var cached=(function(){var snapshot=readSnapshot(target);return {allowed:snapshot.active===true&&snapshot.status==='active'&&snapshot.offline_eligible!==false,snapshot:snapshot};})();
         if(isNetworkError(err)&&cached.allowed)return cached.snapshot;
         throw err;
       }
     })();
-    try{return await STATUS_PROMISE;}finally{STATUS_PROMISE=null;}
+    try{return await STATUS_PROMISE[target];}finally{STATUS_PROMISE[target]=null;}
   }
 
   function statusData(){
@@ -653,14 +672,15 @@
   /* V517 — l'espace courant. Il n'est jamais demande a l'utilisateur quand
      le contexte le donne : un mur dans l'espace des eleves ouvre la grille
      eleves, un mur dans l'espace professionnel ouvre la grille pro. */
-  var ESPACE_COURANT='eleves';
   function espaceCourant(){return ESPACE_COURANT==='pro'?'pro':'eleves';}
   function poserEspace(espace){
     var neuf=String(espace||'')==='pro'?'pro':'eleves';
     if(neuf===ESPACE_COURANT)return;
     ESPACE_COURANT=neuf;
     SELECTED_PLAN=null;
-    try{renderCatalogUI();}catch(_e){window.nxLog&&window.nxLog(_e)}
+    LAST_SERVER_CHECK[neuf]=0;
+    try{renderCatalogUI();refreshSubscriptionUI();}catch(_e){window.nxLog&&window.nxLog(_e)}
+    if(isOnline())fetchStatus(true,neuf).then(function(){if(neuf===paidSpace())refreshSubscriptionUI();}).catch(function(_promiseError){window.nxLog&&window.nxLog(_promiseError,'space-status');});
   }
   function espaceDeviné(){
     try{
@@ -1205,7 +1225,7 @@
     if(result&&result.error)throw result.error;
     var data=parseData(result&&result.data);
     if(!data||data.success!==true)throw new Error((data&&data.message)||'Code non validé.');
-    var verified=await fetchSecureProductStatus(client,context);writeSnapshot(verified);refreshSubscriptionUI();return data;
+    var verified=await fetchSecureProductStatus(client,context);writeSnapshot(verified,espacePourContexte(context));refreshSubscriptionUI();return data;
   };
 
   window.nxRequireSubscriptionAccess=async function(context,onGranted){
@@ -1238,7 +1258,7 @@
       var status=null;
       try{status=await fetchSecureProductStatus(client,PENDING_CONTEXT);}catch(secureErr){throw secureErr;}
       if(status&&status.active===true&&status.status==='active'){
-        writeSnapshot(status);
+        writeSnapshot(status,espacePourContexte(PENDING_CONTEXT));
         await secureReady(status);
         return grantPendingAccess('');
       }
@@ -1527,3 +1547,4 @@
   });
   window.NexoraCourseGame={open:openChallenge,recordAttempt:recordAttempt,readContext:readContext,clearContext:clearContext};
 })();
+
