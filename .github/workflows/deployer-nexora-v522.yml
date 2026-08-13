@@ -1,0 +1,53 @@
+name: Deployer Nexora V522
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexora-v522-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Charger le depot
+        uses: actions/checkout@v4
+
+      - name: Verifier et extraire Nexora V522
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find . -maxdepth 1 -type f -name 'NEXORA_V522_ANDROID_VERCEL_COMPATIBLE*.zip' -print)
+          test "${#archives[@]}" -eq 1
+          archive="${archives[0]}"
+          echo "844a53e087958bda0af743de9457cac443325535b587f0f8cbcc7f617b769b0d  $archive" | sha256sum -c -
+          stage="$RUNNER_TEMP/nexora-v522"
+          mkdir -p "$stage"
+          unzip -q "$archive" -d "$stage"
+          for required in index.html package.json vercel.json service-worker.js manifest.json version.json api/content-key.js api/premium-library.js protected/manifest.json assets/js/nexora-academy-v521.js; do
+            test -f "$stage/$required"
+          done
+          test "$(find "$stage" -type f | wc -l)" -eq 78
+
+      - name: Remplacer entierement V504 par V522
+        shell: bash
+        run: |
+          set -euo pipefail
+          stage="$RUNNER_TEMP/nexora-v522"
+          find . -mindepth 1 -maxdepth 1 ! -name .git ! -name .github -exec rm -rf -- {} +
+          cp -a "$stage/." .
+          rm -f .github/workflows/deployer-nexora-v504.yml
+
+      - name: Publier V522 dans la branche principale
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Deployer Nexora V522 finale"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
