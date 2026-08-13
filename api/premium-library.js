@@ -57,7 +57,7 @@ async function activeSubscription(url, key, token) {
   const response = await fetchWithTimeout(url + "/rest/v1/rpc/nexora_my_subscription_status_v264", {
     method: "POST",
     headers: { apikey: key, Authorization: "Bearer " + token, "Content-Type": "application/json" },
-    body: JSON.stringify({ p_product_code: "all" })
+    body: JSON.stringify({ p_product_code: "eleves" })
   });
   if (!response.ok) throw new Error("SUBSCRIPTION_CHECK_FAILED");
   const data = decodeResult(await readJson(response));

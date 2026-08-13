@@ -1,11 +1,11 @@
 {
-  "version": "v502-20260808-1",
-  "generated_at": "2026-08-08T23:59:00.000Z",
+  "version": "v523-20260813-1",
+  "generated_at": "2026-08-13T14:51:50.696Z",
   "entries": [
     {
       "path": "assets/js/nx-v157-primary-school-script.js",
       "url": "/protected/files/ab3f1a6cceba9724f3a5d36d.nxe",
-      "size": 315866
+      "size": 316044
     },
     {
       "path": "modules/bac/index.html",

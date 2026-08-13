@@ -1,10 +1,10 @@
-/* Nexora V522 — coque d'ouverture rapide et cache final cohérent.
-   Différence avec la V520.1 : le document n'est plus retéléchargé à chaque
+/* Nexora V524 — coque d'ouverture rapide et cache final cohérent.
+   Le document n'est plus retéléchargé à chaque
    lancement. On lit d'abord version.json (467 octets, au plus une fois toutes
    les 6 heures) ; le document n'est repris que si le numéro de version a
    réellement changé. */
 
-const CACHE_NAME = "nexora-v522-coque-1";
+const CACHE_NAME = "nexora-v524-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;

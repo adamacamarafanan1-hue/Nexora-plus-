@@ -14,7 +14,7 @@
      ================================================================== */
 
   /* --- V518 : declarations retrouvees dans le monolithe V504.1 --- */
-  var CACHE_KEY='nexora_subscription_snapshot_v6';
+  var CACHE_KEY='nexora_subscription_snapshot_v7';
   var LEGACY_CACHE_KEYS=['nexora_subscription_snapshot_v5','nexora_subscription_snapshot_v4','nexora_subscription_snapshot_v3'];
   var CLOCK_ROLLBACK_TOLERANCE_MS=5*60*1000;
   var NOTICE_STORAGE_PREFIX='nexora_subscription_notice_v250_';
@@ -253,7 +253,7 @@
 
   /* ============ fin de la boite a outils retrouvee ============ */
 
-  var VERSION='v502-20260808-1';
+  var VERSION='v523-20260813-1';
   var DB_NAME='nexora-secure-content-v211';
   var DB_VERSION=1;
   var ENTITLEMENT_ID='current';
@@ -308,7 +308,7 @@
 
   async function loadManifest(){if(manifestPromise)return manifestPromise;manifestPromise=nxSecureFetchV506(MANIFEST_URL,{cache:'no-store',credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('Manifest sécurisé indisponible.');return r.json();}).then(function(m){if(!m||m.version!==VERSION||!Array.isArray(m.entries))throw new Error('Manifest sécurisé invalide.');m.byPath={};m.entries.forEach(function(e){m.byPath[normalizePath(e.path)]=e;});return m;}).catch(function(err){manifestPromise=null;throw err;});return manifestPromise;}
 
-  async function issueKey(snapshot){var session=await getSession();if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour activer les contenus.');var keys=await deviceKeys();var response=await nxSecureFetchV506('/api/content-key',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({public_key_jwk:keys.public_jwk,content_version:VERSION,device_id:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))})});var data={};try{data=await response.json();}catch(_e){window.nxLog&&window.nxLog(_e)}if(!response.ok||data.success!==true)throw errorMessage(data.message||'Abonnement non autorisé pour les contenus protégés.');var wrapped=b64ToBytes(data.wrapped_key);var contentKey=await crypto.subtle.unwrapKey('raw',wrapped,keys.private_key,{name:'RSA-OAEP'},{name:'AES-GCM'},false,['decrypt']);var serverNow=Date.parse(data.server_now||'')||Date.now(),ends=Date.parse(data.ends_at||'')||0;if(!ends||ends<=serverNow)throw errorMessage('La date d’expiration de l’abonnement est invalide.');var record={id:ENTITLEMENT_ID,version:VERSION,user_id:String(data.user_id||session.user.id),content_key:contentKey,starts_at:data.starts_at||null,ends_at:data.ends_at,ends_at_ms:ends,server_now_ms:serverNow,verified_device_ms:Date.now(),last_device_seen_ms:Date.now(),last_trusted_now_ms:serverNow,issued_at:new Date().toISOString()};await dbPut('entitlements',record);memoryRecord=record;window.dispatchEvent(new CustomEvent('nexora:premium-ready',{detail:{ends_at:record.ends_at}}));return record;}
+  async function issueKey(snapshot){var session=await getSession();if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour activer les contenus.');var keys=await deviceKeys();var response=await nxSecureFetchV506('/api/content-key',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({public_key_jwk:keys.public_jwk,content_version:VERSION,product_code:String(snapshot&&snapshot.product_code||snapshot&&snapshot.plan_code||'').toLowerCase(),device_id:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))})});var data={};try{data=await response.json();}catch(_e){window.nxLog&&window.nxLog(_e)}if(!response.ok||data.success!==true)throw errorMessage(data.message||'Abonnement non autorisé pour les contenus protégés.');var wrapped=b64ToBytes(data.wrapped_key);var contentKey=await crypto.subtle.unwrapKey('raw',wrapped,keys.private_key,{name:'RSA-OAEP'},{name:'AES-GCM'},false,['decrypt']);var serverNow=Date.parse(data.server_now||'')||Date.now(),ends=Date.parse(data.ends_at||'')||0;if(!ends||ends<=serverNow)throw errorMessage('La date d’expiration de l’abonnement est invalide.');var record={id:ENTITLEMENT_ID,version:VERSION,user_id:String(data.user_id||session.user.id),content_key:contentKey,starts_at:data.starts_at||null,ends_at:data.ends_at,ends_at_ms:ends,server_now_ms:serverNow,verified_device_ms:Date.now(),last_device_seen_ms:Date.now(),last_trusted_now_ms:serverNow,issued_at:new Date().toISOString()};await dbPut('entitlements',record);memoryRecord=record;window.dispatchEvent(new CustomEvent('nexora:premium-ready',{detail:{ends_at:record.ends_at}}));return record;}
 
   async function activate(snapshot){if(activationPromise)return activationPromise;activationPromise=(async function(){var existing=await loadRecord();if(existing&&await validateRecord(existing,true)){var incomingEnd=Date.parse(snapshot&&snapshot.ends_at||'')||0;if(!incomingEnd||incomingEnd<=Number(existing.ends_at_ms||0))return existing;}if(!online())throw errorMessage('Connexion Internet nécessaire pour activer ce téléphone.');return issueKey(snapshot||{});})();try{return await activationPromise;}finally{activationPromise=null;}}
 
@@ -1221,8 +1221,7 @@
     try{
       var client=await waitClient();
       var status=null;
-      try{status=await fetchSecureProductStatus(client,PENDING_CONTEXT);}catch(secureErr){if(!isMissingRpc(secureErr))throw secureErr;}
-      if(!status||status.active!==true)status=await fetchStatus(true);
+      try{status=await fetchSecureProductStatus(client,PENDING_CONTEXT);}catch(secureErr){throw secureErr;}
       if(status&&status.active===true&&status.status==='active'){
         writeSnapshot(status);
         await secureReady(status);

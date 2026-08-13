@@ -1,6 +1,6 @@
 import { createHash, webcrypto } from "node:crypto";
 
-const CONTENT_VERSION = "v502-20260808-1";
+const CONTENT_VERSION = "v523-20260813-1";
 const MAX_BODY_BYTES = 16 * 1024;
 const FETCH_TIMEOUT_MS = 8_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -8,7 +8,14 @@ const RATE_LIMIT_MAX_REQUESTS = 20;
 const DEFAULT_SUPABASE_URL = "https://lzypxingcykvgxdifccq.supabase.co";
 const DEFAULT_PUBLISHABLE_KEY = "sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY";
 const rateLimitBuckets = new Map();
-const RPCS = [["nexora_my_subscription_status_v264", { p_product_code: "all" }]];
+
+function normalizeProduct(value) {
+  const product = String(value || "").trim().toLowerCase();
+  if (["modules", "pro", "professional", "professionnel"].includes(product)) return "pro";
+  if (["academy", "orientation", "subjects", "novels", "eleves", "élèves", "student"].includes(product)) return "eleves";
+  if (product === "adams") return "adams";
+  return "";
+}
 
 function decodeResult(value) {
   let current = value;
@@ -115,32 +122,26 @@ function consumeRateLimit(request, token) {
   };
 }
 
-async function activeSubscription(url, publishableKey, token) {
-  for (const item of RPCS) {
-    const rpc = item[0];
-    const response = await fetchWithTimeout(url + "/rest/v1/rpc/" + rpc, {
-      method: "POST",
-      headers: {
-        apikey: publishableKey,
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(item[1])
-    });
-    if (!response.ok) {
-      if (response.status === 400 || response.status === 404) continue;
-      throw new Error("SUBSCRIPTION_CHECK_FAILED");
-    }
-    const data = decodeResult(await readJson(response));
-    const serverNow = Date.parse(data.server_now || "") || Date.now();
-    const endsAt = Date.parse(data.ends_at || "") || 0;
-    if (data.active === true && String(data.status || "") === "active" && endsAt > serverNow) {
-      return {
-        starts_at: data.starts_at || null,
-        ends_at: new Date(endsAt).toISOString(),
-        server_now: new Date(serverNow).toISOString()
-      };
-    }
+async function activeSubscription(url, publishableKey, token, productCode) {
+  const response = await fetchWithTimeout(url + "/rest/v1/rpc/nexora_my_subscription_status_v264", {
+    method: "POST",
+    headers: {
+      apikey: publishableKey,
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ p_product_code: productCode })
+  });
+  if (!response.ok) throw new Error("SUBSCRIPTION_CHECK_FAILED");
+  const data = decodeResult(await readJson(response));
+  const serverNow = Date.parse(data.server_now || "") || Date.now();
+  const endsAt = Date.parse(data.ends_at || "") || 0;
+  if (data.active === true && String(data.status || "") === "active" && endsAt > serverNow) {
+    return {
+      starts_at: data.starts_at || null,
+      ends_at: new Date(endsAt).toISOString(),
+      server_now: new Date(serverNow).toISOString()
+    };
   }
   return null;
 }
@@ -167,7 +168,8 @@ export default async function handler(request, response) {
       return response.status(429).json({ success: false, message: "Trop de demandes rapprochées. Réessaie dans un instant." });
     }
     const body = requestBody(request);
-    if (body.content_version !== CONTENT_VERSION || !validPublicJwk(body.public_key_jwk)) {
+    const productCode = normalizeProduct(body.product_code);
+    if (body.content_version !== CONTENT_VERSION || !productCode || !validPublicJwk(body.public_key_jwk)) {
       return response.status(400).json({ success: false, message: "Demande de contenu invalide." });
     }
     const url = String(process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
@@ -184,8 +186,8 @@ export default async function handler(request, response) {
     const user = await readJson(userResponse);
     if (!user || !user.id) return response.status(401).json({ success: false, message: "Compte Nexora introuvable." });
 
-    const subscription = await activeSubscription(url, publishableKey, token);
-    if (!subscription) return response.status(403).json({ success: false, message: "Aucun abonnement Nexora actif." });
+    const subscription = await activeSubscription(url, publishableKey, token, productCode);
+    if (!subscription) return response.status(403).json({ success: false, message: "Cet espace Nexora n’est pas actif sur ce compte." });
 
     // Les navigateurs exportent la clé publique RSA avec key_ops=["wrapKey"]
     // lorsque la paire locale sert à wrapKey/unwrapKey. Le chiffrement RSA-OAEP
