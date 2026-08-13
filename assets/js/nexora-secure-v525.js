@@ -1,5 +1,7 @@
 
-/* NEXORA V506.0 — abonnement et contenu sécurisé, sans cache de cours/jeux */
+/* NEXORA V525 — abonnement et contenu sécurisé, sans cache de cours/jeux.
+   Correction : la vérification locale ne déclenche plus une demande serveur
+   vide avant de connaître l'espace Élèves ou Pro. */
 /* ===== inline-7 ===== */
 (function(){
   'use strict';
@@ -308,12 +310,24 @@
 
   async function loadManifest(){if(manifestPromise)return manifestPromise;manifestPromise=nxSecureFetchV506(MANIFEST_URL,{cache:'no-store',credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('Manifest sécurisé indisponible.');return r.json();}).then(function(m){if(!m||m.version!==VERSION||!Array.isArray(m.entries))throw new Error('Manifest sécurisé invalide.');m.byPath={};m.entries.forEach(function(e){m.byPath[normalizePath(e.path)]=e;});return m;}).catch(function(err){manifestPromise=null;throw err;});return manifestPromise;}
 
-  async function issueKey(snapshot){var session=await getSession();if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour activer les contenus.');var keys=await deviceKeys();var response=await nxSecureFetchV506('/api/content-key',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({public_key_jwk:keys.public_jwk,content_version:VERSION,product_code:String(snapshot&&snapshot.product_code||snapshot&&snapshot.plan_code||'').toLowerCase(),device_id:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))})});var data={};try{data=await response.json();}catch(_e){window.nxLog&&window.nxLog(_e)}if(!response.ok||data.success!==true)throw errorMessage(data.message||'Abonnement non autorisé pour les contenus protégés.');var wrapped=b64ToBytes(data.wrapped_key);var contentKey=await crypto.subtle.unwrapKey('raw',wrapped,keys.private_key,{name:'RSA-OAEP'},{name:'AES-GCM'},false,['decrypt']);var serverNow=Date.parse(data.server_now||'')||Date.now(),ends=Date.parse(data.ends_at||'')||0;if(!ends||ends<=serverNow)throw errorMessage('La date d’expiration de l’abonnement est invalide.');var record={id:ENTITLEMENT_ID,version:VERSION,user_id:String(data.user_id||session.user.id),content_key:contentKey,starts_at:data.starts_at||null,ends_at:data.ends_at,ends_at_ms:ends,server_now_ms:serverNow,verified_device_ms:Date.now(),last_device_seen_ms:Date.now(),last_trusted_now_ms:serverNow,issued_at:new Date().toISOString()};await dbPut('entitlements',record);memoryRecord=record;window.dispatchEvent(new CustomEvent('nexora:premium-ready',{detail:{ends_at:record.ends_at}}));return record;}
+  function secureAccessProduct(snapshot){
+    snapshot=snapshot&&typeof snapshot==='object'?snapshot:{};
+    var values=[snapshot.requested_product_code,snapshot.product_code,snapshot.plan_code,PENDING_CONTEXT];
+    for(var i=0;i<values.length;i++){
+      var value=String(values[i]||'').trim().toLowerCase();
+      if(['modules','pro','professional','professionnel'].indexOf(value)>-1)return 'pro';
+      if(['academy','orientation','subjects','novels','eleves','élèves','student'].indexOf(value)>-1)return 'eleves';
+      if(value==='adams')return 'adams';
+    }
+    return '';
+  }
+
+  async function issueKey(snapshot){var session=await getSession();if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour activer les contenus.');var product=secureAccessProduct(snapshot);if(!product)throw errorMessage('Espace Nexora non reconnu. Fermez cette fenêtre puis ouvrez de nouveau le cours.');var keys=await deviceKeys();var response=await nxSecureFetchV506('/api/content-key',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({public_key_jwk:keys.public_jwk,content_version:VERSION,product_code:product,device_id:(crypto.randomUUID?crypto.randomUUID():String(Date.now()))})});var data={};try{data=await response.json();}catch(_e){window.nxLog&&window.nxLog(_e)}if(!response.ok||data.success!==true)throw errorMessage(data.message||'Abonnement non autorisé pour les contenus protégés.');var wrapped=b64ToBytes(data.wrapped_key);var contentKey=await crypto.subtle.unwrapKey('raw',wrapped,keys.private_key,{name:'RSA-OAEP'},{name:'AES-GCM'},false,['decrypt']);var serverNow=Date.parse(data.server_now||'')||Date.now(),ends=Date.parse(data.ends_at||'')||0;if(!ends||ends<=serverNow)throw errorMessage('La date d’expiration de l’abonnement est invalide.');var record={id:ENTITLEMENT_ID,version:VERSION,user_id:String(data.user_id||session.user.id),content_key:contentKey,starts_at:data.starts_at||null,ends_at:data.ends_at,ends_at_ms:ends,server_now_ms:serverNow,verified_device_ms:Date.now(),last_device_seen_ms:Date.now(),last_trusted_now_ms:serverNow,issued_at:new Date().toISOString()};await dbPut('entitlements',record);memoryRecord=record;window.dispatchEvent(new CustomEvent('nexora:premium-ready',{detail:{ends_at:record.ends_at}}));return record;}
 
   async function activate(snapshot){if(activationPromise)return activationPromise;activationPromise=(async function(){var existing=await loadRecord();if(existing&&await validateRecord(existing,true)){var incomingEnd=Date.parse(snapshot&&snapshot.ends_at||'')||0;if(!incomingEnd||incomingEnd<=Number(existing.ends_at_ms||0))return existing;}if(!online())throw errorMessage('Connexion Internet nécessaire pour activer ce téléphone.');return issueKey(snapshot||{});})();try{return await activationPromise;}finally{activationPromise=null;}}
 
-  async function entitlement(){var record=await loadRecord();if(record&&await validateRecord(record,true))return record;if(online())return activate({});throw errorMessage('Connexion Internet nécessaire pour ouvrir ce contenu premium.');}
-  async function hasValidEntitlement(){try{await entitlement();return true;}catch(_e){return false;}}
+  async function entitlement(){var record=await loadRecord();if(record&&await validateRecord(record,true))return record;if(online())return activate({requested_product_code:PENDING_CONTEXT});throw errorMessage('Connexion Internet nécessaire pour ouvrir ce contenu premium.');}
+  async function hasValidEntitlement(){try{var record=await loadRecord();return !!(record&&await validateRecord(record,true));}catch(_e){return false;}}
 
   async function encryptedBytes(entry){if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours ou ce jeu.');var target=/^https?:/i.test(String(entry.url||''))?entry.url:'/'+normalizePath(entry.url);var request=new Request(target,{credentials:'omit',cache:'no-store'});var response=await nxSecureFetchV506(request,{cache:'no-store',credentials:'same-origin'});if(!response||!response.ok)throw errorMessage('Chargement sécurisé impossible ('+(response&&response.status||0)+').');return new Uint8Array(await response.arrayBuffer());}
   async function decrypt(path){path=normalizePath(path);var record=await entitlement(),manifest=await loadManifest(),entry=manifest.byPath[path];if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);var packed=await encryptedBytes(entry);if(packed.length<33||String.fromCharCode.apply(null,packed.slice(0,4))!=='NXE1')throw errorMessage('Paquet sécurisé invalide.');var iv=packed.slice(4,16),cipher=packed.slice(16),plain;try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(path)},record.content_key,cipher);}finally{try{packed.fill(0);cipher.fill(0);}catch(_wipeError){}}return new Uint8Array(plain);}
@@ -437,6 +451,7 @@
       status:normalizedStatus,
       authoritative:data.authoritative===true||data.version==='v250',
       source:data.source||'',
+      requested_product_code:data.requested_product_code||'',
       product_code:data.product_code||data.plan_code||'all',
       plan_code:data.plan_code||data.product_code||'',
       duration_months:Number(data.duration_months||0)||null,
@@ -1512,4 +1527,3 @@
   });
   window.NexoraCourseGame={open:openChallenge,recordAttempt:recordAttempt,readContext:readContext,clearContext:clearContext};
 })();
-

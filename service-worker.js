@@ -1,10 +1,10 @@
-/* Nexora V524 — coque d'ouverture rapide et cache final cohérent.
+/* Nexora V525 — coque d'ouverture rapide et mise à jour critique de l'accès.
    Le document n'est plus retéléchargé à chaque
    lancement. On lit d'abord version.json (467 octets, au plus une fois toutes
    les 6 heures) ; le document n'est repris que si le numéro de version a
    réellement changé. */
 
-const CACHE_NAME = "nexora-v524-coque-1";
+const CACHE_NAME = "nexora-v525-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;
@@ -17,7 +17,11 @@ const PUBLIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PUBLIC_ASSETS)));
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(PUBLIC_ASSETS))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("message", (event) => {
@@ -31,6 +35,11 @@ self.addEventListener("activate", (event) => {
         .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
         .map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: "window", includeUncontrolled: true }))
+      .then((clients) => Promise.all(clients.map((client) => {
+        if (typeof client.navigate !== "function") return null;
+        return client.navigate(client.url).catch(() => null);
+      })))
   );
 });
 
