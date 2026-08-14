@@ -1,0 +1,57 @@
+name: Finaliser V527.4
+
+on:
+  push:
+    branches: [repair-v5274-bac-cours-20260814]
+    paths: [.github/workflows/refine-v5274.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nettoyer les deux derniers détails
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('assets/js/nexora-secure-v525.js')
+          s=p.read_text(encoding='utf-8')
+          old="var refreshed=await client.auth.refreshSession();"
+          new="var refreshed=await withTimeout(client.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');"
+          if s.count(old)!=1:
+              raise SystemExit(f'Rafraîchissement abonnement inattendu: {s.count(old)}')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('service-worker.js')
+          s=p.read_text(encoding='utf-8')
+          old='lancement. On lit d’abord version.json (467 octets, au plus une fois toutes\n   les 6 heures) ; le document n’est repris que si le numéro de version a'
+          # Le fichier source utilise les apostrophes ASCII dans ce commentaire.
+          if old not in s:
+              old="lancement. On lit d'abord version.json (467 octets, au plus une fois toutes\n   les 6 heures) ; le document n'est repris que si le numéro de version a"
+              new="lancement. On lit d'abord version.json (fichier léger, au plus une fois toutes\n   les 15 minutes) ; le document n'est repris que si le numéro de version a"
+          else:
+              new='lancement. On lit d’abord version.json (fichier léger, au plus une fois toutes\n   les 15 minutes) ; le document n’est repris que si le numéro de version a'
+          if old not in s:
+              raise SystemExit('Commentaire du service worker inattendu')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          node --check assets/js/nexora-secure-v525.js
+          grep -q '15 minutes' service-worker.js
+          git diff --check
+      - name: Enregistrer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/js/nexora-secure-v525.js service-worker.js
+          git commit -m 'Finaliser la fiabilité de session V527.4'
+          git push origin HEAD:repair-v5274-bac-cours-20260814
