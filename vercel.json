@@ -152,5 +152,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/secure-content.js": {
+      "includeFiles": "protected/files/**"
+    }
+  }
 }
