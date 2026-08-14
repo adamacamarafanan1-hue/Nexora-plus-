@@ -196,6 +196,8 @@
    sans aucun style.
    ═══════════════════════════════════════════════════════════════════════ */
 
+.nx-course-sequence{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 2px;padding:12px 14px;border-left:4px solid var(--sc,#2F77C9);border-radius:6px;background:#EEF3F8;color:#16324F}.nx-course-sequence b{font-size:14px}.nx-course-sequence span{font-size:12px;font-weight:700;color:#5F6976}.nx-lecon-v524-objectif{border-left-color:var(--lec-accent);background:#F5F9FF}.nx-lecon-v524-exemple,.nx-lecon-v524-methode{border-left-color:var(--lec-accent)}[data-theme="dark"] .nx-course-sequence{background:#171A1E;color:#DDE4ED}[data-theme="dark"] .nx-lecon-v524-objectif{background:#101A26}@media(max-width:520px){.nx-course-sequence{align-items:flex-start;flex-direction:column;gap:3px}}
+
 .nx-lecon-v524{
   --lec-encre:#21252B;
   --lec-encre-douce:#4A515A;
