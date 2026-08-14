@@ -1,10 +1,10 @@
-/* Nexora V525 — coque d'ouverture rapide et cache final cohérent.
+/* Nexora V526 — cache d'accès renouvelé et contrôleur sécurisé toujours frais.
    Le document n'est plus retéléchargé à chaque
    lancement. On lit d'abord version.json (467 octets, au plus une fois toutes
    les 6 heures) ; le document n'est repris que si le numéro de version a
    réellement changé. */
 
-const CACHE_NAME = "nexora-v525-coque-2";
+const CACHE_NAME = "nexora-v526-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;
@@ -17,7 +17,11 @@ const PUBLIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PUBLIC_ASSETS)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(PUBLIC_ASSETS);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("message", (event) => {
@@ -122,12 +126,17 @@ self.addEventListener("fetch", (event) => {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
       const cached = await cache.match(event.request);
-      if (cached) return cached;
-      const reponse = await fetch(event.request, { cache: "reload" });
-      if (reponse && reponse.ok) {
-        try { await cache.put(event.request, reponse.clone()); } catch (_erreur) {}
+      try {
+        const reponse = await fetch(event.request, { cache: "no-store" });
+        if (reponse && reponse.ok) {
+          try { await cache.put(event.request, reponse.clone()); } catch (_erreur) {}
+          return reponse;
+        }
+      } catch (_erreur) {
+        if (cached) return cached;
+        throw _erreur;
       }
-      return reponse;
+      return cached || fetch(event.request, { cache: "no-store" });
     })());
     return;
   }
