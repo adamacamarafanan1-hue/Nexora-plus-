@@ -1,0 +1,85 @@
+name: Préparer V527.4 BAC et cours
+
+on:
+  push:
+    branches: [repair-v5274-bac-cours-20260814]
+    paths: [.github/workflows/repair-v5274-bac-cours.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Corriger les fichiers canoniques
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          changes={
+            '<meta content="v527.3-pro-modules" name="nexora-build"/>':'<meta content="v527.4-bac-cours" name="nexora-build"/>',
+            '<meta content="V527.3" name="nexora-release"/>':'<meta content="V527.4" name="nexora-release"/>',
+            '<meta content="V527.3 — ouverture des 22 modules Pro fiabilisée" name="nexora-version"/>':'<meta content="V527.4 — BAC plein écran et chargement des cours fiabilisés" name="nexora-version"/>',
+            "./assets/js/nexora-secure-v525.js'":"./assets/js/nexora-secure-v525.js?v=527.4'",
+            './assets/css/nexora-academy-v524.css?v=527.2':'./assets/css/nexora-academy-v524.css?v=527.4',
+            './assets/js/nexora-academy-v524.js?v=527.2':'./assets/js/nexora-academy-v524.js?v=527.4',
+            './service-worker.js?v=527.1':'./service-worker.js?v=527.4'
+          }
+          for old,new in changes.items():
+            if old not in s: raise SystemExit('Marqueur absent: '+old)
+            s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('assets/js/nexora-secure-v525.js'); s=p.read_text(encoding='utf-8')
+          old="if(value==='modules'||value==='pro'||value==='professional')return 'pro';"
+          new="if(value==='modules'||value==='pro'||value==='professional'||value==='professionnel')return 'pro';"
+          if s.count(old)!=1: raise SystemExit('Alias Pro inattendu')
+          s=s.replace(old,new,1)
+          old="var c=window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;\n      if(!c||!c.auth)return null;"
+          new="var c=null;\n      try{c=await waitClient();}catch(_waitClientError){window.nxLog&&window.nxLog(_waitClientError,'secure-content-client');}\n      if(!c||!c.auth)return null;"
+          if s.count(old)!=1: raise SystemExit('Initialisation session inattendue')
+          s=s.replace(old,new,1)
+          pairs=[
+            ("var forced=await c.auth.refreshSession();","var forced=await withTimeout(c.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');"),
+            ("var r=await c.auth.getSession();","var r=await withTimeout(c.auth.getSession(),8000,'La lecture de la session Nexora prend trop de temps.');"),
+            ("var refreshed=await c.auth.refreshSession();","var refreshed=await withTimeout(c.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');"),
+            ("response=await client.auth.getSession();","response=await withTimeout(client.auth.getSession(),8000,'La lecture de la session Nexora prend trop de temps.');"),
+            ("response=await client.auth.refreshSession();","response=await withTimeout(client.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');")
+          ]
+          for old,new in pairs: s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('service-worker.js'); s=p.read_text(encoding='utf-8')
+          s=s.replace('/* Nexora V527.3 — cache renouvelé après réparation des 22 modules Pro.','/* Nexora V527.4 — cache renouvelé après correction BAC et chargement sécurisé.',1)
+          s=s.replace('const CACHE_NAME = "nexora-v527-pro-1";','const CACHE_NAME = "nexora-v5274-bac-cours-1";',1)
+          s=s.replace('const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;','const DELAI_CONTROLE_MS = 15 * 60 * 1000;',1)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('version.json'); v=json.loads(p.read_text(encoding='utf-8'))
+          v.update({'version':'V527.4','message':'Nexora V527.4 : BAC en plein écran et ouverture des cours fiabilisée avec session sécurisée rafraîchie.','critical':True,'updated_at':'2026-08-14T19:15:00.000Z','update_system':'forced-service-worker-v527.4-bac-cours-session','subscription':'supabase-v527.4-session-wait-timeout-refresh','secure_content':'nxe-v525-protocol-v527.4-session-ready-server-authority','lecons':'lecture-v527.4-bac-fullscreen-course-loader'})
+          p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+          node --check assets/js/nexora-secure-v525.js
+          node --check assets/js/nexora-academy-v524.js
+          grep -q 'nexora-academy-v524.css?v=527.4' index.html
+          grep -q 'nexora-secure-v525.js?v=527.4' index.html
+          grep -q 'service-worker.js?v=527.4' index.html
+          grep -q '"version": "V527.4"' version.json
+          git diff --check
+      - name: Enregistrer sur la branche de réparation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html assets/js/nexora-secure-v525.js service-worker.js version.json
+          git commit -m 'Réparer BAC et chargement des cours V527.4'
+          git push origin HEAD:repair-v5274-bac-cours-20260814
