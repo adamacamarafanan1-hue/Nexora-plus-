@@ -1,0 +1,217 @@
+from pathlib import Path
+import json
+import re
+
+secure_path = Path('assets/js/nexora-secure-v525.js')
+academy_path = Path('assets/js/nexora-academy-v524.js')
+css_path = Path('assets/css/nexora-academy-v524.css')
+index_path = Path('index.html')
+sw_path = Path('service-worker.js')
+version_path = Path('version.json')
+
+secure = secure_path.read_text(encoding='utf-8')
+academy = academy_path.read_text(encoding='utf-8')
+css = css_path.read_text(encoding='utf-8')
+index = index_path.read_text(encoding='utf-8')
+sw = sw_path.read_text(encoding='utf-8')
+
+# 1) Session sécurisée fraîche + délai réaliste + un retry après 401.
+if 'NX_SECURE_FETCH_TIMEOUT_MS=45000' not in secure:
+    if 'NX_SECURE_FETCH_TIMEOUT_MS=20000' not in secure:
+        raise SystemExit('Timeout sécurisé attendu introuvable')
+    secure = secure.replace('NX_SECURE_FETCH_TIMEOUT_MS=20000', 'NX_SECURE_FETCH_TIMEOUT_MS=45000', 1)
+
+session_pattern = re.compile(
+    r"  async function getSession\(\)\{.*?\n  \}\n\n  async function requireSession\(\)\{.*?\n  \}",
+    re.S,
+)
+session_replacement = '''  async function getSession(forceRefresh){
+    try{
+      var c=window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;
+      if(!c||!c.auth)return null;
+      if(forceRefresh===true&&typeof c.auth.refreshSession==='function'){
+        try{
+          var forced=await c.auth.refreshSession();
+          var forcedSession=forced&&forced.data&&forced.data.session||null;
+          if(forcedSession&&forcedSession.access_token&&forcedSession.user)return forcedSession;
+        }catch(_forceError){window.nxLog&&window.nxLog(_forceError,'secure-content-refresh')}
+      }
+      var r=await c.auth.getSession();
+      var session=r&&r.data&&r.data.session||null;
+      var expiresAt=Number(session&&session.expires_at||0)*1000;
+      if(session&&session.access_token&&session.user&&(!expiresAt||expiresAt>Date.now()+60000))return session;
+      if(typeof c.auth.refreshSession==='function'){
+        try{
+          var refreshed=await c.auth.refreshSession();
+          session=refreshed&&refreshed.data&&refreshed.data.session||null;
+          if(session&&session.access_token&&session.user)return session;
+        }catch(_refreshError){window.nxLog&&window.nxLog(_refreshError,'secure-content-refresh')}
+      }
+      return null;
+    }catch(_e){window.nxLog&&window.nxLog(_e,'secure-content-session');return null;}
+  }
+
+  async function requireSession(forceRefresh){
+    if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours.');
+    var session=await getSession(forceRefresh===true);
+    if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour ouvrir ce contenu.');
+    return session;
+  }'''
+if 'async function getSession(forceRefresh)' not in secure:
+    secure, count = session_pattern.subn(session_replacement, secure, count=1)
+    if count != 1:
+        raise SystemExit(f'Bloc session sécurisé non remplacé: {count}')
+
+secure = secure.replace('var session=await requireSession();', 'var session=await requireSession(false);', 1)
+
+if 'response&&response.status===401' not in secure:
+    old_request = """    var response=await nxSecureFetchV506('/api/secure-content',{
+      method:'POST',credentials:'same-origin',cache:'no-store',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({content_version:VERSION,path:path})
+    });"""
+    new_request = """    async function requestSecureBytes(activeSession){
+      return nxSecureFetchV506('/api/secure-content',{
+        method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+activeSession.access_token},
+        body:JSON.stringify({content_version:VERSION,path:path})
+      });
+    }
+    var response=await requestSecureBytes(session);
+    if(response&&response.status===401){
+      session=await requireSession(true);
+      response=await requestSecureBytes(session);
+    }"""
+    if old_request not in secure:
+        raise SystemExit('Requête secure-content attendue introuvable')
+    secure = secure.replace(old_request, new_request, 1)
+
+# 2) Contrôleurs BAC/Brevet historiques restaurés dans le bundle Académie.
+controllers = r'''
+/* ===== V527.2 · contrôleurs BAC et Brevet restaurés dans le bundle Académie ===== */
+(function(){
+  'use strict';
+  if(window.NexoraBac&&window.NexoraDixieme)return;
+  function el(id){return document.getElementById(id)}
+  function notify(message){try{if(window.NexoraApp&&typeof window.NexoraApp.notify==='function')return window.NexoraApp.notify(message);if(typeof window.toast==='function')window.toast(message)}catch(_e){window.nxLog&&window.nxLog(_e)}}
+  function resolver(){var r=window.NexoraAcademyContentV271;if(!r||typeof r.mountFrame!=='function')throw new Error('Chargeur officiel de l’Académie indisponible.');return r}
+
+  function ensureBacShell(){
+    var viewer=el('nxBacAcademyViewer');if(viewer)return viewer;
+    viewer=document.createElement('section');viewer.id='nxBacAcademyViewer';viewer.className='nx-bac-viewer-v90';viewer.hidden=true;viewer.setAttribute('role','dialog');viewer.setAttribute('aria-modal','true');viewer.setAttribute('aria-label','Matières BAC');
+    viewer.innerHTML='<header class="nx-bac-head-v90"><button type="button" class="nx-bac-close-v90" id="nxBacCloseButton" aria-label="Retour à l’Académie Nexora">←</button><div class="nx-bac-head-copy-v90"><span>Académie Nexora</span><h2>Matières BAC — Adams BAC Guinée</h2></div><button type="button" class="nx-bac-reload-v90" id="nxBacReloadButton">Actualiser</button></header><div class="nx-bac-frame-wrap-v90"><div class="nx-bac-loader-v90" id="nxBacLoader"><div class="nx-bac-loader-inner-v90"><span class="nx-bac-spinner-v90" aria-hidden="true"></span><b>Ouverture des matières BAC…</b></div></div><iframe id="nxBacAcademyFrame" loading="eager" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads" allow="microphone; fullscreen" title="Matières BAC — Adams BAC Guinée"></iframe></div>';
+    document.body.appendChild(viewer);return viewer;
+  }
+  var bacLastFocus=null;
+  function bacLoader(visible,message){var loader=el('nxBacLoader');if(!loader)return;loader.hidden=!visible;var label=loader.querySelector('b');if(label&&message)label.textContent=message}
+  function bacFrame(force){
+    ensureBacShell();var frame=el('nxBacAcademyFrame');if(!frame)return Promise.reject(new Error('Cadre BAC introuvable.'));
+    if(!force&&frame.dataset.loaded==='1'){bacLoader(false);return Promise.resolve(true)}
+    bacLoader(true,'Ouverture des matières BAC…');
+    frame.onload=function(){frame.dataset.loaded='1';bacLoader(false)};
+    frame.onerror=function(){frame.dataset.loaded='';bacLoader(true,'Impossible d’ouvrir le programme BAC. Réessaie.')};
+    return resolver().mountFrame(frame,'modules/bac/index.html').catch(function(error){frame.dataset.loaded='';bacLoader(true,'Le contenu BAC n’a pas pu être chargé. Ferme cette rubrique puis réessaie.');throw error});
+  }
+  function openBacRestored(){var viewer=ensureBacShell();bacLastFocus=document.activeElement;viewer.hidden=false;document.body.classList.add('nx-bac-open-v90');var p=bacFrame(false);var close=el('nxBacCloseButton');if(close)setTimeout(function(){try{close.focus()}catch(_e){}},30);return p}
+  function closeBacRestored(){var viewer=el('nxBacAcademyViewer');if(!viewer)return;viewer.hidden=true;document.body.classList.remove('nx-bac-open-v90');if(bacLastFocus&&bacLastFocus.focus)try{bacLastFocus.focus()}catch(_e){}}
+
+  function ensureDixiemeShell(){
+    var viewer=el('nx10AcademyViewer');if(viewer)return viewer;
+    viewer=document.createElement('section');viewer.id='nx10AcademyViewer';viewer.className='nx10-viewer-v91';viewer.hidden=true;viewer.setAttribute('role','dialog');viewer.setAttribute('aria-modal','true');viewer.setAttribute('aria-label','Programme de 10ème année');
+    viewer.innerHTML='<header class="nx10-head-v91"><button type="button" class="nx10-close-v91" id="nx10CloseButton" aria-label="Retour à l’Académie Nexora">←</button><div class="nx10-head-copy-v91"><span>Académie Nexora</span><h2>Brevet — cours de 10ème année et sujets BEPC</h2></div><button type="button" class="nx10-reload-v91" id="nx10ReloadButton">Actualiser</button></header><div class="nx10-frame-wrap-v91"><div class="nx10-loader-v91" id="nx10Loader"><div class="nx10-loader-inner-v91"><span class="nx10-spinner-v91" aria-hidden="true"></span><b>Ouverture des cours du Brevet…</b></div></div><iframe id="nx10AcademyFrame" loading="eager" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads" allow="microphone; fullscreen" title="Brevet — cours de 10ème année et sujets BEPC"></iframe></div>';
+    document.body.appendChild(viewer);return viewer;
+  }
+  var tenLastFocus=null,tenPendingTarget='subjects';
+  function tenLoader(visible,message){var loader=el('nx10Loader');if(!loader)return;loader.hidden=!visible;var label=loader.querySelector('b');if(label&&message)label.textContent=message}
+  function navigateTen(target){var frame=el('nx10AcademyFrame');if(!frame||!frame.contentWindow)return;target=target==='brevet'?'brevet':'subjects';try{if(typeof frame.contentWindow.show==='function')frame.contentWindow.show(target);else frame.contentWindow.postMessage({type:'nexora-open-10eme',target:target},window.location.protocol==='file:'?'*':window.location.origin)}catch(_e){window.nxLog&&window.nxLog(_e)}}
+  function tenFrame(force,target){
+    ensureDixiemeShell();var frame=el('nx10AcademyFrame');if(!frame)return Promise.reject(new Error('Cadre Brevet introuvable.'));
+    tenPendingTarget=target==='brevet'?'brevet':'subjects';
+    if(!force&&frame.dataset.loaded==='1'){tenLoader(false);navigateTen(tenPendingTarget);return Promise.resolve(true)}
+    tenLoader(true,'Ouverture du programme de 10ème année…');
+    frame.onload=function(){frame.dataset.loaded='1';tenLoader(false);setTimeout(function(){navigateTen(tenPendingTarget)},40)};
+    frame.onerror=function(){frame.dataset.loaded='';tenLoader(true,'Impossible d’ouvrir le programme. Réessaie.')};
+    return resolver().mountFrame(frame,'modules/dixieme/index.html').catch(function(error){frame.dataset.loaded='';tenLoader(true,'Le contenu Brevet n’a pas pu être chargé. Ferme cette rubrique puis réessaie.');throw error});
+  }
+  function openTenRestored(target){var viewer=ensureDixiemeShell();tenLastFocus=document.activeElement;viewer.hidden=false;document.body.classList.add('nx10-open-v91');var p=tenFrame(false,target);var close=el('nx10CloseButton');if(close)setTimeout(function(){try{close.focus()}catch(_e){}},30);return p}
+  function closeTenRestored(){var viewer=el('nx10AcademyViewer');if(!viewer)return;viewer.hidden=true;document.body.classList.remove('nx10-open-v91');if(tenLastFocus&&tenLastFocus.focus)try{tenLastFocus.focus()}catch(_e){}}
+
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest?e.target:null;if(!t)return;
+    if(t.closest('#nxBacCloseButton')){e.preventDefault();closeBacRestored();return}
+    if(t.closest('#nxBacReloadButton')){e.preventDefault();bacFrame(true).catch(function(err){notify(String(err&&err.message||err))});return}
+    if(t.closest('#nx10CloseButton')){e.preventDefault();closeTenRestored();return}
+    if(t.closest('#nx10ReloadButton')){e.preventDefault();tenFrame(true,tenPendingTarget).catch(function(err){notify(String(err&&err.message||err))});return}
+  },true);
+  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;var bac=el('nxBacAcademyViewer'),ten=el('nx10AcademyViewer');if(bac&&!bac.hidden){e.preventDefault();closeBacRestored()}else if(ten&&!ten.hidden){e.preventDefault();closeTenRestored()}},true);
+
+  window.NexoraBac={open:openBacRestored,close:closeBacRestored,reload:function(){return bacFrame(true)}};
+  window.NexoraDixieme={open:openTenRestored,close:closeTenRestored,reload:function(){return tenFrame(true,tenPendingTarget)}};
+})();
+'''
+
+if 'contrôleurs BAC et Brevet restaurés dans le bundle Académie' not in academy:
+    marker = '  function openBac(target){'
+    if marker not in academy:
+        raise SystemExit('Point d’intégration BAC introuvable')
+    academy = academy.replace(marker, controllers + '\n' + marker, 1)
+
+# 3) Vérifier l’abonnement AVANT de télécharger les gros JSON scolaires.
+old_open = "function open(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){open.apply(__nxThis,__nxArgs)},NX_FAIL);return;}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',openGranted);return openGranted()}"
+new_open = "function open(){var __nxArgs=arguments,__nxThis=this;function granted(){if(!NX_READY){NX_LOAD().then(function(){openGranted.apply(__nxThis,__nxArgs)},NX_FAIL);return;}return openGranted.apply(__nxThis,__nxArgs)}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',granted);return granted()}"
+open_count = academy.count(old_open)
+if open_count:
+    academy = academy.replace(old_open, new_open)
+elif new_open not in academy:
+    raise SystemExit('Chargeurs de classes attendus introuvables')
+
+# 4) Styles des fenêtres examens directement dans la feuille Académie.
+exam_css = r'''
+/* V527.2 — fenêtres officielles BAC et Brevet restaurées */
+.nx-bac-viewer-v90,.nx10-viewer-v91{position:fixed;inset:0;z-index:12050;background:var(--bg,#f5f7fb);display:grid;grid-template-rows:auto minmax(0,1fr);color:var(--ink,#172033)}
+.nx-bac-viewer-v90[hidden],.nx10-viewer-v91[hidden]{display:none!important}
+.nx-bac-head-v90,.nx10-head-v91{min-height:68px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(15,23,42,.12);background:var(--surface,#fff);box-shadow:0 3px 18px rgba(15,23,42,.06)}
+.nx-bac-head-copy-v90,.nx10-head-copy-v91{min-width:0}.nx-bac-head-copy-v90 span,.nx10-head-copy-v91 span{display:block;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#64748b)}
+.nx-bac-head-copy-v90 h2,.nx10-head-copy-v91 h2{margin:2px 0 0;font-size:clamp(15px,4vw,20px);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nx-bac-close-v90,.nx10-close-v91,.nx-bac-reload-v90,.nx10-reload-v91{min-height:42px;border:1px solid rgba(15,23,42,.12);border-radius:12px;background:var(--surface,#fff);color:inherit;font-weight:800;padding:0 13px;cursor:pointer}
+.nx-bac-close-v90,.nx10-close-v91{width:44px;padding:0;font-size:21px}
+.nx-bac-frame-wrap-v90,.nx10-frame-wrap-v91{position:relative;min-height:0;overflow:hidden;background:#fff}
+#nxBacAcademyFrame,#nx10AcademyFrame{display:block;width:100%;height:100%;border:0;background:#fff}
+.nx-bac-loader-v90,.nx10-loader-v91{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:rgba(248,250,252,.96)}
+.nx-bac-loader-v90[hidden],.nx10-loader-v91[hidden]{display:none!important}
+.nx-bac-loader-inner-v90,.nx10-loader-inner-v91{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:22px}
+.nx-bac-spinner-v90,.nx10-spinner-v91{width:34px;height:34px;border-radius:50%;border:4px solid rgba(37,99,235,.16);border-top-color:#2563eb;animation:nxExamSpinV5272 .8s linear infinite}
+@keyframes nxExamSpinV5272{to{transform:rotate(360deg)}}
+body.nx-bac-open-v90,body.nx10-open-v91{overflow:hidden!important}
+@media(max-width:600px){.nx-bac-head-v90,.nx10-head-v91{gap:8px;padding:8px}.nx-bac-reload-v90,.nx10-reload-v91{font-size:11px;padding:0 9px}.nx-bac-head-copy-v90 h2,.nx10-head-copy-v91 h2{font-size:14px}}
+'''
+if 'nxExamSpinV5272' not in css:
+    css = css.rstrip() + '\n' + exam_css + '\n'
+
+# 5) Version et cache pour que le téléphone reçoive la correction.
+index = index.replace('nexora-academy-v524.css?v=527.1', 'nexora-academy-v524.css?v=527.2')
+index = index.replace('nexora-academy-v524.js?v=527.1', 'nexora-academy-v524.js?v=527.2')
+sw = sw.replace('Nexora V527.1', 'Nexora V527.2', 1)
+sw = sw.replace('const CACHE_NAME = "nexora-v527-cours-2";', 'const CACHE_NAME = "nexora-v527-cours-3";', 1)
+
+version = json.loads(version_path.read_text(encoding='utf-8'))
+version.update({
+    'version': 'V527.2',
+    'message': 'Nexora V527.2 : ouverture des classes du lycée, du BAC et du Brevet fiabilisée.',
+    'critical': True,
+    'updated_at': '2026-08-14T14:45:00.000Z',
+    'update_system': 'forced-service-worker-v527.2-lycee-bac-brevet-open',
+    'secure_content': 'nxe-v525-protocol-v527.2-session-refresh-gzip',
+    'lecons': 'lecture-v527.2-access-before-load-bac-brevet-restored'
+})
+
+secure_path.write_text(secure, encoding='utf-8')
+academy_path.write_text(academy, encoding='utf-8')
+css_path.write_text(css, encoding='utf-8')
+index_path.write_text(index, encoding='utf-8')
+sw_path.write_text(sw, encoding='utf-8')
+version_path.write_text(json.dumps(version, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+print('Chargeurs de classes réordonnés:', open_count)
+print('Contrôleurs BAC/Brevet restaurés: OK')
+print('Session sécurisée rafraîchie + retry 401: OK')
