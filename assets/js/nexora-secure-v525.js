@@ -1203,8 +1203,11 @@
   window.nxSetSubscriptionSnapshot=function(snapshot){writeSnapshot(snapshot||{});refreshSubscriptionUI();};
 
   function secureProductCode(context){
-    var value=String(context||'all').toLowerCase();
-    return ['adams','modules','orientation','academy'].indexOf(value)>-1?value:'all';
+    var value=String(context||'').toLowerCase();
+    if(value==='modules'||value==='pro'||value==='professional'||value==='professionnel')return 'pro';
+    if(value==='academy'||value==='academie'||value==='orientation'||value==='subjects'||value==='novels'||value==='eleves'||value==='student')return 'eleves';
+    if(value==='adams')return 'adams';
+    return espacePourContexte(value);
   }
 
   async function fetchSecureProductStatus(client,context){
