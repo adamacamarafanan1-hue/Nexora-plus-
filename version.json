@@ -1,8 +1,8 @@
 {
-  "version": "V525",
-  "message": "Nexora V525 : séparation définitive des accès Élèves et Pro — contrôle serveur par contenu, clé maître jamais envoyée au navigateur.",
+  "version": "V525.1",
+  "message": "Nexora V525.1 : ouverture des cours corrigée, accès Élève et Pro strictement séparés.",
   "critical": false,
-  "updated_at": "2026-08-13T21:19:00Z",
+  "updated_at": "2026-08-14T08:15:47.851Z",
   "update_system": "controlled-service-worker-v525-version-gated",
   "subscription": "server-plan-id-required-v519.2-supabase-catalog-8-plans",
   "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
@@ -10,7 +10,8 @@
   "ouverture": "head-14ko-lazy-groups-timers-260-2600-3200",
   "account_creation": "essential-fields-first-no-overlay",
   "subscription_cta": "product-specific-access-v525",
-  "subscription_spaces": "eleves-pro-server-isolated-v525",
+  "subscription_spaces": "eleves-pro-canonical-mapping-v525.1",
   "audio": "primary-autostart-timer-cancelled-v523",
-  "lecons": "lecture-v524-prefixe-unique-nx-lecon-terminale-corrigee"
+  "lecons": "lecture-v524-prefixe-unique-nx-lecon-terminale-corrigee",
+  "secure_manifest": "restored-product-gated-v525.1"
 }
