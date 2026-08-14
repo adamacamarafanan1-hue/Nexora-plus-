@@ -69,6 +69,31 @@
       return value||{};
     }
 
+  /* V527 : PostgREST peut renvoyer un jsonb directement, une chaîne JSON,
+     une ligne unique ou un objet enveloppé. L'ancien contrôle ne savait lire
+     que le premier cas et transformait les autres en « abonnement absent ». */
+  function parseStatusData(value){
+      var current=value;
+      for(var i=0;i<6;i++){
+        if(typeof current==='string'){
+          try{current=JSON.parse(current);continue;}catch(_e){return {};}
+        }
+        if(Array.isArray(current)){
+          if(current.length===1){current=current[0];continue;}
+          return {};
+        }
+        if(!current||typeof current!=='object')return {};
+        if(Object.prototype.hasOwnProperty.call(current,'active')||Object.prototype.hasOwnProperty.call(current,'status'))return current;
+        var keys=['data','result','resultat','nexora_my_subscription_status_v264'];
+        var moved=false;
+        for(var k=0;k<keys.length;k++){
+          if(Object.prototype.hasOwnProperty.call(current,keys[k])){current=current[keys[k]];moved=true;break;}
+        }
+        if(!moved)return current;
+      }
+      return current&&typeof current==='object'?current:{};
+    }
+
   function isOnline(){
       return typeof navigator==='undefined'||navigator.onLine!==false;
     }
@@ -118,15 +143,42 @@
     }
 
   async function currentUser(client){
-      var session=await client.auth.getSession();
-      var user=session&&session.data&&session.data.session&&session.data.session.user;
-      if(user)return user;
+      var session=await currentSession(client,false);
+      return session&&session.user||null;
+    }
+
+  async function currentSession(client,forceRefresh){
+      var response=null,session=null;
+      if(!forceRefresh){
+        response=await client.auth.getSession();
+        session=response&&response.data&&response.data.session||null;
+        var expiresAt=Number(session&&session.expires_at||0)*1000;
+        if(session&&session.user&&session.access_token&&(!expiresAt||expiresAt>Date.now()+60000))return session;
+      }
       try{
         var refreshed=await client.auth.refreshSession();
-        user=refreshed&&refreshed.data&&refreshed.data.session&&refreshed.data.session.user;
-        if(user)return user;
+        session=refreshed&&refreshed.data&&refreshed.data.session||null;
+        if(session&&session.user&&session.access_token)return session;
       }catch(_e){window.nxLog&&window.nxLog(_e)}
       return null;
+    }
+
+  function isSessionRpcError(err){
+      var code=String(err&&err.code||err&&err.status||'');
+      var msg=String(err&&err.message||err||'').toLowerCase();
+      return code==='401'||code==='403'||code==='42501'||code==='PGRST301'||/jwt|session|permission denied|not authenticated|authentication|token/.test(msg);
+    }
+
+  async function subscriptionStatusRpc(client,product){
+      var session=await currentSession(client,false);
+      if(!session){var loginError=new Error('Connexion Nexora obligatoire pour vérifier votre accès.');loginError.code='SESSION_REQUIRED';throw loginError;}
+      var result=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:product}),10000,'La vérification officielle de l’abonnement prend trop de temps.');
+      if(result&&result.error&&isSessionRpcError(result.error)){
+        session=await currentSession(client,true);
+        if(session)result=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:product}),10000,'La vérification officielle de l’abonnement prend trop de temps.');
+      }
+      if(result&&result.error)throw result.error;
+      return parseStatusData(result&&result.data);
     }
 
   function readSnapshot(space){
@@ -496,10 +548,8 @@
 
   async function callStatus(client,space){
     var target=paidSpace(space);
-    var canonical=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:target}),10000,'La vérification officielle de l’abonnement prend trop de temps.');
-    if(canonical&&canonical.error)throw canonical.error;
-    var raw=parseData(canonical&&canonical.data);
-    raw.authoritative=true;raw.version='v264';
+    var raw=await subscriptionStatusRpc(client,target);
+    raw.authoritative=true;raw.version='v527';
     return normalizeStatus(raw);
   }
 
@@ -1212,9 +1262,7 @@
 
   async function fetchSecureProductStatus(client,context){
     var product=secureProductCode(context);
-    var result=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:product}),10000,'La vérification officielle de l’accès prend trop de temps.');
-    if(result&&result.error)throw result.error;
-    var raw=parseData(result&&result.data);raw.authoritative=true;raw.version='v264';
+    var raw=await subscriptionStatusRpc(client,product);raw.authoritative=true;raw.version='v527';
     return normalizeStatus(raw);
   }
 
@@ -1262,7 +1310,11 @@
       try{status=await fetchSecureProductStatus(client,PENDING_CONTEXT);}catch(secureErr){throw secureErr;}
       if(status&&status.active===true&&status.status==='active'){
         writeSnapshot(status,espacePourContexte(PENDING_CONTEXT));
-        await secureReady(status);
+        /* Le serveur /api/secure-content refait obligatoirement le contrôle
+           d'abonnement avant de livrer les octets déchiffrés. Une vérification
+           locale de téléphone ne doit donc jamais convertir un accès actif
+           en écran tarifaire. */
+        try{await secureReady(status);}catch(_secureReadyError){window.nxLog&&window.nxLog(_secureReadyError,'secure-ready-v527');}
         return grantPendingAccess('');
       }
       if(status&&(status.status==='expired'||status.status==='revoked'))enforceExpiredAccess(status,true);
@@ -1272,11 +1324,17 @@
       return false;
     }catch(err){
       cached=cachedAccessStatus();
-      if(isNetworkError(err)&&cached.allowed){try{await secureReady(cached.snapshot);return grantPendingAccess('Connexion rétablie nécessaire pour ouvrir ce contenu premium.');}catch(_secureFallback){window.nxLog&&window.nxLog(_secureFallback)}}
-      PENDING_ACCESS=null;
-      renderCatalogError(friendlyError(err));
-      openModal('plans');
-      return false;
+      if(cached.allowed){
+        try{await secureReady(cached.snapshot);}catch(_secureFallback){window.nxLog&&window.nxLog(_secureFallback,'secure-fallback-v527')}
+        return grantPendingAccess('Vérification finale de votre accès par le serveur…');
+      }
+      /* Une erreur réseau, RPC ou de rafraîchissement de session n'est pas la
+         preuve d'un abonnement absent. Le contenu protégé garde le dernier mot :
+         il s'ouvrira seulement si le serveur confirme réellement l'accès. */
+      var technicalMessage=friendlyError(err);
+      renderCatalogError(technicalMessage);
+      try{if(typeof window.toast==='function')window.toast(technicalMessage);}catch(_toastError){window.nxLog&&window.nxLog(_toastError)}
+      return grantPendingAccess('Vérification sécurisée de votre accès en cours…');
     }
   };
 
@@ -1550,4 +1608,3 @@
   });
   window.NexoraCourseGame={open:openChallenge,recordAttempt:recordAttempt,readContext:readContext,clearContext:clearContext};
 })();
-
