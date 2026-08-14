@@ -1,0 +1,123 @@
+name: Réparer les 22 modules Pro V527.3
+
+on:
+  push:
+    branches:
+      - repair-pro-v5273-20260814
+    paths:
+      - .github/workflows/repair-pro-v5273.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexora-repair-pro-v5273
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Repartir exactement de main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B nexora-pro-fix origin/main
+
+      - name: Corriger le circuit d'ouverture Pro dans la source canonique
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          index_path = Path('index.html')
+          text = index_path.read_text(encoding='utf-8')
+
+          old_scope = """      if(!btn||!btn.closest||!btn.closest('[data-learn-center]'))return;\n      var action=btn.getAttribute('data-action')||'';"""
+          new_scope = """      if(!btn||!btn.closest)return;\n      var action=btn.getAttribute('data-action')||'';\n      var inLearnCenter=!!btn.closest('[data-learn-center]');\n      var inProfessionalModules=action==='open-official-course'&&!!btn.closest('.nx-pro-modules-v342');\n      if(!inLearnCenter&&!inProfessionalModules)return;"""
+          if text.count(old_scope) != 1:
+              raise SystemExit(f'Garde événementielle inattendue: {text.count(old_scope)} occurrence(s)')
+          text = text.replace(old_scope, new_scope, 1)
+
+          old_access = "window.nxRequireSubscriptionAccess('modules',function(){nxAcademyOpenCourseGranted(moduleId);});"
+          new_access = "window.nxRequireSubscriptionAccess('pro',function(){nxAcademyOpenCourseGranted(moduleId);});"
+          if text.count(old_access) != 1:
+              raise SystemExit(f'Contrôle accès Pro inattendu: {text.count(old_access)} occurrence(s)')
+          text = text.replace(old_access, new_access, 1)
+
+          replacements = {
+              '<meta content="v525-acces-separes" name="nexora-build"/>': '<meta content="v527.3-pro-modules" name="nexora-build"/>',
+              '<meta content="V525" name="nexora-release"/>': '<meta content="V527.3" name="nexora-release"/>',
+              '<meta content="V525 — accès Élèves / Pro séparés" name="nexora-version"/>': '<meta content="V527.3 — ouverture des 22 modules Pro fiabilisée" name="nexora-version"/>'
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'Marqueur de version inattendu: {old} -> {text.count(old)} occurrence(s)')
+              text = text.replace(old, new, 1)
+
+          cards = text.count('class="nx-pro-module-v342" data-action="open-official-course" data-module-id=')
+          if cards != 22:
+              raise SystemExit(f'Inventaire Pro inattendu: {cards} boutons au lieu de 22')
+          if text.count('"modules/formation/') < 22:
+              raise SystemExit('Les chemins sécurisés des 22 formations ne sont pas tous présents.')
+          index_path.write_text(text, encoding='utf-8')
+
+          sw_path = Path('service-worker.js')
+          sw = sw_path.read_text(encoding='utf-8')
+          if sw.count('nexora-v527-cours-3') != 1:
+              raise SystemExit('Nom de cache V527.2 inattendu.')
+          sw = sw.replace('nexora-v527-cours-3', 'nexora-v527-pro-1', 1)
+          sw = sw.replace('/* Nexora V527.2 — cache renouvelé après organisation des cours.', '/* Nexora V527.3 — cache renouvelé après réparation des 22 modules Pro.', 1)
+          sw_path.write_text(sw, encoding='utf-8')
+
+          version_path = Path('version.json')
+          version = json.loads(version_path.read_text(encoding='utf-8'))
+          version.update({
+              'version': 'V527.3',
+              'message': 'Nexora V527.3 : ouverture des 22 modules Professionnels fiabilisée sans modifier la séparation des accès.',
+              'critical': True,
+              'updated_at': '2026-08-14T15:53:00.000Z',
+              'update_system': 'forced-service-worker-v527.3-pro-module-open',
+              'subscription': 'supabase-v527.3-explicit-pro-gate',
+              'secure_content': 'nxe-v525-protocol-v527.3-pro-click-to-secure-loader',
+              'lecons': 'lecture-v527.3-pro-event-scope-official-secure-loader'
+          })
+          version_path.write_text(json.dumps(version, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          print('22 cartes Pro: OK')
+          print('Délégation de clic Pro: OK')
+          print('Accès explicite product_code pro: OK')
+          print('Chargeur officiel nxAcademyOpenCourseGranted conservé: OK')
+          PY
+
+      - name: Vérifier la correction avant publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "inProfessionalModules=action==='open-official-course'" index.html
+          grep -q "nxRequireSubscriptionAccess('pro',function(){nxAcademyOpenCourseGranted(moduleId);});" index.html
+          test "$(grep -o 'class="nx-pro-module-v342" data-action="open-official-course" data-module-id=' index.html | wc -l)" -eq 22
+          grep -q 'nexora-v527-pro-1' service-worker.js
+          grep -q '"version": "V527.3"' version.json
+          git diff --check
+
+      - name: Publier uniquement la correction applicative dans main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html service-worker.js version.json
+          if git diff --cached --quiet; then
+            echo "Aucune modification applicative à publier."
+            exit 0
+          fi
+          git commit -m "Réparer l'ouverture des 22 modules Pro V527.3"
+          git push origin HEAD:main
