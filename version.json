@@ -2,7 +2,7 @@
   "version": "V527.3",
   "message": "Nexora V527.3 : ouverture des 22 modules Professionnels fiabilisée sans modifier la séparation des accès.",
   "critical": true,
-  "updated_at": "2026-08-14T15:53:00.000Z",
+  "updated_at": "2026-08-14T18:44:00.000Z",
   "update_system": "forced-service-worker-v527.3-pro-module-open",
   "subscription": "supabase-v527.3-explicit-pro-gate",
   "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
