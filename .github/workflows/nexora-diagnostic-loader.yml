@@ -1,0 +1,43 @@
+name: Nexora diagnostic chargeur Académie
+
+on:
+  push:
+    paths:
+      - '.github/workflows/nexora-diagnostic-loader.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspecter les chargeurs Nexora
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text(encoding='utf-8', errors='replace')
+          needles = [
+              'NexoraAcademyContentV271',
+              'NexoraLoadFeatureGroupV506',
+              'modules/bac/index.html',
+              'modules/dixieme/index.html'
+          ]
+          for needle in needles:
+              print('\n===== '+needle+' =====')
+              start = 0
+              found = 0
+              while True:
+                  i = text.find(needle, start)
+                  if i < 0 or found >= 8:
+                      break
+                  a = max(0, i-1800)
+                  b = min(len(text), i+3000)
+                  print(text[a:b].replace('\n','\\n'))
+                  print('\n--- occurrence ---')
+                  start = i + len(needle)
+                  found += 1
+              print('occurrences:', found)
+          PY
