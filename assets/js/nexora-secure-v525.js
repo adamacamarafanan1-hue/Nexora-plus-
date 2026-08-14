@@ -150,13 +150,13 @@
   async function currentSession(client,forceRefresh){
       var response=null,session=null;
       if(!forceRefresh){
-        response=await client.auth.getSession();
+        response=await withTimeout(client.auth.getSession(),8000,'La lecture de la session Nexora prend trop de temps.');
         session=response&&response.data&&response.data.session||null;
         var expiresAt=Number(session&&session.expires_at||0)*1000;
         if(session&&session.user&&session.access_token&&(!expiresAt||expiresAt>Date.now()+60000))return session;
       }
       try{
-        var refreshed=await client.auth.refreshSession();
+        var refreshed=await withTimeout(client.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');
         session=refreshed&&refreshed.data&&refreshed.data.session||null;
         if(session&&session.user&&session.access_token)return session;
       }catch(_e){window.nxLog&&window.nxLog(_e)}
@@ -333,22 +333,23 @@
 
   async function getSession(forceRefresh){
     try{
-      var c=window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;
+      var c=null;
+      try{c=await waitClient();}catch(_waitClientError){window.nxLog&&window.nxLog(_waitClientError,'secure-content-client');}
       if(!c||!c.auth)return null;
       if(forceRefresh===true&&typeof c.auth.refreshSession==='function'){
         try{
-          var forced=await c.auth.refreshSession();
+          var forced=await withTimeout(c.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');
           var forcedSession=forced&&forced.data&&forced.data.session||null;
           if(forcedSession&&forcedSession.access_token&&forcedSession.user)return forcedSession;
         }catch(_forceError){window.nxLog&&window.nxLog(_forceError,'secure-content-refresh')}
       }
-      var r=await c.auth.getSession();
+      var r=await withTimeout(c.auth.getSession(),8000,'La lecture de la session Nexora prend trop de temps.');
       var session=r&&r.data&&r.data.session||null;
       var expiresAt=Number(session&&session.expires_at||0)*1000;
       if(session&&session.access_token&&session.user&&(!expiresAt||expiresAt>Date.now()+60000))return session;
       if(typeof c.auth.refreshSession==='function'){
         try{
-          var refreshed=await c.auth.refreshSession();
+          var refreshed=await withTimeout(c.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');
           session=refreshed&&refreshed.data&&refreshed.data.session||null;
           if(session&&session.access_token&&session.user)return session;
         }catch(_refreshError){window.nxLog&&window.nxLog(_refreshError,'secure-content-refresh')}
@@ -746,7 +747,7 @@
   }
   function espacePourContexte(context){
     var value=String(context||'').toLowerCase();
-    if(value==='modules'||value==='pro'||value==='professional')return 'pro';
+    if(value==='modules'||value==='pro'||value==='professional'||value==='professionnel')return 'pro';
     if(value==='academy'||value==='orientation'||value==='subjects'||value==='novels'||value==='eleves'||value==='student')return 'eleves';
     return espaceDeviné();
   }

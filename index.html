@@ -12,9 +12,9 @@
 <meta content="Nexora Académie — cours, sujets, romans, formations, communauté, Jeu Adams et défis éducatifs." name="description"/>
 <meta content="#143B67" name="theme-color"/>
 <meta content="Nexora Académie" name="application-name"/>
-<meta content="v527.3-pro-modules" name="nexora-build"/>
-<meta content="V527.3" name="nexora-release"/>
-<meta content="V527.3 — ouverture des 22 modules Pro fiabilisée" name="nexora-version"/>
+<meta content="v527.4-bac-cours" name="nexora-build"/>
+<meta content="V527.4" name="nexora-release"/>
+<meta content="V527.4 — BAC plein écran et chargement des cours fiabilisés" name="nexora-version"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Nexora Académie" name="apple-mobile-web-app-title"/>
@@ -22636,9 +22636,9 @@ function renderTeacherRequestCenter(db){
     promises[key]=new Promise(function(resolve,reject){var l=document.createElement('link');l.rel='stylesheet';l.href=url;l.setAttribute('data-nexora-style-group',name);l.onload=function(){ready[key]=true;resolve(true);};l.onerror=function(){promises[key]=null;reject(new Error('Styles Nexora indisponibles : '+name));};document.head.appendChild(l);});return promises[key];
   }
   function group(screen){screen=String(screen||'');if(screen==='access')return 'kdo';if(screen==='adams')return 'adams';if(screen==='academy'||screen==='subjects'||screen==='novels')return 'academy';return ''}
-  function load(screen){var g=group(screen);if(!g)return Promise.resolve(true);return script('secure','./assets/js/nexora-secure-v525.js').then(function(){if(g==='kdo')return style('kdo','./assets/css/nexora-kdo-v518.0.css').then(function(){return script('kdo','./assets/js/nexora-kdo-v521.js');});if(g==='academy')return style('academy','./assets/css/nexora-academy-v524.css?v=527.2').then(function(){return script('academy','./assets/js/nexora-academy-v524.js?v=527.2');});if(g==='adams')return style('adams','./assets/css/nexora-adams-v518.0.css').then(function(){return script('adams','./assets/js/nexora-adams-v521.js');});return true;});}
+  function load(screen){var g=group(screen);if(!g)return Promise.resolve(true);return script('secure','./assets/js/nexora-secure-v525.js?v=527.4').then(function(){if(g==='kdo')return style('kdo','./assets/css/nexora-kdo-v518.0.css').then(function(){return script('kdo','./assets/js/nexora-kdo-v521.js');});if(g==='academy')return style('academy','./assets/css/nexora-academy-v524.css?v=527.4').then(function(){return script('academy','./assets/js/nexora-academy-v524.js?v=527.4');});if(g==='adams')return style('adams','./assets/css/nexora-adams-v518.0.css').then(function(){return script('adams','./assets/js/nexora-adams-v521.js');});return true;});}
   window.NexoraSecureReadyV506=function(){return !!ready.secure;};
-  window.NexoraEnsureSecureV506=function(){return script('secure','./assets/js/nexora-secure-v525.js');};
+  window.NexoraEnsureSecureV506=function(){return script('secure','./assets/js/nexora-secure-v525.js?v=527.4');};
   window.NexoraFeatureGroupReadyV506=function(screen){var g=group(screen);if(!g)return true;if(!ready.secure)return false;if(g==='kdo')return !!ready.kdo;if(g==='academy')return !!ready.academy;if(g==='adams')return !!ready.adams;return true;};
   window.NexoraLoadFeatureGroupV506=load;
   window.NexoraLoadFeedV506=function(){return script('feed','./assets/js/nexora-feed-v521.js');};
@@ -22876,7 +22876,7 @@ function renderTeacherRequestCenter(db){
   }
 
   function registerNexoraServiceWorker(){
-    navigator.serviceWorker.register('./service-worker.js?v=527.1',{scope:'./',updateViaCache:'none'})
+    navigator.serviceWorker.register('./service-worker.js?v=527.4',{scope:'./',updateViaCache:'none'})
       .then(function(registration){
         registrationRef=registration;
         watchInstalling(registration);
