@@ -130,17 +130,34 @@
     }
 
   function getClient(){
-      try{return window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;}catch(_e){return null;}
-    }
+    try{return window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;}catch(_e){return null;}
+  }
 
-  async function waitClient(){
-      for(var i=0;i<60;i++){
-        var c=getClient();
-        if(c&&c.auth&&typeof c.rpc==='function')return c;
-        await new Promise(function(resolve){setTimeout(resolve,120);});
-      }
-      throw new Error('Connexion à Nexora indisponible. Vérifie Internet puis réessaie.');
+/* V528 — tous les parcours payants déclenchent explicitement le client
+   Supabase officiel avant le contrôle d'accès et /api/secure-content. */
+async function ensureClientNow(){
+    var direct=getClient();
+    if(direct&&direct.auth&&typeof direct.rpc==='function')return direct;
+    var app=window.NexoraApp;
+    if(app&&typeof app.ensureSupabaseClientReady==='function'){
+      try{
+        var ready=await withTimeout(Promise.resolve(app.ensureSupabaseClientReady()),12000,'Le service de connexion Nexora prend trop de temps.');
+        if(ready&&ready.auth&&typeof ready.rpc==='function')return ready;
+      }catch(err){try{window.nxLog&&window.nxLog(err,'secure-client-ready-v528');}catch(_logError){}}
     }
+    return getClient();
+  }
+
+async function waitClient(){
+    var first=await ensureClientNow();
+    if(first&&first.auth&&typeof first.rpc==='function')return first;
+    for(var i=0;i<25;i++){
+      var c=getClient();
+      if(c&&c.auth&&typeof c.rpc==='function')return c;
+      await new Promise(function(resolve){setTimeout(resolve,120);});
+    }
+    throw new Error('Connexion à Nexora indisponible. Vérifie Internet puis réessaie.');
+  }
 
   async function currentUser(client){
       var session=await currentSession(client,false);

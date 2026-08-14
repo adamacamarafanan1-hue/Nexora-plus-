@@ -1,17 +1,11 @@
 {
-  "version": "V527.4",
-  "message": "Nexora V527.4 : BAC en plein écran et ouverture des cours fiabilisée avec session sécurisée rafraîchie.",
+  "version": "V528.0",
+  "message": "Nexora V528.0 : moteur commun Élèves/Pro fiabilisé ; le client Supabase est initialisé explicitement avant toute ouverture sécurisée.",
   "critical": true,
-  "updated_at": "2026-08-14T21:07:30.000Z",
-  "update_system": "forced-service-worker-v527.4-bac-cours-session",
-  "subscription": "supabase-v527.4-session-wait-timeout-refresh",
-  "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
-  "secure_content": "nxe-v525-protocol-v527.4-session-ready-server-authority",
-  "ouverture": "head-14ko-lazy-groups-timers-260-2600-3200",
-  "account_creation": "essential-fields-first-no-overlay",
-  "subscription_cta": "product-specific-access-v525",
-  "subscription_spaces": "eleves-pro-canonical-mapping-v525.1",
-  "audio": "primary-autostart-timer-cancelled-v523",
-  "lecons": "lecture-v527.4-bac-fullscreen-course-loader",
-  "secure_manifest": "restored-product-gated-v525.1"
+  "updated_at": "2026-08-14T21:50:00.000Z",
+  "update_system": "forced-service-worker-v528-unified-courses",
+  "subscription": "supabase-v528-explicit-client-readiness",
+  "secure_content": "nxe-v525-protocol-v528-server-authority",
+  "lecons": "lecture-v528-single-secure-client-path",
+  "secure_manifest": "v525-20260813-1"
 }
