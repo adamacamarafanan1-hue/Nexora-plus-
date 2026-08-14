@@ -33,29 +33,22 @@ jobs:
 
           secure_path = Path('assets/js/nexora-secure-v525.js')
           secure = secure_path.read_text(encoding='utf-8')
+          start_marker = '  function getClient(){'
+          end_marker = '  async function currentUser(client){'
+          if secure.count(start_marker) != 1 or secure.count(end_marker) != 1:
+              raise SystemExit('Bornes du client sécurisé absentes ou dupliquées')
+          start = secure.index(start_marker)
+          end = secure.index(end_marker, start)
+          current_block = secure[start:end]
+          if 'async function waitClient()' not in current_block or 'getSupabaseClient' not in current_block:
+              raise SystemExit('Bloc client sécurisé inattendu : arrêt sans modification')
 
-          old = """  function getClient(){
+          new_block = """  function getClient(){
               try{return window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;}catch(_e){return null;}
             }
 
-          async function waitClient(){
-              for(var i=0;i<60;i++){
-                var c=getClient();
-                if(c&&c.auth&&typeof c.rpc==='function')return c;
-                await new Promise(function(resolve){setTimeout(resolve,120);});
-              }
-              throw new Error('Connexion à Nexora indisponible. Vérifie Internet puis réessaie.');
-            }
-          """
-
-          new = """  function getClient(){
-              try{return window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;}catch(_e){return null;}
-            }
-
-          /* V528 — le moteur sécurisé ne doit plus attendre passivement que Supabase
-             soit chargé ailleurs. Tous les parcours Élèves et Pro passent ici : on
-             déclenche donc explicitement le client officiel Nexora avant le contrôle
-             d'accès et avant /api/secure-content. */
+          /* V528 — tous les parcours payants déclenchent explicitement le client
+             Supabase officiel avant le contrôle d'accès et /api/secure-content. */
           async function ensureClientNow(){
               var direct=getClient();
               if(direct&&direct.auth&&typeof direct.rpc==='function')return direct;
@@ -79,11 +72,9 @@ jobs:
               }
               throw new Error('Connexion à Nexora indisponible. Vérifie Internet puis réessaie.');
             }
-          """
 
-          if secure.count(old) != 1:
-              raise SystemExit(f'Bloc waitClient attendu une seule fois, trouvé {secure.count(old)} fois')
-          secure = secure.replace(old, new, 1)
+          """
+          secure = secure[:start] + new_block + secure[end:]
           secure_path.write_text(secure, encoding='utf-8')
 
           index_path = Path('index.html')
@@ -114,7 +105,7 @@ jobs:
             'version': 'V528.0',
             'message': 'Nexora V528.0 : moteur commun Élèves/Pro fiabilisé ; le client Supabase est initialisé explicitement avant toute ouverture sécurisée.',
             'critical': True,
-            'updated_at': '2026-08-14T21:40:00.000Z',
+            'updated_at': '2026-08-14T21:46:00.000Z',
             'update_system': 'forced-service-worker-v528-unified-courses',
             'subscription': 'supabase-v528-explicit-client-readiness',
             'secure_content': 'nxe-v525-protocol-v528-server-authority',
@@ -134,6 +125,7 @@ jobs:
           grep -q "ensureSupabaseClientReady" assets/js/nexora-secure-v525.js
           grep -q "secure-client-ready-v528" assets/js/nexora-secure-v525.js
           grep -q "V528.0" index.html
+          grep -q "?v=528.0" index.html
           grep -q "nexora-v528-unified-courses-1" service-worker.js
           grep -q "nexora_my_subscription_status_v264" api/secure-content.js
           grep -q '"product_code":"eleves"' api/secure-content.js
