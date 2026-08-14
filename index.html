@@ -12,9 +12,9 @@
 <meta content="Nexora Académie — cours, sujets, romans, formations, communauté, Jeu Adams et défis éducatifs." name="description"/>
 <meta content="#143B67" name="theme-color"/>
 <meta content="Nexora Académie" name="application-name"/>
-<meta content="v525-acces-separes" name="nexora-build"/>
-<meta content="V525" name="nexora-release"/>
-<meta content="V525 — accès Élèves / Pro séparés" name="nexora-version"/>
+<meta content="v527.3-pro-modules" name="nexora-build"/>
+<meta content="V527.3" name="nexora-release"/>
+<meta content="V527.3 — ouverture des 22 modules Pro fiabilisée" name="nexora-version"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Nexora Académie" name="apple-mobile-web-app-title"/>
@@ -14954,7 +14954,7 @@ function applyRealtimeStory(payload){try{
   function nxAcademyOpenCourse(moduleId){
     moduleId=String(moduleId||'');
     if(typeof window.nxRequireSubscriptionAccess==='function'){
-      window.nxRequireSubscriptionAccess('modules',function(){nxAcademyOpenCourseGranted(moduleId);});
+      window.nxRequireSubscriptionAccess('pro',function(){nxAcademyOpenCourseGranted(moduleId);});
       return;
     }
     toast('Abonnement Nexora requis pour ouvrir ce cours.');
@@ -18108,8 +18108,11 @@ function nxLearningBindEventsOnce(){
     document.addEventListener('click',function(e){
       var target=eventElementTarget?eventElementTarget(e):(e&&e.target);
       var btn=target&&target.closest?target.closest('[data-action]'):null;
-      if(!btn||!btn.closest||!btn.closest('[data-learn-center]'))return;
+      if(!btn||!btn.closest)return;
       var action=btn.getAttribute('data-action')||'';
+      var inLearnCenter=!!btn.closest('[data-learn-center]');
+      var inProfessionalModules=action==='open-official-course'&&!!btn.closest('.nx-pro-modules-v342');
+      if(!inLearnCenter&&!inProfessionalModules)return;
       if(action==='set-learn-filter'){e.preventDefault();nxLearningOpenModuleId='';nxLearningFilter=btn.getAttribute('data-filter')||'all';renderLearnCenter(readDB());return;}
       if(action==='open-official-course'){e.preventDefault();nxAcademyOpenCourse(btn.getAttribute('data-module-id')||'');return;}
       if(action==='show-module-course-access'){
