@@ -156,7 +156,7 @@
         if(session&&session.user&&session.access_token&&(!expiresAt||expiresAt>Date.now()+60000))return session;
       }
       try{
-        var refreshed=await client.auth.refreshSession();
+        var refreshed=await withTimeout(client.auth.refreshSession(),8000,'Le rafraîchissement de la session Nexora prend trop de temps.');
         session=refreshed&&refreshed.data&&refreshed.data.session||null;
         if(session&&session.user&&session.access_token)return session;
       }catch(_e){window.nxLog&&window.nxLog(_e)}
