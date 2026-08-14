@@ -27,6 +27,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 -c "from pathlib import Path; p=Path('assets/css/nexora-academy-v524.css'); p.write_text(p.read_text(encoding='utf-8').rstrip()+'\n',encoding='utf-8')"
           node --check assets/js/nexora-secure-v525.js
           node --check assets/js/nexora-academy-v524.js
           grep -q 'window.NexoraBac={open:openBacRestored' assets/js/nexora-academy-v524.js
