@@ -2,7 +2,7 @@
   "version": "V528.0",
   "message": "Nexora V528.0 : moteur commun Élèves/Pro fiabilisé ; le client Supabase est initialisé explicitement avant toute ouverture sécurisée.",
   "critical": true,
-  "updated_at": "2026-08-14T21:50:00.000Z",
+  "updated_at": "2026-08-14T22:01:00.000Z",
   "update_system": "forced-service-worker-v528-unified-courses",
   "subscription": "supabase-v528-explicit-client-readiness",
   "secure_content": "nxe-v525-protocol-v528-server-authority",
