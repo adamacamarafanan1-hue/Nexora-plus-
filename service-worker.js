@@ -4,7 +4,7 @@
    les 6 heures) ; le document n'est repris que si le numéro de version a
    réellement changé. */
 
-const CACHE_NAME = "nexora-v525-coque-1";
+const CACHE_NAME = "nexora-v525-coque-2";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;
@@ -123,7 +123,7 @@ self.addEventListener("fetch", (event) => {
       const cache = await caches.open(CACHE_NAME);
       const cached = await cache.match(event.request);
       if (cached) return cached;
-      const reponse = await fetch(event.request);
+      const reponse = await fetch(event.request, { cache: "reload" });
       if (reponse && reponse.ok) {
         try { await cache.put(event.request, reponse.clone()); } catch (_erreur) {}
       }
