@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nexora — diagnostic d'ouverture des cours</title>
+<style>
+:root{--ard:#16324F;--craie:#EEF2F6;--bleu:#2F77C9;--cendre:#EDEFF2;--trait:#C6CBD2;
+--vert:#2F7A4F;--rouge:#B4442E;--ocre:#B07D2B}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--cendre);color:#21252B;
+font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{padding:18px 16px calc(18px + env(safe-area-inset-top,0px));background:var(--ard);color:var(--craie)}
+header small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:rgba(238,242,246,.66)}
+header h1{margin:6px 0 0;font-size:20px;font-weight:800;line-height:1.25;letter-spacing:-.02em}
+header p{margin:8px 0 0;font-size:13.5px;line-height:1.6;color:rgba(238,242,246,.84)}
+main{padding:12px}
+#go{width:100%;min-height:52px;margin-bottom:14px;border:0;border-radius:9px;
+background:var(--ard);color:var(--craie);font:inherit;font-size:15.5px;font-weight:800;cursor:pointer}
+#go[disabled]{opacity:.6}
+.etape{margin:0 0 10px;padding:13px 14px;border:1px solid var(--trait);border-left:3px solid var(--trait);
+border-radius:9px;background:#fff}
+.etape b{display:block;margin-bottom:6px;color:var(--ard);font-size:11px;font-weight:800;
+letter-spacing:.14em;text-transform:uppercase}
+.etape p{margin:0;font-size:14.5px;line-height:1.65}
+.etape code{display:block;margin-top:7px;padding:9px 10px;border-radius:6px;background:var(--cendre);
+font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.6;
+white-space:pre-wrap;word-break:break-word}
+.ok{border-left-color:var(--vert)}
+.ko{border-left-color:var(--rouge);background:#FFF6F4}
+.attente{border-left-color:var(--ocre);background:#FFFBF3}
+.info{border-left-color:var(--bleu)}
+#verdict{margin:0 0 14px;padding:15px 16px;border-radius:10px;background:var(--ard);color:var(--craie);
+font-size:15px;line-height:1.65;display:none}
+#verdict b{display:block;margin-bottom:6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(238,242,246,.7)}
+footer{padding:14px 16px calc(22px + env(safe-area-inset-bottom,0px));color:#5F656C;font-size:12px;line-height:1.6;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <small>Nexora · outil de dépannage</small>
+  <h1>Pourquoi les cours ne s'ouvrent pas</h1>
+  <p>Cette page rejoue exactement la chaîne d'ouverture d'un cours, étape par étape, et s'arrête sur la première qui casse. Connecte-toi d'abord à Nexora dans cet onglet, puis reviens ici.</p>
+</header>
+<main>
+  <button id="go" type="button">Lancer le diagnostic</button>
+  <div id="verdict"></div>
+  <div id="sortie"></div>
+</main>
+<footer>Lecture seule. Aucune donnée n'est modifiée. Aucune clé n'est affichée.</footer>
+
+<script>
+'use strict';
+var SUPABASE_URL = 'https://lzypxingcykvgxdifccq.supabase.co';
+var PUBLISHABLE  = 'sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY';
+var sortie = document.getElementById('sortie');
+var verdict = document.getElementById('verdict');
+var causes = [];
+
+function bloc(etat, titre, texte, detail){
+  var d = document.createElement('div');
+  d.className = 'etape ' + etat;
+  d.innerHTML = '<b>' + titre + '</b><p>' + texte + '</p>' +
+    (detail ? '<code>' + String(detail).replace(/[&<>]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }) + '</code>' : '');
+  sortie.appendChild(d);
+  return d;
+}
+function cause(t){ causes.push(t); }
+
+function sessionNexora(){
+  for (var i = 0; i < localStorage.length; i++){
+    var k = localStorage.key(i);
+    if (!/^sb-.*-auth-token$/.test(k)) continue;
+    try {
+      var v = JSON.parse(localStorage.getItem(k));
+      if (v && v.access_token) return v;
+      if (v && v.currentSession && v.currentSession.access_token) return v.currentSession;
+    } catch(_e){}
+  }
+  return null;
+}
+
+function b64urlToBytes(s){
+  s = String(s).replace(/-/g,'+').replace(/_/g,'/');
+  while (s.length % 4) s += '=';
+  var bin = atob(s), out = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function rpc(token, produit){
+  var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/nexora_my_subscription_status_v264', {
+    method:'POST',
+    headers:{ apikey: PUBLISHABLE, Authorization:'Bearer ' + token, 'Content-Type':'application/json' },
+    body: JSON.stringify({ p_product_code: produit })
+  });
+  var texte = await r.text();
+  var data = null;
+  try { data = JSON.parse(texte); } catch(_e){}
+  return { status: r.status, ok: r.ok, data: data, brut: texte.slice(0, 400) };
+}
+
+async function lancer(){
+  sortie.innerHTML = '';
+  verdict.style.display = 'none';
+  causes = [];
+  var bouton = document.getElementById('go');
+  bouton.disabled = true;
+  bouton.textContent = 'Diagnostic en cours…';
+
+  try {
+
+    /* ── 1. Session ─────────────────────────────────────────── */
+    var sess = sessionNexora();
+    if (!sess) {
+      bloc('ko', '1 · Session', "Aucune session Nexora trouvée dans ce navigateur. Ouvre Nexora, connecte-toi, puis reviens sur cette page <b>dans le même onglet et le même navigateur</b>.");
+      cause("Tu n'es pas connecté dans ce navigateur.");
+      return;
+    }
+    var token = sess.access_token;
+    var expire = sess.expires_at ? new Date(sess.expires_at * 1000) : null;
+    var perime = expire && expire.getTime() < Date.now();
+    bloc(perime ? 'ko' : 'ok', '1 · Session',
+      perime ? "La session est expirée. Déconnecte-toi et reconnecte-toi."
+             : "Session trouvée et valide.",
+      'utilisateur : ' + ((sess.user && sess.user.email) || '(inconnu)') +
+      (expire ? '\nexpire le : ' + expire.toLocaleString('fr-FR') : ''));
+    if (perime) { cause('La session de connexion est expirée.'); return; }
+
+    /* ── 2. Version attendue par le code en ligne ───────────── */
+    var VERSION = null, fichierSecure = null;
+    try {
+      var idx = await (await fetch('/', {cache:'no-store'})).text();
+      var m = idx.match(/assets\/js\/nexora-secure-v[0-9.]+\.js/);
+      fichierSecure = m ? m[0] : null;
+      if (fichierSecure) {
+        var src = await (await fetch('/' + fichierSecure, {cache:'no-store'})).text();
+        var mv = src.match(/var VERSION\s*=\s*'([^']+)'/);
+        VERSION = mv ? mv[1] : null;
+      }
+    } catch(_e){}
+    bloc(VERSION ? 'ok' : 'attente', '2 · Version de contenu du code en ligne',
+      VERSION ? "Le code déployé attend cette version de contenu."
+              : "Version introuvable dans le code déployé. Le reste du diagnostic utilisera la valeur du manifeste.",
+      'fichier : ' + (fichierSecure || '(non trouvé)') + '\nVERSION : ' + (VERSION || '(inconnue)'));
+
+    /* ── 3. Manifeste des contenus protégés ─────────────────── */
+    var manif = null, statutManif = 0;
+    try {
+      var rm = await fetch('/protected/manifest.json', {cache:'no-store'});
+      statutManif = rm.status;
+      if (rm.ok) manif = await rm.json();
+    } catch(_e){}
+    if (!manif) {
+      bloc('ko', '3 · Manifeste protégé',
+        "Le fichier /protected/manifest.json n'est pas servi. Sans lui, aucun cours ne peut être ouvert.",
+        'HTTP ' + statutManif);
+      cause('Le manifeste /protected/manifest.json est absent du déploiement.');
+      return;
+    }
+    if (!VERSION) VERSION = manif.version;
+    var versionsOk = (manif.version === VERSION);
+    bloc(versionsOk ? 'ok' : 'ko', '3 · Manifeste protégé',
+      versionsOk
+        ? "Manifeste présent, et sa version correspond à celle attendue par le code."
+        : "<b>Décalage de version.</b> Le code déployé attend une version, le manifeste en annonce une autre. Le module refuse alors le manifeste et aucun cours ne s'ouvre — quel que soit l'abonnement.",
+      'manifeste : ' + manif.version + '\ncode      : ' + VERSION +
+      '\nentrées   : ' + (manif.entries ? manif.entries.length : 0));
+    if (!versionsOk) cause("Le manifeste protégé et le code déployé n'annoncent pas la même version de contenu.");
+
+    /* ── 4. La fonction Supabase existe-t-elle ? ─────────────── */
+    var res = await rpc(token, 'all');
+    if (res.status === 404 || /does not exist|could not find the function/i.test(res.brut)) {
+      bloc('ko', '4 · Fonction Supabase',
+        "La fonction <code style='display:inline;padding:2px 5px'>nexora_my_subscription_status_v264</code> n'existe pas dans ta base. Le code l'appelle à chaque ouverture de cours : l'erreur remonte et l'application affiche le mur d'abonnement. <b>Tous</b> les abonnés sont bloqués.",
+        'HTTP ' + res.status + '\n' + res.brut);
+      cause("La fonction nexora_my_subscription_status_v264 n'existe pas : exécute SUPABASE_CORRECTION_ACCES_V523.sql.");
+      return;
+    }
+    if (res.status === 401 || res.status === 403) {
+      bloc('ko', '4 · Fonction Supabase',
+        "La fonction existe mais refuse ton compte. Il manque probablement le droit d'exécution : <code style='display:inline;padding:2px 5px'>grant execute … to authenticated</code>.",
+        'HTTP ' + res.status + '\n' + res.brut);
+      cause("La fonction existe mais le droit d'exécution manque pour les comptes connectés.");
+      return;
+    }
+    if (!res.ok) {
+      bloc('ko', '4 · Fonction Supabase', "Appel refusé par Supabase.", 'HTTP ' + res.status + '\n' + res.brut);
+      cause('Supabase refuse la vérification d\'abonnement (HTTP ' + res.status + ').');
+      return;
+    }
+    bloc('ok', '4 · Fonction Supabase', "La fonction existe et répond.");
+
+    /* ── 5. Ton abonnement, espace par espace ───────────────── */
+    var espaces = ['academy', 'modules', 'orientation', 'adams', 'all'];
+    var etats = {};
+    var lignes = [];
+    for (var i = 0; i < espaces.length; i++){
+      var r2 = await rpc(token, espaces[i]);
+      var d = r2.data || {};
+      etats[espaces[i]] = d;
+      lignes.push(
+        (espaces[i] + '        ').slice(0, 12) +
+        'active=' + (d.active === true ? 'oui' : 'non') +
+        '  statut=' + (d.status || '?') +
+        (d.ends_at ? '  fin=' + String(d.ends_at).slice(0, 10) : ''));
+    }
+    var eleveOk = etats.academy && etats.academy.active === true;
+    var proOk   = etats.modules && etats.modules.active === true;
+    bloc((eleveOk || proOk) ? 'ok' : 'ko', '5 · Ton abonnement vu par la base',
+      (eleveOk || proOk)
+        ? ("Abonnement actif sur : " + (eleveOk ? "l'espace élèves" : "") +
+           (eleveOk && proOk ? " et " : "") + (proOk ? "l'espace professionnel" : "") + ".")
+        : "<b>Aucun espace actif sur ce compte.</b> Ce n'est pas un défaut d'affichage : la base répond que l'abonnement n'est pas actif. Vérifie que ton paiement approuvé a bien été repris dans la table des abonnements (bloc 5 du fichier SQL de diagnostic).",
+      lignes.join('\n'));
+    if (!eleveOk && !proOk) cause("La base ne voit aucun abonnement actif sur ce compte : le paiement approuvé n'a pas été repris.");
+    if (etats.adams && etats.adams.active !== true && (eleveOk || proOk))
+      bloc('attente', '5b · Jeu Adams',
+        "L'abonnement payant ne peut jamais ouvrir le Jeu Adams : la table des abonnements n'accepte que « eleves » et « pro », alors que l'application demande le code « adams ». Seuls les codes d'activation l'ouvrent. C'est un défaut à corriger côté SQL.");
+
+    /* ── 6. La clé de contenu côté Vercel ───────────────────── */
+    var produit = eleveOk ? 'academy' : (proOk ? 'modules' : 'academy');
+    var paire = await crypto.subtle.generateKey(
+      { name:'RSA-OAEP', modulusLength:2048, publicExponent:new Uint8Array([1,0,1]), hash:'SHA-256' },
+      true, ['wrapKey','unwrapKey']);
+    var jwkPub = await crypto.subtle.exportKey('jwk', paire.publicKey);
+    var pkcs8  = await crypto.subtle.exportKey('pkcs8', paire.privateKey);
+    var privee = await crypto.subtle.importKey('pkcs8', pkcs8, { name:'RSA-OAEP', hash:'SHA-256' }, false, ['unwrapKey']);
+
+    var rk = await fetch('/api/content-key', {
+      method:'POST', cache:'no-store', credentials:'same-origin',
+      headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + token },
+      body: JSON.stringify({
+        public_key_jwk: jwkPub,
+        content_version: VERSION,
+        product_code: produit,
+        device_id: 'diagnostic-' + Date.now()
+      })
+    });
+    var kdata = {};
+    try { kdata = await rk.json(); } catch(_e){}
+    var explication = {
+      400: "La version de contenu envoyée par le navigateur ne correspond pas à celle codée dans /api/content-key.js sur Vercel. Les deux doivent être identiques après chaque redéploiement.",
+      401: "Le serveur ne reconnaît pas la session.",
+      403: "Le serveur dit que cet espace n'est pas actif sur ce compte.",
+      429: "Trop de demandes rapprochées : la limite est de 20 par minute et par compte. Attends une minute et relance.",
+      500: "Erreur serveur. La cause la plus fréquente est la variable NEXORA_CONTENT_KEY_B64 absente sur Vercel, ou qui ne fait pas exactement 32 octets une fois décodée. Vérifie aussi qu'elle est bien cochée pour l'environnement Production."
+    };
+    if (!rk.ok || kdata.success !== true) {
+      bloc('ko', '6 · Clé de contenu (Vercel)',
+        (explication[rk.status] || "La demande de clé a échoué.") ,
+        'HTTP ' + rk.status + '\nproduit demandé : ' + produit +
+        '\nversion envoyée : ' + VERSION + '\nréponse : ' + (kdata.message || '(vide)'));
+      cause('/api/content-key répond ' + rk.status + ' : ' + (kdata.message || 'échec'));
+      return;
+    }
+    bloc('ok', '6 · Clé de contenu (Vercel)', "Le serveur a délivré la clé de déchiffrement.",
+      'espace : ' + produit + '\nfin d\'abonnement : ' + String(kdata.ends_at || '').slice(0, 10));
+
+    /* ── 7. Déchiffrement réel d'un contenu ─────────────────── */
+    var cle = await crypto.subtle.unwrapKey('raw', b64urlToBytes(kdata.wrapped_key), privee,
+      { name:'RSA-OAEP' }, { name:'AES-GCM' }, false, ['decrypt']);
+
+    var entrees = (manif.entries || []).slice().sort(function(a,b){ return a.size - b.size; });
+    var cible = entrees[0];
+    var rf = await fetch(cible.url, { cache:'no-store', credentials:'omit' });
+    if (!rf.ok) {
+      bloc('ko', '7 · Lecture d\'un contenu', "Le fichier protégé n'est pas servi par Vercel.",
+        cible.path + '\nHTTP ' + rf.status);
+      cause('Les fichiers de /protected/files/ ne sont pas servis (HTTP ' + rf.status + ').');
+      return;
+    }
+    var paquet = new Uint8Array(await rf.arrayBuffer());
+    var entete = String.fromCharCode.apply(null, paquet.slice(0, 4));
+    if (paquet.length < 33 || entete !== 'NXE1') {
+      bloc('ko', '7 · Lecture d\'un contenu',
+        "Le fichier téléchargé n'est pas un paquet chiffré Nexora. Vercel renvoie probablement une page d'erreur à la place du fichier.",
+        cible.path + '\nen-tête lu : ' + JSON.stringify(entete) + '\ntaille : ' + paquet.length);
+      cause("Les fichiers protégés ne sont pas servis tels quels par Vercel.");
+      return;
+    }
+    try {
+      var clair = await crypto.subtle.decrypt(
+        { name:'AES-GCM', iv: paquet.slice(4,16), additionalData: new TextEncoder().encode(cible.path) },
+        cle, paquet.slice(16));
+      bloc('ok', '7 · Lecture d\'un contenu',
+        "Déchiffrement réussi de bout en bout. La chaîne complète fonctionne pour ce compte.",
+        cible.path + '\n' + clair.byteLength + ' octets lus en clair');
+    } catch(_e){
+      bloc('ko', '7 · Lecture d\'un contenu',
+        "Le fichier est bien chiffré mais la clé ne l'ouvre pas. La variable NEXORA_CONTENT_KEY_B64 sur Vercel n'est pas celle qui a servi à chiffrer les fichiers de /protected/. Il faut soit restaurer l'ancienne valeur, soit rechiffrer tous les contenus avec la nouvelle.",
+        cible.path);
+      cause("La clé NEXORA_CONTENT_KEY_B64 sur Vercel n'est pas celle qui a chiffré les contenus déployés.");
+      return;
+    }
+
+    /* ── 8. Autorisation déjà posée sur ce téléphone ────────── */
+    try {
+      var dbs = (indexedDB.databases ? await indexedDB.databases() : []);
+      var trouve = dbs.some(function(d){ return d.name === 'nexora-secure-content-v211'; });
+      bloc('info', '8 · Autorisation locale',
+        trouve ? "Une autorisation est déjà enregistrée sur ce téléphone."
+               : "Aucune autorisation locale enregistrée pour l'instant : elle sera créée à la première ouverture d'un cours.");
+    } catch(_e){}
+
+  } catch (err) {
+    bloc('ko', 'Interruption', "Le diagnostic s'est arrêté sur une erreur inattendue.", String(err && err.message || err));
+    cause('Erreur inattendue : ' + String(err && err.message || err));
+  } finally {
+    document.getElementById('go').disabled = false;
+    document.getElementById('go').textContent = 'Relancer le diagnostic';
+    verdict.style.display = 'block';
+    verdict.innerHTML = '<b>Verdict</b>' + (causes.length
+      ? causes.map(function(c){ return '• ' + c; }).join('<br>')
+      : "Toute la chaîne répond correctement pour ce compte, jusqu'au déchiffrement d'un vrai contenu. Si les cours ne s'ouvrent toujours pas, le problème est dans l'affichage et non dans l'accès.");
+  }
+}
+
+document.getElementById('go').addEventListener('click', lancer);
+</script>
+</body>
+</html>
