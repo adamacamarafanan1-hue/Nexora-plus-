@@ -2,7 +2,7 @@
   "version": "V527.2",
   "message": "Nexora V527.2 : ouverture des classes du lycée, du BAC et du Brevet fiabilisée.",
   "critical": true,
-  "updated_at": "2026-08-14T14:45:00.000Z",
+  "updated_at": "2026-08-14T14:49:00.000Z",
   "update_system": "forced-service-worker-v527.2-lycee-bac-brevet-open",
   "subscription": "supabase-v527-session-refresh-rpc-server-authority",
   "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
