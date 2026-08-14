@@ -1,1 +1,32 @@
-name: Preparation
+name: Verification Nexora
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verifier les fichiers critiques
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Verifier JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/js/nexora-secure-v525.js
+          node --check assets/js/nexora-academy-v524.js
+          node --check api/secure-content.js
+
+      - name: Verifier la version Nexora
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f version.json
+          grep -q '"version"' version.json
+          test -f index.html
+          test -f service-worker.js
