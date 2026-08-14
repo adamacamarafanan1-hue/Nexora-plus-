@@ -1,0 +1,153 @@
+name: Reparation unifiee des cours V528
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-unified-courses-v528.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexora-v528-unified-course-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Integrer V528 dans les sources canoniques
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          secure_path = Path('assets/js/nexora-secure-v525.js')
+          secure = secure_path.read_text(encoding='utf-8')
+
+          old = """  function getClient(){
+              try{return window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;}catch(_e){return null;}
+            }
+
+          async function waitClient(){
+              for(var i=0;i<60;i++){
+                var c=getClient();
+                if(c&&c.auth&&typeof c.rpc==='function')return c;
+                await new Promise(function(resolve){setTimeout(resolve,120);});
+              }
+              throw new Error('Connexion à Nexora indisponible. Vérifie Internet puis réessaie.');
+            }
+          """
+
+          new = """  function getClient(){
+              try{return window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;}catch(_e){return null;}
+            }
+
+          /* V528 — le moteur sécurisé ne doit plus attendre passivement que Supabase
+             soit chargé ailleurs. Tous les parcours Élèves et Pro passent ici : on
+             déclenche donc explicitement le client officiel Nexora avant le contrôle
+             d'accès et avant /api/secure-content. */
+          async function ensureClientNow(){
+              var direct=getClient();
+              if(direct&&direct.auth&&typeof direct.rpc==='function')return direct;
+              var app=window.NexoraApp;
+              if(app&&typeof app.ensureSupabaseClientReady==='function'){
+                try{
+                  var ready=await withTimeout(Promise.resolve(app.ensureSupabaseClientReady()),12000,'Le service de connexion Nexora prend trop de temps.');
+                  if(ready&&ready.auth&&typeof ready.rpc==='function')return ready;
+                }catch(err){try{window.nxLog&&window.nxLog(err,'secure-client-ready-v528');}catch(_logError){}}
+              }
+              return getClient();
+            }
+
+          async function waitClient(){
+              var first=await ensureClientNow();
+              if(first&&first.auth&&typeof first.rpc==='function')return first;
+              for(var i=0;i<25;i++){
+                var c=getClient();
+                if(c&&c.auth&&typeof c.rpc==='function')return c;
+                await new Promise(function(resolve){setTimeout(resolve,120);});
+              }
+              throw new Error('Connexion à Nexora indisponible. Vérifie Internet puis réessaie.');
+            }
+          """
+
+          if secure.count(old) != 1:
+              raise SystemExit(f'Bloc waitClient attendu une seule fois, trouvé {secure.count(old)} fois')
+          secure = secure.replace(old, new, 1)
+          secure_path.write_text(secure, encoding='utf-8')
+
+          index_path = Path('index.html')
+          index = index_path.read_text(encoding='utf-8')
+          replacements = {
+              '<meta content="v527.4-bac-cours" name="nexora-build"/>': '<meta content="v528.0-unified-course-gateway" name="nexora-build"/>',
+              '<meta content="V527.4" name="nexora-release"/>': '<meta content="V528.0" name="nexora-release"/>',
+              '<meta content="V527.4 — BAC plein écran et chargement des cours fiabilisés" name="nexora-version"/>': '<meta content="V528.0 — ouverture unifiée et sécurisée des cours Élèves et Pro" name="nexora-version"/>'
+          }
+          for before, after in replacements.items():
+              if index.count(before) != 1:
+                  raise SystemExit(f'Marqueur index introuvable ou dupliqué: {before[:70]}')
+              index = index.replace(before, after, 1)
+          if '?v=527.4' not in index:
+              raise SystemExit('Aucun cache-buster V527.4 trouvé dans index.html')
+          index = index.replace('?v=527.4', '?v=528.0')
+          index_path.write_text(index, encoding='utf-8')
+
+          sw_path = Path('service-worker.js')
+          sw = sw_path.read_text(encoding='utf-8')
+          if 'nexora-v5274-bac-cours-1' not in sw:
+              raise SystemExit('Cache V527.4 attendu absent du service worker')
+          sw = sw.replace('nexora-v5274-bac-cours-1', 'nexora-v528-unified-courses-1', 1)
+          sw = sw.replace('V527.4', 'V528.0')
+          sw_path.write_text(sw, encoding='utf-8')
+
+          version = {
+            'version': 'V528.0',
+            'message': 'Nexora V528.0 : moteur commun Élèves/Pro fiabilisé ; le client Supabase est initialisé explicitement avant toute ouverture sécurisée.',
+            'critical': True,
+            'updated_at': '2026-08-14T21:40:00.000Z',
+            'update_system': 'forced-service-worker-v528-unified-courses',
+            'subscription': 'supabase-v528-explicit-client-readiness',
+            'secure_content': 'nxe-v525-protocol-v528-server-authority',
+            'lecons': 'lecture-v528-single-secure-client-path',
+            'secure_manifest': 'v525-20260813-1'
+          }
+          Path('version.json').write_text(json.dumps(version, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Valider strictement la reparation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/js/nexora-secure-v525.js
+          node --check assets/js/nexora-academy-v524.js
+          python3 -m json.tool version.json >/dev/null
+          grep -q "ensureSupabaseClientReady" assets/js/nexora-secure-v525.js
+          grep -q "secure-client-ready-v528" assets/js/nexora-secure-v525.js
+          grep -q "V528.0" index.html
+          grep -q "nexora-v528-unified-courses-1" service-worker.js
+          grep -q "nexora_my_subscription_status_v264" api/secure-content.js
+          grep -q '"product_code":"eleves"' api/secure-content.js
+          grep -q '"product_code":"pro"' api/secure-content.js
+          git diff --check
+
+      - name: Publier la source canonique et retirer l'outil temporaire
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/repair-unified-courses-v528.yml
+          git add assets/js/nexora-secure-v525.js index.html service-worker.js version.json
+          git diff --cached --stat
+          git commit -m "Unifier l'ouverture sécurisée des cours V528.0"
+          git push origin HEAD:main
