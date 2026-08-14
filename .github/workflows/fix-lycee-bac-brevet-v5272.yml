@@ -1,11 +1,7 @@
 name: Corriger Lycée BAC Brevet V527.2
 
 on:
-  push:
-    paths:
-      - '.github/workflows/fix-lycee-bac-brevet-v5272.yml'
-      - '.github/scripts/fix_lycee_bac_brevet_v5272.py'
-      - '.github/scripts/run_fix_lycee_bac_brevet_v5272.py'
+  workflow_dispatch:
 
 permissions:
   contents: write
