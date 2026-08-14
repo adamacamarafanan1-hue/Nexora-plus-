@@ -33,15 +33,19 @@ jobs:
 
           secure_path = Path('assets/js/nexora-secure-v525.js')
           secure = secure_path.read_text(encoding='utf-8')
-          start_marker = '  function getClient(){'
-          end_marker = '  async function currentUser(client){'
-          if secure.count(start_marker) != 1 or secure.count(end_marker) != 1:
-              raise SystemExit('Bornes du client sécurisé absentes ou dupliquées')
-          start = secure.index(start_marker)
-          end = secure.index(end_marker, start)
+          wait_marker = '  async function waitClient(){'
+          user_marker = '  async function currentUser(client){'
+          get_marker = '  function getClient(){'
+          if secure.count(wait_marker) != 1 or secure.count(user_marker) != 1:
+              raise SystemExit('Bornes uniques waitClient/currentUser absentes : arrêt')
+          wait_pos = secure.index(wait_marker)
+          start = secure.rfind(get_marker, 0, wait_pos)
+          end = secure.index(user_marker, wait_pos)
+          if start < 0 or end <= wait_pos:
+              raise SystemExit('Bloc du client sécurisé non localisable')
           current_block = secure[start:end]
-          if 'async function waitClient()' not in current_block or 'getSupabaseClient' not in current_block:
-              raise SystemExit('Bloc client sécurisé inattendu : arrêt sans modification')
+          if current_block.count('function getClient()') != 1 or current_block.count('async function waitClient()') != 1:
+              raise SystemExit('Bloc moteur ambigu : arrêt')
 
           new_block = """  function getClient(){
               try{return window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;}catch(_e){return null;}
@@ -105,7 +109,7 @@ jobs:
             'version': 'V528.0',
             'message': 'Nexora V528.0 : moteur commun Élèves/Pro fiabilisé ; le client Supabase est initialisé explicitement avant toute ouverture sécurisée.',
             'critical': True,
-            'updated_at': '2026-08-14T21:46:00.000Z',
+            'updated_at': '2026-08-14T21:50:00.000Z',
             'update_system': 'forced-service-worker-v528-unified-courses',
             'subscription': 'supabase-v528-explicit-client-readiness',
             'secure_content': 'nxe-v525-protocol-v528-server-authority',
@@ -122,8 +126,8 @@ jobs:
           node --check assets/js/nexora-secure-v525.js
           node --check assets/js/nexora-academy-v524.js
           python3 -m json.tool version.json >/dev/null
+          test "$(grep -c "secure-client-ready-v528" assets/js/nexora-secure-v525.js)" -eq 1
           grep -q "ensureSupabaseClientReady" assets/js/nexora-secure-v525.js
-          grep -q "secure-client-ready-v528" assets/js/nexora-secure-v525.js
           grep -q "V528.0" index.html
           grep -q "?v=528.0" index.html
           grep -q "nexora-v528-unified-courses-1" service-worker.js
