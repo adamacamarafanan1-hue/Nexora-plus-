@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/fix-lycee-bac-brevet-v5272.yml'
       - '.github/scripts/fix_lycee_bac_brevet_v5272.py'
+      - '.github/scripts/run_fix_lycee_bac_brevet_v5272.py'
 
 permissions:
   contents: write
@@ -20,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Intégrer la correction V527.2
-        run: python3 .github/scripts/fix_lycee_bac_brevet_v5272.py
+        run: python3 .github/scripts/run_fix_lycee_bac_brevet_v5272.py
 
       - name: Vérifier JavaScript et cohérence
         shell: bash
@@ -31,7 +32,9 @@ jobs:
           grep -q 'window.NexoraBac={open:openBacRestored' assets/js/nexora-academy-v524.js
           grep -q 'window.NexoraDixieme={open:openTenRestored' assets/js/nexora-academy-v524.js
           grep -q 'NX_SECURE_FETCH_TIMEOUT_MS=45000' assets/js/nexora-secure-v525.js
+          grep -q 'response&&response.status===401' assets/js/nexora-secure-v525.js
           grep -q 'nexora-academy-v524.js?v=527.2' index.html
+          grep -q 'nexora-academy-v524.css?v=527.2' index.html
           grep -q 'nexora-v527-cours-3' service-worker.js
           grep -q '"version": "V527.2"' version.json
           git diff --check
