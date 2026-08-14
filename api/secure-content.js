@@ -25,14 +25,19 @@ function normalizePath(value) {
 
 function decodeResult(value) {
   let current = value;
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < 6; index += 1) {
     if (Array.isArray(current) && current.length === 1) current = current[0];
     if (typeof current === "string") {
       try { current = JSON.parse(current); continue; } catch { break; }
     }
-    if (current && typeof current === "object" && "data" in current) {
-      current = current.data;
-      continue;
+    if (current && typeof current === "object") {
+      if ("active" in current || "status" in current) break;
+      const wrappedKey = ["data", "result", "resultat", "nexora_my_subscription_status_v264"]
+        .find((key) => key in current);
+      if (wrappedKey) {
+        current = current[wrappedKey];
+        continue;
+      }
     }
     break;
   }
