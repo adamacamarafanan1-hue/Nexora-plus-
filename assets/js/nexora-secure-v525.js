@@ -312,7 +312,7 @@
   var manifestPromise=null;
   var authObserverReady=false;
   var dec=new TextDecoder('utf-8');
-  var NX_SECURE_FETCH_TIMEOUT_MS=20000;
+  var NX_SECURE_FETCH_TIMEOUT_MS=45000;
 
   function nxSecureFetchV506(url,options){
     options=options||{};
@@ -331,43 +331,35 @@
     try{var keys=await caches.keys();await Promise.all(keys.filter(function(k){return /^nexora-premium-encrypted-/i.test(k);}).map(function(k){return caches.delete(k);}));}catch(_e){window.nxLog&&window.nxLog(_e)}
   }
 
-  async function getSession(){
+  async function getSession(forceRefresh){
     try{
       var c=window.NexoraApp&&typeof window.NexoraApp.getSupabaseClient==='function'?window.NexoraApp.getSupabaseClient():null;
       if(!c||!c.auth)return null;
+      if(forceRefresh===true&&typeof c.auth.refreshSession==='function'){
+        try{
+          var forced=await c.auth.refreshSession();
+          var forcedSession=forced&&forced.data&&forced.data.session||null;
+          if(forcedSession&&forcedSession.access_token&&forcedSession.user)return forcedSession;
+        }catch(_forceError){window.nxLog&&window.nxLog(_forceError,'secure-content-refresh')}
+      }
       var r=await c.auth.getSession();
-      return r&&r.data&&r.data.session||null;
-    }catch(_e){return null;}
+      var session=r&&r.data&&r.data.session||null;
+      var expiresAt=Number(session&&session.expires_at||0)*1000;
+      if(session&&session.access_token&&session.user&&(!expiresAt||expiresAt>Date.now()+60000))return session;
+      if(typeof c.auth.refreshSession==='function'){
+        try{
+          var refreshed=await c.auth.refreshSession();
+          session=refreshed&&refreshed.data&&refreshed.data.session||null;
+          if(session&&session.access_token&&session.user)return session;
+        }catch(_refreshError){window.nxLog&&window.nxLog(_refreshError,'secure-content-refresh')}
+      }
+      return null;
+    }catch(_e){window.nxLog&&window.nxLog(_e,'secure-content-session');return null;}
   }
 
-  async function setupAuthObserver(){
-    if(authObserverReady)return;
-    var c=null;
-    for(var i=0;i<50&&!c;i++){
-      try{c=window.NexoraApp&&window.NexoraApp.getSupabaseClient&&window.NexoraApp.getSupabaseClient();}catch(_e){window.nxLog&&window.nxLog(_e)}
-      if(!c)await new Promise(function(r){setTimeout(r,150);});
-    }
-    if(!c||!c.auth||typeof c.auth.onAuthStateChange!=='function')return;
-    authObserverReady=true;
-    c.auth.onAuthStateChange(function(event){if(event==='SIGNED_OUT'||event==='USER_DELETED')revoke('logout');});
-  }
-
-  async function loadManifest(){
-    if(manifestPromise)return manifestPromise;
-    manifestPromise=nxSecureFetchV506(MANIFEST_URL,{cache:'no-store',credentials:'same-origin'})
-      .then(function(r){if(!r.ok)throw new Error('Manifest sécurisé indisponible.');return r.json();})
-      .then(function(m){
-        if(!m||m.version!==VERSION||!Array.isArray(m.entries))throw new Error('Manifest sécurisé invalide.');
-        m.byPath={};
-        m.entries.forEach(function(e){m.byPath[normalizePath(e.path)]=e;});
-        return m;
-      }).catch(function(err){manifestPromise=null;throw err;});
-    return manifestPromise;
-  }
-
-  async function requireSession(){
+  async function requireSession(forceRefresh){
     if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours.');
-    var session=await getSession();
+    var session=await getSession(forceRefresh===true);
     if(!session||!session.access_token||!session.user)throw errorMessage('Connexion Nexora obligatoire pour ouvrir ce contenu.');
     return session;
   }
@@ -376,8 +368,19 @@
     path=normalizePath(path);
     var manifest=await loadManifest(),entry=manifest.byPath[path];
     if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);
-    var session=await requireSession();
-    var response=await nxSecureFetchV506('/api/secure-content',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({content_version:VERSION,path:path})});
+    var session=await requireSession(false);
+    async function requestSecureBytes(activeSession){
+      return nxSecureFetchV506('/api/secure-content',{
+        method:'POST',credentials:'same-origin',cache:'no-store',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+activeSession.access_token},
+        body:JSON.stringify({content_version:VERSION,path:path})
+      });
+    }
+    var response=await requestSecureBytes(session);
+    if(response&&response.status===401){
+      session=await requireSession(true);
+      response=await requestSecureBytes(session);
+    }
     if(!response.ok){
       var data={};try{data=await response.json();}catch(_e){window.nxLog&&window.nxLog(_e)}
       var msg=data&&data.message?String(data.message):'Accès à ce contenu refusé.';

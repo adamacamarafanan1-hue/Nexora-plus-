@@ -1,17 +1,17 @@
 {
-  "version": "V527.1",
-  "message": "Nexora V527.1 : cours du collège et du lycée organisés en progression pédagogique.",
+  "version": "V527.2",
+  "message": "Nexora V527.2 : ouverture des classes du lycée, du BAC et du Brevet fiabilisée.",
   "critical": true,
-  "updated_at": "2026-08-14T13:10:00.000Z",
-  "update_system": "forced-service-worker-v527.1-course-organization",
+  "updated_at": "2026-08-14T14:45:00.000Z",
+  "update_system": "forced-service-worker-v527.2-lycee-bac-brevet-open",
   "subscription": "supabase-v527-session-refresh-rpc-server-authority",
   "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
-  "secure_content": "nxe-v525-protocol-v527-server-authority",
+  "secure_content": "nxe-v525-protocol-v527.2-session-refresh-gzip",
   "ouverture": "head-14ko-lazy-groups-timers-260-2600-3200",
   "account_creation": "essential-fields-first-no-overlay",
   "subscription_cta": "product-specific-access-v525",
   "subscription_spaces": "eleves-pro-canonical-mapping-v525.1",
   "audio": "primary-autostart-timer-cancelled-v523",
-  "lecons": "lecture-v527.1-ordre-pedagogique-sequences-progressives",
+  "lecons": "lecture-v527.2-access-before-load-bac-brevet-restored",
   "secure_manifest": "restored-product-gated-v525.1"
 }

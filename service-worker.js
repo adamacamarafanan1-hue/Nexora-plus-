@@ -1,10 +1,10 @@
-/* Nexora V527.1 — cache renouvelé après organisation des cours.
+/* Nexora V527.2 — cache renouvelé après organisation des cours.
    Le document n'est plus retéléchargé à chaque
    lancement. On lit d'abord version.json (467 octets, au plus une fois toutes
    les 6 heures) ; le document n'est repris que si le numéro de version a
    réellement changé. */
 
-const CACHE_NAME = "nexora-v527-cours-2";
+const CACHE_NAME = "nexora-v527-cours-3";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;
