@@ -2,7 +2,7 @@
   "version": "V527.4",
   "message": "Nexora V527.4 : BAC en plein écran et ouverture des cours fiabilisée avec session sécurisée rafraîchie.",
   "critical": true,
-  "updated_at": "2026-08-14T19:15:00.000Z",
+  "updated_at": "2026-08-14T21:07:30.000Z",
   "update_system": "forced-service-worker-v527.4-bac-cours-session",
   "subscription": "supabase-v527.4-session-wait-timeout-refresh",
   "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
