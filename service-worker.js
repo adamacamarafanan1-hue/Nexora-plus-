@@ -1,13 +1,13 @@
-/* Nexora V527.3 — cache renouvelé après réparation des 22 modules Pro.
+/* Nexora V527.4 — cache renouvelé après correction BAC et chargement sécurisé.
    Le document n'est plus retéléchargé à chaque
    lancement. On lit d'abord version.json (467 octets, au plus une fois toutes
    les 6 heures) ; le document n'est repris que si le numéro de version a
    réellement changé. */
 
-const CACHE_NAME = "nexora-v527-pro-1";
+const CACHE_NAME = "nexora-v5274-bac-cours-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
-const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;
+const DELAI_CONTROLE_MS = 15 * 60 * 1000;
 
 const PUBLIC_ASSETS = [
   "/index.html",
