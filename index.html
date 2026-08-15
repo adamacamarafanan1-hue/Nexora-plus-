@@ -4,6 +4,11 @@
 <!-- Nexora V508 : deux espaces — élèves (maternelle, primaire, collège, lycée, sujets, romans)
      et professionnel (les 22 modules). Aucune règle d’accès ni de contenu modifiée. -->
 <meta charset="utf-8"/>
+<!-- V524.1 : la feuille de l’Académie est désormais liée dès le document.
+     Elle n’était plus chargée que par le chargeur paresseux, et les écrans
+     du primaire, de la 11ème, de la 12ème et de la Terminale se retrouvaient
+     sans style quand ce chargeur ne se déclenchait pas. -->
+<link href="./assets/css/nexora-academy-v524.css" rel="stylesheet"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' blob:; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://lzypxingcykvgxdifccq.supabase.co; media-src 'self' data: blob: https://lzypxingcykvgxdifccq.supabase.co; connect-src 'self' https://lzypxingcykvgxdifccq.supabase.co wss://lzypxingcykvgxdifccq.supabase.co https://nexora-plus-beta.vercel.app; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' blob: https://nexora-plus-beta.vercel.app; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" http-equiv="Content-Security-Policy"/>
 <meta content="no-referrer" name="referrer"/>
@@ -13,8 +18,8 @@
 <meta content="#143B67" name="theme-color"/>
 <meta content="Nexora Académie" name="application-name"/>
 <meta content="v524-affichage-lecons" name="nexora-build"/>
-<meta content="V524" name="nexora-release"/>
-<meta content="V524 — affichage premium des leçons" name="nexora-version"/>
+<meta content="V524.1" name="nexora-release"/>
+<meta content="V524.1 — feuille de l’Académie liée dès le document" name="nexora-version"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Nexora Académie" name="apple-mobile-web-app-title"/>
