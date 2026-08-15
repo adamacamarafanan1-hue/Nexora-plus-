@@ -319,68 +319,6 @@
     });
   }
 
-
-/* ===== V527.2 · contrôleurs BAC et Brevet restaurés dans le bundle Académie ===== */
-(function(){
-  'use strict';
-  if(window.NexoraBac&&window.NexoraDixieme)return;
-  function el(id){return document.getElementById(id)}
-  function notify(message){try{if(window.NexoraApp&&typeof window.NexoraApp.notify==='function')return window.NexoraApp.notify(message);if(typeof window.toast==='function')window.toast(message)}catch(_e){window.nxLog&&window.nxLog(_e)}}
-  function resolver(){var r=window.NexoraAcademyContentV271;if(!r||typeof r.mountFrame!=='function')throw new Error('Chargeur officiel de l’Académie indisponible.');return r}
-
-  function ensureBacShell(){
-    var viewer=el('nxBacAcademyViewer');if(viewer)return viewer;
-    viewer=document.createElement('section');viewer.id='nxBacAcademyViewer';viewer.className='nx-bac-viewer-v90';viewer.hidden=true;viewer.setAttribute('role','dialog');viewer.setAttribute('aria-modal','true');viewer.setAttribute('aria-label','Matières BAC');
-    viewer.innerHTML='<header class="nx-bac-head-v90"><button type="button" class="nx-bac-close-v90" id="nxBacCloseButton" aria-label="Retour à l’Académie Nexora">←</button><div class="nx-bac-head-copy-v90"><span>Académie Nexora</span><h2>Matières BAC — Adams BAC Guinée</h2></div><button type="button" class="nx-bac-reload-v90" id="nxBacReloadButton">Actualiser</button></header><div class="nx-bac-frame-wrap-v90"><div class="nx-bac-loader-v90" id="nxBacLoader"><div class="nx-bac-loader-inner-v90"><span class="nx-bac-spinner-v90" aria-hidden="true"></span><b>Ouverture des matières BAC…</b></div></div><iframe id="nxBacAcademyFrame" loading="eager" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads" allow="microphone; fullscreen" title="Matières BAC — Adams BAC Guinée"></iframe></div>';
-    document.body.appendChild(viewer);return viewer;
-  }
-  var bacLastFocus=null;
-  function bacLoader(visible,message){var loader=el('nxBacLoader');if(!loader)return;loader.hidden=!visible;var label=loader.querySelector('b');if(label&&message)label.textContent=message}
-  function bacFrame(force){
-    ensureBacShell();var frame=el('nxBacAcademyFrame');if(!frame)return Promise.reject(new Error('Cadre BAC introuvable.'));
-    if(!force&&frame.dataset.loaded==='1'){bacLoader(false);return Promise.resolve(true)}
-    bacLoader(true,'Ouverture des matières BAC…');
-    frame.onload=function(){frame.dataset.loaded='1';bacLoader(false)};
-    frame.onerror=function(){frame.dataset.loaded='';bacLoader(true,'Impossible d’ouvrir le programme BAC. Réessaie.')};
-    return resolver().mountFrame(frame,'modules/bac/index.html').catch(function(error){frame.dataset.loaded='';bacLoader(true,'Le contenu BAC n’a pas pu être chargé. Ferme cette rubrique puis réessaie.');throw error});
-  }
-  function openBacRestored(){var viewer=ensureBacShell();bacLastFocus=document.activeElement;viewer.hidden=false;document.body.classList.add('nx-bac-open-v90');var p=bacFrame(false);var close=el('nxBacCloseButton');if(close)setTimeout(function(){try{close.focus()}catch(_e){}},30);return p}
-  function closeBacRestored(){var viewer=el('nxBacAcademyViewer');if(!viewer)return;viewer.hidden=true;document.body.classList.remove('nx-bac-open-v90');if(bacLastFocus&&bacLastFocus.focus)try{bacLastFocus.focus()}catch(_e){}}
-
-  function ensureDixiemeShell(){
-    var viewer=el('nx10AcademyViewer');if(viewer)return viewer;
-    viewer=document.createElement('section');viewer.id='nx10AcademyViewer';viewer.className='nx10-viewer-v91';viewer.hidden=true;viewer.setAttribute('role','dialog');viewer.setAttribute('aria-modal','true');viewer.setAttribute('aria-label','Programme de 10ème année');
-    viewer.innerHTML='<header class="nx10-head-v91"><button type="button" class="nx10-close-v91" id="nx10CloseButton" aria-label="Retour à l’Académie Nexora">←</button><div class="nx10-head-copy-v91"><span>Académie Nexora</span><h2>Brevet — cours de 10ème année et sujets BEPC</h2></div><button type="button" class="nx10-reload-v91" id="nx10ReloadButton">Actualiser</button></header><div class="nx10-frame-wrap-v91"><div class="nx10-loader-v91" id="nx10Loader"><div class="nx10-loader-inner-v91"><span class="nx10-spinner-v91" aria-hidden="true"></span><b>Ouverture des cours du Brevet…</b></div></div><iframe id="nx10AcademyFrame" loading="eager" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads" allow="microphone; fullscreen" title="Brevet — cours de 10ème année et sujets BEPC"></iframe></div>';
-    document.body.appendChild(viewer);return viewer;
-  }
-  var tenLastFocus=null,tenPendingTarget='subjects';
-  function tenLoader(visible,message){var loader=el('nx10Loader');if(!loader)return;loader.hidden=!visible;var label=loader.querySelector('b');if(label&&message)label.textContent=message}
-  function navigateTen(target){var frame=el('nx10AcademyFrame');if(!frame||!frame.contentWindow)return;target=target==='brevet'?'brevet':'subjects';try{if(typeof frame.contentWindow.show==='function')frame.contentWindow.show(target);else frame.contentWindow.postMessage({type:'nexora-open-10eme',target:target},window.location.protocol==='file:'?'*':window.location.origin)}catch(_e){window.nxLog&&window.nxLog(_e)}}
-  function tenFrame(force,target){
-    ensureDixiemeShell();var frame=el('nx10AcademyFrame');if(!frame)return Promise.reject(new Error('Cadre Brevet introuvable.'));
-    tenPendingTarget=target==='brevet'?'brevet':'subjects';
-    if(!force&&frame.dataset.loaded==='1'){tenLoader(false);navigateTen(tenPendingTarget);return Promise.resolve(true)}
-    tenLoader(true,'Ouverture du programme de 10ème année…');
-    frame.onload=function(){frame.dataset.loaded='1';tenLoader(false);setTimeout(function(){navigateTen(tenPendingTarget)},40)};
-    frame.onerror=function(){frame.dataset.loaded='';tenLoader(true,'Impossible d’ouvrir le programme. Réessaie.')};
-    return resolver().mountFrame(frame,'modules/dixieme/index.html').catch(function(error){frame.dataset.loaded='';tenLoader(true,'Le contenu Brevet n’a pas pu être chargé. Ferme cette rubrique puis réessaie.');throw error});
-  }
-  function openTenRestored(target){var viewer=ensureDixiemeShell();tenLastFocus=document.activeElement;viewer.hidden=false;document.body.classList.add('nx10-open-v91');var p=tenFrame(false,target);var close=el('nx10CloseButton');if(close)setTimeout(function(){try{close.focus()}catch(_e){}},30);return p}
-  function closeTenRestored(){var viewer=el('nx10AcademyViewer');if(!viewer)return;viewer.hidden=true;document.body.classList.remove('nx10-open-v91');if(tenLastFocus&&tenLastFocus.focus)try{tenLastFocus.focus()}catch(_e){}}
-
-  document.addEventListener('click',function(e){
-    var t=e.target&&e.target.closest?e.target:null;if(!t)return;
-    if(t.closest('#nxBacCloseButton')){e.preventDefault();closeBacRestored();return}
-    if(t.closest('#nxBacReloadButton')){e.preventDefault();bacFrame(true).catch(function(err){notify(String(err&&err.message||err))});return}
-    if(t.closest('#nx10CloseButton')){e.preventDefault();closeTenRestored();return}
-    if(t.closest('#nx10ReloadButton')){e.preventDefault();tenFrame(true,tenPendingTarget).catch(function(err){notify(String(err&&err.message||err))});return}
-  },true);
-  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;var bac=el('nxBacAcademyViewer'),ten=el('nx10AcademyViewer');if(bac&&!bac.hidden){e.preventDefault();closeBacRestored()}else if(ten&&!ten.hidden){e.preventDefault();closeTenRestored()}},true);
-
-  window.NexoraBac={open:openBacRestored,close:closeBacRestored,reload:function(){return bacFrame(true)}};
-  window.NexoraDixieme={open:openTenRestored,close:closeTenRestored,reload:function(){return tenFrame(true,tenPendingTarget)}};
-})();
-
   function openBac(target){
     return withAccess('academy',target,'Ouverture du BAC…',function(){
       if(!window.NexoraBac||typeof window.NexoraBac.open!=='function')throw new Error('Rubrique BAC non initialisée.');
@@ -677,95 +615,6 @@
   },false);
 })();
 
-/* Moteur pédagogique unique : ordre des rubriques et découpage des séquences. */
-(function(){
-  'use strict';
-  if(window.NexoraCourseLayout)return;
-  function text(value){return String(value==null?'':value).trim()}
-  function values(value){
-    if(Array.isArray(value))return value.map(text).filter(Boolean);
-    var one=text(value);return one?[one]:[];
-  }
-  function college(lesson,esc,actionPrefix){
-    var z=lesson.sections||{},number=0,html='';
-    function block(title,value,kind,cls){
-      var rows=values(value);if(!rows.length)return;
-      number++;
-      html+='<h3><span class="nx7-section-num-v485">'+number+'</span>'+title+'</h3>';
-      if(kind==='list')html+='<ul'+(cls?' class="'+cls+'"':'')+'>'+rows.map(function(row){return '<li>'+esc(row)+'</li>'}).join('')+'</ul>';
-      else if(kind==='ordered')html+='<ol'+(cls?' class="'+cls+'"':'')+'>'+rows.map(function(row){return '<li>'+esc(row)+'</li>'}).join('')+'</ol>';
-      else html+=rows.map(function(row){return '<p>'+esc(row)+'</p>'}).join('');
-    }
-    block('Objectif de la leçon',lesson.objective);
-    block('Prérequis',lesson.prereq);
-    block('Introduction',z.introduction);
-    block('Origine ou historique',z.historique);
-    block('Définition',z.definition);
-    block('Cours expliqué',z.developpement);
-    block('Fonctionnement',z.fonctionnement);
-    block('Importance et applications',z.importance);
-    block('Exemples concrets',z.exemples,'ordered');
-    block('À retenir',z.retenir,'list','nx7-retain-v485');
-    block("Exercices d'application",z.exercices,'ordered','nx7-exercises-v485');
-    var correction=text(lesson.correction);
-    if(correction){
-      html+='<button type="button" class="nx-course-correction-toggle" data-'+actionPrefix+'-action="correction">Afficher la correction</button>'+
-        '<div class="nx-course-correction" data-'+actionPrefix+'-correction hidden><b>Correction guidée</b><p>'+esc(correction)+'</p></div>';
-    }
-    if(!html){
-      var fallback=text(lesson.lesson_text||lesson.course);
-      html=fallback.split(/\n\s*\n/).filter(Boolean).map(function(row){return '<p>'+esc(row)+'</p>'}).join('');
-    }
-    return html;
-  }
-  function lycee(lesson,esc){
-    var P='nx-lecon-v524';
-    function box(title,value,cls){
-      var rows=values(value);if(!rows.length)return '';
-      return '<div class="'+P+'-box'+(cls?' '+P+'-'+cls:'')+'"><b>'+title+'</b><span>'+rows.map(esc).join('<br>')+'</span></div>';
-    }
-    var out='';
-    out+=box('Objectif de la leçon',lesson.objective,'objectif');
-    out+=box('Définition et repères',lesson.definition,'def');
-    var plan=Array.isArray(lesson.plan)?lesson.plan.filter(function(row){return row&&text(row[0])&&text(row[1])}):[];
-    if(plan.length){
-      out+='<div class="'+P+'-plan"><b class="'+P+'-plan-title">Cours expliqué, point par point</b>'+plan.map(function(row,index){return '<section class="'+P+'-sec"><h5><u>'+(index+1)+'</u>'+esc(row[0])+'</h5><p>'+esc(row[1])+'</p></section>'}).join('')+'</div>';
-    }else{
-      out+=[lesson.p1,lesson.p2,lesson.p3].map(text).filter(Boolean).map(function(row){return '<p>'+esc(row)+'</p>'}).join('');
-    }
-    out+=box('Formules et outils à connaître',lesson.formules,'formul');
-    out+=box('Exemple expliqué',lesson.example,'exemple');
-    out+=box('Méthode de travail',lesson.method,'methode');
-    out+=box('Erreurs fréquentes à éviter',lesson.pieges,'piege');
-    var exercises=Array.isArray(lesson.exercices)?lesson.exercices.filter(function(item){return item&&text(item.enonce)}):[];
-    if(exercises.length){
-      out+='<div class="'+P+'-exos"><b class="'+P+'-plan-title">Exercices d’application ('+exercises.length+')</b>'+exercises.map(function(item,index){var correction=text(item.correction);return '<section class="'+P+'-exo"><h5><u>'+(index+1)+'</u>Énoncé</h5><p>'+esc(item.enonce)+'</p>'+(correction?'<details class="'+P+'-corr"><summary>Voir la correction détaillée</summary><p>'+esc(correction)+'</p></details>':'')+'</section>'}).join('')+'</div>';
-    }else if(text(lesson.exercise)){
-      out+=box("Exercice d’application",lesson.exercise,'exercice');
-      out+=box('Correction guidée',lesson.correction,'correction');
-    }
-    out+=box('Notions essentielles',lesson.key_points,'notions');
-    out+=box('Synthèse : à retenir',lesson.recap,'retenir');
-    return '<div class="'+P+'">'+out+'</div>';
-  }
-  function sequenceHeader(index,total){
-    if(index%5!==0)return '';
-    var labels=['Fondations','Comprendre','Appliquer','Approfondir','Synthèse et révision'];
-    var sequence=Math.floor(index/5),end=Math.min(index+5,total);
-    return '<div class="nx-course-sequence"><b>Séquence '+(sequence+1)+' · '+(labels[sequence]||'Progression')+'</b><span>Leçons '+(index+1)+' à '+end+'</span></div>';
-  }
-  function toggleExclusive(button,article){
-    var list=article&&article.parentNode,wasOpen=article&&article.classList.contains('open');
-    if(!list)return;
-    Array.prototype.forEach.call(list.querySelectorAll('.open'),function(openArticle){
-      openArticle.classList.remove('open');
-      var openButton=openArticle.querySelector('[aria-expanded]');if(openButton)openButton.setAttribute('aria-expanded','false');
-    });
-    if(!wasOpen){article.classList.add('open');button.setAttribute('aria-expanded','true')}
-  }
-  window.NexoraCourseLayout={college:college,lycee:lycee,sequenceHeader:sequenceHeader,toggleExclusive:toggleExclusive};
-})();
-
 /* ===== nexora-seventh-script-v349 ===== */
 (function(){
 'use strict';
@@ -807,9 +656,9 @@ function syncTheme(){var v=viewer();if(!v)return;var t=document.documentElement.
 function renderHome(){state.subject=null;state.lesson=-1;state.query='';setHeader('7ème année · Cours');setBack(false);var done=totalDone(),total=totalLessons();main().innerHTML='<section class="nx7-hero-v349"><span class="nx7-kicker-v349">Programme du collège guinéen</span><h2>7ème année — cours complets</h2><p>Chaque leçon suit la structure officielle de Nexora Académie : introduction, origine lorsque cela est pertinent, définition, développement approfondi, fonctionnement, importance, exemples concrets, points à retenir et exercices d’application.</p><div class="nx7-stats-v349"><div class="nx7-stat-v349"><b>'+DATA.length+'</b><span>matières du programme</span></div><div class="nx7-stat-v349"><b>'+total+'</b><span>leçons structurées</span></div><div class="nx7-stat-v349"><b>'+done+'</b><span>leçons terminées</span></div></div></section><div class="nx7-note-v349"><b>Lecture autonome :</b> ouvre une matière, lis chaque leçon lentement et dans l’ordre, puis marque-la comme lue avant de continuer.</div><section class="nx7-subject-grid-v349">'+DATA.map(function(s){var d=countDone(s),pct=Math.round(d*100/s.lessons.length);return '<button type="button" class="nx7-subject-v349" style="--s:'+esc(s.accent)+'" data-nx7-subject="'+esc(s.id)+'"><span class="nx7-subject-head-v349"><span class="nx7-subject-icon-v349">'+esc(s.icon)+'</span><span class="nx7-count-v349">'+s.lessons.length+' leçons · '+themeCount(s)+' thèmes</span></span><h3>'+esc(s.name)+'</h3><p>'+esc(s.intro)+'</p><span class="nx7-subject-foot-v349"><span>'+d+'/'+s.lessons.length+' terminées · '+pct+' %</span><b>Ouvrir →</b></span></button>'}).join('')+'</section>'}
 function renderLessons(id){var s=subject(id);if(!s)return renderHome();state.subject=id;state.lesson=-1;setHeader('7ème année · '+s.name);setBack(true);var d=countDone(s);main().innerHTML='<section class="nx7-page-head-v349"><div><small>7ème année · '+esc(s.name)+'</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.intro)+'</p></div><span class="nx7-progress-chip-v349">'+d+' / '+s.lessons.length+' terminées</span></section><label class="nx7-search-v349"><input type="search" data-nx7-search placeholder="Rechercher une leçon ou un chapitre" value="'+esc(state.query)+'" aria-label="Rechercher une leçon"></label><section class="nx7-lesson-list-v349" data-nx7-list></section>';renderLessonList(s)}
 function renderLessonList(s){var list=q('[data-nx7-list]',viewer());if(!list)return;var term=String(state.query||'').trim().toLowerCase();var found=[];s.lessons.forEach(function(l,i){var hay=(l.title+' '+l.chapter+' '+(l.lesson_text||'')).toLowerCase();if(!term||hay.indexOf(term)>-1)found.push({l:l,i:i})});if(!found.length){list.innerHTML='<div class="nx7-empty-v349">Aucune leçon ne correspond à cette recherche.</div>';return}var html='',current='';found.forEach(function(x){if(x.l.chapter!==current){current=x.l.chapter;var tot=0,dn=0;s.lessons.forEach(function(z,zi){if(z.chapter===current){tot++;if(isDone(s,zi))dn++}});html+='<div class="nx7-theme-head-v349" style="--s:'+esc(s.accent)+'"><b>'+esc(current)+'</b><span>'+dn+' / '+tot+'</span></div>'}var done=isDone(s,x.i);html+='<button type="button" class="nx7-lesson-card-v349" style="--s:'+esc(s.accent)+'" data-nx7-lesson="'+x.i+'">'+'<span class="nx7-lesson-num-v349">'+(x.i+1)+'</span>'+'<span class="nx7-lesson-copy-v349"><small>'+esc(x.l.chapter)+'</small><b>'+esc(x.l.title)+'</b><span>'+esc(x.l.summary||x.l.objective||'Leçon approfondie')+'</span></span>'+'<span class="nx7-lesson-state-v349"><span>'+esc(x.l.duration)+'</span><i>'+(done?'✓':'→')+'</i></span></button>'});list.innerHTML=html}
-function renderCourse(id,index){var s=subject(id),l=s&&s.lessons[index];if(!l)return renderLessons(id);state.subject=id;state.lesson=index;setHeader(s.name+' · Leçon '+(index+1));setBack(true);var done=isDone(s,index),body=window.NexoraCourseLayout.college(l,esc,'nx7');main().innerHTML='<article class="nx7-course-v349" style="--s:'+esc(s.accent)+'"><header class="nx7-course-hero-v349"><small>7ème année · '+esc(s.name)+' · Leçon '+(index+1)+'/'+s.lessons.length+'</small><span class="nx7-kicker-v349">Thème</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.chapter)+'</p><div class="nx7-course-tools-v349"><span>Leçon complète · 45 à 60 min</span><button type="button" data-nx7-action="speak">🔊 Écouter la leçon</button></div></header><section class="nx7-course-text-v349">'+body+'</section><nav class="nx7-nav-v349"><button type="button" data-nx7-action="lessons">← Toutes les leçons</button>'+(index>0?'<button type="button" data-nx7-action="previous">Précédente</button>':'')+'<button type="button" data-nx7-action="complete">'+(done?'✓ Leçon lue':'Marquer comme lue')+'</button>'+(index<s.lessons.length-1?'<button type="button" class="primary" data-nx7-action="next">Suivante →</button>':'<button type="button" class="primary" data-nx7-action="subjects">Choisir une matière</button>')+'</nav></article>';try{main().scrollIntoView({block:'start'})}catch(_e){window.nxLog&&window.nxLog(_e)}}
+function renderCourse(id,index){var s=subject(id),l=s&&s.lessons[index];if(!l)return renderLessons(id);state.subject=id;state.lesson=index;setHeader(s.name+' · Leçon '+(index+1));setBack(true);var done=isDone(s,index),z=l.sections||{},order=[['introduction','','Introduction','p'],['historique','','Origine ou historique','p'],['definition','','Définition','p'],['developpement','','Développement approfondi','p'],['fonctionnement','','Fonctionnement','p'],['importance','','Importance et objectifs','p'],['exemples','','Exemples concrets','ol'],['retenir','','À retenir','ul'],['exercices','','Exercices d’application','ol']],nxNum=0,body='';order.forEach(function(sec){var values=Array.isArray(z[sec[0]])?z[sec[0]].filter(Boolean):[];if(!values.length)return;nxNum++;body+='<h3><span class="nx7-section-num-v485">'+nxNum+'</span>'+sec[2]+'</h3>';if(sec[3]==='p'){body+=values.map(function(v){return '<p>'+esc(v)+'</p>'}).join('')}else{var cls=sec[0]==='retenir'?' class="nx7-retain-v485"':(sec[0]==='exercices'?' class="nx7-exercises-v485"':'');body+='<'+sec[3]+cls+'>'+values.map(function(v){return '<li>'+esc(v)+'</li>'}).join('')+'</'+sec[3]+'>'}});if(!body){var text=String(l.lesson_text||l.course||''),paras=text.split(/\n\s*\n/).filter(Boolean);body=paras.map(function(p){return '<p>'+esc(p)+'</p>'}).join('')}main().innerHTML='<article class="nx7-course-v349" style="--s:'+esc(s.accent)+'"><header class="nx7-course-hero-v349"><small>7ème année · '+esc(s.name)+' · Leçon '+(index+1)+'/'+s.lessons.length+'</small><span class="nx7-kicker-v349">Thème</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.chapter)+'</p><div class="nx7-course-tools-v349"><span>Leçon complète · 45 à 60 min</span><button type="button" data-nx7-action="speak">🔊 Écouter la leçon</button></div></header><section class="nx7-course-text-v349">'+body+'</section><nav class="nx7-nav-v349"><button type="button" data-nx7-action="lessons">← Toutes les leçons</button>'+(index>0?'<button type="button" data-nx7-action="previous">Précédente</button>':'')+'<button type="button" data-nx7-action="complete">'+(done?'✓ Leçon lue':'Marquer comme lue')+'</button>'+(index<s.lessons.length-1?'<button type="button" class="primary" data-nx7-action="next">Suivante →</button>':'<button type="button" class="primary" data-nx7-action="subjects">Choisir une matière</button>')+'</nav></article>';try{main().scrollIntoView({block:'start'})}catch(_e){window.nxLog&&window.nxLog(_e)} }
 function openGranted(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){openGranted.apply(__nxThis,__nxArgs)},NX_FAIL);return;}var v=viewer();if(!v)return false;state.lastFocus=document.activeElement;syncTheme();v.hidden=false;document.body.classList.add('nx7-open-v349');renderHome();setTimeout(function(){var c=q('[data-nx7-action="close"]',v);if(c)c.focus()},30);return true}
-function open(){var __nxArgs=arguments,__nxThis=this;function granted(){if(!NX_READY){NX_LOAD().then(function(){openGranted.apply(__nxThis,__nxArgs)},NX_FAIL);return;}return openGranted.apply(__nxThis,__nxArgs)}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',granted);return granted()}
+function open(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){open.apply(__nxThis,__nxArgs)},NX_FAIL);return;}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',openGranted);return openGranted()}
 function close(){var v=viewer();if(!v)return;try{speechSynthesis.cancel()}catch(_e){window.nxLog&&window.nxLog(_e)}v.hidden=true;document.body.classList.remove('nx7-open-v349');if(state.lastFocus&&state.lastFocus.focus)try{state.lastFocus.focus()}catch(_e2){window.nxLog&&window.nxLog(_e2)}}
 function back(){if(state.lesson>=0){renderLessons(state.subject);return}if(state.subject){renderHome();return}close()}
 function speak(){var s=subject(state.subject),l=s&&s.lessons[state.lesson];if(!l||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(l.lesson_text||l.course||l.title);u.lang='fr-FR';u.rate=.9;speechSynthesis.speak(u)}catch(_e){window.nxLog&&window.nxLog(_e)}}
@@ -860,9 +709,9 @@ function syncTheme(){var v=viewer();if(!v)return;var t=document.documentElement.
 function renderHome(){state.subject=null;state.lesson=-1;state.query='';setHeader('8ème année · Cours');setBack(false);var done=totalDone(),total=totalLessons();main().innerHTML='<section class="nx7-hero-v349"><span class="nx7-kicker-v349">Programme du collège guinéen</span><h2>8ème année — véritables leçons</h2><p>Chaque thème est présenté par une introduction propre au sujet, une définition précise, un développement approfondi, le fonctionnement de la notion, son importance, des exemples concrets, les idées essentielles et des exercices d’application.</p><div class="nx7-stats-v349"><div class="nx7-stat-v349"><b>'+DATA.length+'</b><span>matières du programme</span></div><div class="nx7-stat-v349"><b>'+total+'</b><span>leçons complètes</span></div><div class="nx7-stat-v349"><b>'+done+'</b><span>leçons terminées</span></div></div></section><div class="nx7-note-v349"><b>Lecture progressive :</b> choisis une matière, ouvre une leçon, lis chaque partie dans l’ordre puis réponds aux questions d’application.</div><section class="nx7-subject-grid-v349">'+DATA.map(function(s){var d=countDone(s),pct=Math.round(d*100/s.lessons.length);return '<button type="button" class="nx7-subject-v349" style="--s:'+esc(s.accent)+'" data-nx8-subject="'+esc(s.id)+'"><span class="nx7-subject-head-v349"><span class="nx7-subject-icon-v349">'+esc(s.icon)+'</span><span class="nx7-count-v349">'+s.lessons.length+' leçons · '+themeCount(s)+' thèmes</span></span><h3>'+esc(s.name)+'</h3><p>'+esc(s.intro)+'</p><span class="nx7-subject-foot-v349"><span>'+d+'/'+s.lessons.length+' terminées · '+pct+' %</span><b>Ouvrir →</b></span></button>'}).join('')+'</section>'}
 function renderLessons(id){var s=subject(id);if(!s)return renderHome();state.subject=id;state.lesson=-1;setHeader('8ème année · '+s.name);setBack(true);var d=countDone(s);main().innerHTML='<section class="nx7-page-head-v349"><div><small>8ème année · '+esc(s.name)+'</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.intro)+'</p></div><span class="nx7-progress-chip-v349">'+d+' / '+s.lessons.length+' terminées</span></section><label class="nx7-search-v349"><input type="search" data-nx8-search placeholder="Rechercher une leçon ou un chapitre" value="'+esc(state.query)+'" aria-label="Rechercher une leçon"></label><section class="nx7-lesson-list-v349" data-nx8-list></section>';renderLessonList(s)}
 function renderLessonList(s){var list=q('[data-nx8-list]',viewer());if(!list)return;var term=String(state.query||'').trim().toLowerCase();var found=[];s.lessons.forEach(function(l,i){var hay=(l.title+' '+l.chapter+' '+l.objective).toLowerCase();if(!term||hay.indexOf(term)>-1)found.push({l:l,i:i})});if(!found.length){list.innerHTML='<div class="nx7-empty-v349">Aucune leçon ne correspond à cette recherche.</div>';return}var html='',current='';found.forEach(function(x){if(x.l.chapter!==current){current=x.l.chapter;var tot=0,dn=0;s.lessons.forEach(function(z,zi){if(z.chapter===current){tot++;if(isDone(s,zi))dn++}});html+='<div class="nx7-theme-head-v349" style="--s:'+esc(s.accent)+'"><b>'+esc(current)+'</b><span>'+dn+' / '+tot+'</span></div>'}var done=isDone(s,x.i);html+='<button type="button" class="nx7-lesson-card-v349" style="--s:'+esc(s.accent)+'" data-nx8-lesson="'+x.i+'">'+'<span class="nx7-lesson-num-v349">'+(x.i+1)+'</span>'+'<span class="nx7-lesson-copy-v349"><small>'+esc(x.l.chapter)+'</small><b>'+esc(x.l.title)+'</b><span>'+esc(x.l.objective)+'</span></span>'+'<span class="nx7-lesson-state-v349"><span>'+esc(x.l.duration)+'</span><i>'+(done?'✓':'→')+'</i></span></button>'});list.innerHTML=html}
-function renderCourse(id,index){var s=subject(id),l=s&&s.lessons[index];if(!l)return renderLessons(id);state.subject=id;state.lesson=index;setHeader(s.name+' · Leçon '+(index+1));setBack(true);var done=isDone(s,index),body=window.NexoraCourseLayout.college(l,esc,'nx8');main().innerHTML='<article class="nx7-course-v349" style="--s:'+esc(s.accent)+'"><header class="nx7-course-hero-v349"><small>8ème année · '+esc(s.name)+' · Leçon '+(index+1)+'/'+s.lessons.length+'</small><span class="nx7-kicker-v349">Thème</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.chapter)+'</p><div class="nx7-course-tools-v349"><span>Leçon complète · 55 à 70 min</span><button type="button" data-nx8-action="speak">🔊 Écouter la leçon</button></div></header><section class="nx7-course-text-v349">'+body+'</section><nav class="nx7-nav-v349"><button type="button" data-nx8-action="lessons">← Toutes les leçons</button>'+(index>0?'<button type="button" data-nx8-action="previous">Précédente</button>':'')+'<button type="button" data-nx8-action="complete">'+(done?'✓ Leçon lue':'Marquer comme lue')+'</button>'+(index<s.lessons.length-1?'<button type="button" class="primary" data-nx8-action="next">Suivante →</button>':'<button type="button" class="primary" data-nx8-action="subjects">Choisir une matière</button>')+'</nav></article>';try{main().scrollIntoView({block:'start'})}catch(_e){window.nxLog&&window.nxLog(_e)}}
+function renderCourse(id,index){var s=subject(id),l=s&&s.lessons[index];if(!l)return renderLessons(id);state.subject=id;state.lesson=index;setHeader(s.name+' · Leçon '+(index+1));setBack(true);var done=isDone(s,index),z=l.sections||{},order=[['introduction','','Introduction','p'],['historique','','Origine ou historique','p'],['definition','','Définition','p'],['developpement','','Développement approfondi','p'],['fonctionnement','','Fonctionnement','p'],['importance','','Importance et objectifs','p'],['exemples','','Exemples concrets','ol'],['retenir','','À retenir','ul'],['exercices','','Exercices d’application','ol']],nxNum=0,body='';order.forEach(function(sec){var values=Array.isArray(z[sec[0]])?z[sec[0]].filter(Boolean):[];if(!values.length)return;nxNum++;body+='<h3><span class="nx7-section-num-v485">'+nxNum+'</span>'+sec[2]+'</h3>';if(sec[3]==='p'){body+=values.map(function(v){return '<p>'+esc(v)+'</p>'}).join('')}else{var cls=sec[0]==='retenir'?' class="nx7-retain-v485"':(sec[0]==='exercices'?' class="nx7-exercises-v485"':'');body+='<'+sec[3]+cls+'>'+values.map(function(v){return '<li>'+esc(v)+'</li>'}).join('')+'</'+sec[3]+'>'}});if(!body){var text=String(l.lesson_text||l.course||''),paras=text.split(/\n\s*\n/).filter(Boolean);body=paras.map(function(p){return '<p>'+esc(p)+'</p>'}).join('')}main().innerHTML='<article class="nx7-course-v349" style="--s:'+esc(s.accent)+'"><header class="nx7-course-hero-v349"><small>8ème année · '+esc(s.name)+' · Leçon '+(index+1)+'/'+s.lessons.length+'</small><span class="nx7-kicker-v349">Thème</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.chapter)+'</p><div class="nx7-course-tools-v349"><span>Leçon complète · 55 à 70 min</span><button type="button" data-nx8-action="speak">🔊 Écouter la leçon</button></div></header><section class="nx7-course-text-v349">'+body+'</section><nav class="nx7-nav-v349"><button type="button" data-nx8-action="lessons">← Toutes les leçons</button>'+(index>0?'<button type="button" data-nx8-action="previous">Précédente</button>':'')+'<button type="button" data-nx8-action="complete">'+(done?'✓ Leçon lue':'Marquer comme lue')+'</button>'+(index<s.lessons.length-1?'<button type="button" class="primary" data-nx8-action="next">Suivante →</button>':'<button type="button" class="primary" data-nx8-action="subjects">Choisir une matière</button>')+'</nav></article>';try{main().scrollIntoView({block:'start'})}catch(_e){window.nxLog&&window.nxLog(_e)} }
 function openGranted(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){openGranted.apply(__nxThis,__nxArgs)},NX_FAIL);return;}var v=viewer();if(!v)return false;state.lastFocus=document.activeElement;syncTheme();v.hidden=false;document.body.classList.add('nx7-open-v349');renderHome();setTimeout(function(){var c=q('[data-nx8-action="close"]',v);if(c)c.focus()},30);return true}
-function open(){var __nxArgs=arguments,__nxThis=this;function granted(){if(!NX_READY){NX_LOAD().then(function(){openGranted.apply(__nxThis,__nxArgs)},NX_FAIL);return;}return openGranted.apply(__nxThis,__nxArgs)}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',granted);return granted()}
+function open(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){open.apply(__nxThis,__nxArgs)},NX_FAIL);return;}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',openGranted);return openGranted()}
 function close(){var v=viewer();if(!v)return;try{speechSynthesis.cancel()}catch(_e){window.nxLog&&window.nxLog(_e)}v.hidden=true;document.body.classList.remove('nx7-open-v349');if(state.lastFocus&&state.lastFocus.focus)try{state.lastFocus.focus()}catch(_e2){window.nxLog&&window.nxLog(_e2)}}
 function back(){if(state.lesson>=0){renderLessons(state.subject);return}if(state.subject){renderHome();return}close()}
 function speak(){var s=subject(state.subject),l=s&&s.lessons[state.lesson];if(!l||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(l.lesson_text||l.course||l.title);u.lang='fr-FR';u.rate=.9;speechSynthesis.speak(u)}catch(_e){window.nxLog&&window.nxLog(_e)}}
@@ -913,9 +762,9 @@ function syncTheme(){var v=viewer();if(!v)return;var t=document.documentElement.
 function renderHome(){state.subject=null;state.lesson=-1;state.query='';setHeader('9ème année · Cours');setBack(false);var done=totalDone(),total=totalLessons();main().innerHTML='<section class="nx7-hero-v349"><span class="nx7-kicker-v349">Programme du collège guinéen</span><h2>9ème année — véritables leçons</h2><p>Chaque thème est présenté comme un cours complet : introduction spécifique, définition, développement, fonctionnement, importance, exemples concrets, points à retenir et exercices d’application.</p><div class="nx7-stats-v349"><div class="nx7-stat-v349"><b>'+DATA.length+'</b><span>matières du programme</span></div><div class="nx7-stat-v349"><b>'+total+'</b><span>leçons complètes</span></div><div class="nx7-stat-v349"><b>'+done+'</b><span>leçons terminées</span></div></div></section><div class="nx7-note-v349"><b>Lecture autonome :</b> avance dans l’ordre des leçons, lis chaque partie attentivement, observe les exemples puis réponds aux exercices avant de poursuivre.</div><section class="nx7-subject-grid-v349">'+DATA.map(function(s){var d=countDone(s),pct=Math.round(d*100/s.lessons.length);return '<button type="button" class="nx7-subject-v349" style="--s:'+esc(s.accent)+'" data-nx9-subject="'+esc(s.id)+'"><span class="nx7-subject-head-v349"><span class="nx7-subject-icon-v349">'+esc(s.icon)+'</span><span class="nx7-count-v349">'+s.lessons.length+' leçons · '+themeCount(s)+' thèmes</span></span><h3>'+esc(s.name)+'</h3><p>'+esc(s.intro)+'</p><span class="nx7-subject-foot-v349"><span>'+d+'/'+s.lessons.length+' terminées · '+pct+' %</span><b>Ouvrir →</b></span></button>'}).join('')+'</section>'}
 function renderLessons(id){var s=subject(id);if(!s)return renderHome();state.subject=id;state.lesson=-1;setHeader('9ème année · '+s.name);setBack(true);var d=countDone(s);main().innerHTML='<section class="nx7-page-head-v349"><div><small>9ème année · '+esc(s.name)+'</small><h2>'+esc(s.name)+'</h2><p>'+esc(s.intro)+'</p></div><span class="nx7-progress-chip-v349">'+d+' / '+s.lessons.length+' terminées</span></section><label class="nx7-search-v349"><input type="search" data-nx9-search placeholder="Rechercher une leçon ou un chapitre" value="'+esc(state.query)+'" aria-label="Rechercher une leçon"></label><section class="nx7-lesson-list-v349" data-nx9-list></section>';renderLessonList(s)}
 function renderLessonList(s){var list=q('[data-nx9-list]',viewer());if(!list)return;var term=String(state.query||'').trim().toLowerCase();var found=[];s.lessons.forEach(function(l,i){var hay=(l.title+' '+l.chapter+' '+l.objective).toLowerCase();if(!term||hay.indexOf(term)>-1)found.push({l:l,i:i})});if(!found.length){list.innerHTML='<div class="nx7-empty-v349">Aucune leçon ne correspond à cette recherche.</div>';return}var html='',current='';found.forEach(function(x){if(x.l.chapter!==current){current=x.l.chapter;var tot=0,dn=0;s.lessons.forEach(function(z,zi){if(z.chapter===current){tot++;if(isDone(s,zi))dn++}});html+='<div class="nx7-theme-head-v349" style="--s:'+esc(s.accent)+'"><b>'+esc(current)+'</b><span>'+dn+' / '+tot+'</span></div>'}var done=isDone(s,x.i);html+='<button type="button" class="nx7-lesson-card-v349" style="--s:'+esc(s.accent)+'" data-nx9-lesson="'+x.i+'">'+'<span class="nx7-lesson-num-v349">'+(x.i+1)+'</span>'+'<span class="nx7-lesson-copy-v349"><small>'+esc(x.l.chapter)+'</small><b>'+esc(x.l.title)+'</b><span>'+esc(x.l.objective)+'</span></span>'+'<span class="nx7-lesson-state-v349"><span>'+esc(x.l.duration)+'</span><i>'+(done?'✓':'→')+'</i></span></button>'});list.innerHTML=html}
-function renderCourse(id,index){var s=subject(id),l=s&&s.lessons[index];if(!l)return renderLessons(id);state.subject=id;state.lesson=index;setHeader(s.name+' · Leçon '+(index+1));setBack(true);var done=isDone(s,index),body=window.NexoraCourseLayout.college(l,esc,'nx9');main().innerHTML='<article class="nx7-course-v349" style="--s:'+esc(s.accent)+'"><header class="nx7-course-hero-v349"><small>9ème année · '+esc(s.name)+' · Leçon '+(index+1)+'/'+s.lessons.length+'</small><span class="nx7-kicker-v349">Thème</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.chapter)+'</p><div class="nx7-course-tools-v349"><span>Leçon complète · 55 à 75 min</span><button type="button" data-nx9-action="speak">🔊 Écouter la leçon</button></div></header><section class="nx7-course-text-v349">'+body+'</section><nav class="nx7-nav-v349"><button type="button" data-nx9-action="lessons">← Toutes les leçons</button>'+(index>0?'<button type="button" data-nx9-action="previous">Précédente</button>':'')+'<button type="button" data-nx9-action="complete">'+(done?'✓ Leçon lue':'Marquer comme lue')+'</button>'+(index<s.lessons.length-1?'<button type="button" class="primary" data-nx9-action="next">Suivante →</button>':'<button type="button" class="primary" data-nx9-action="subjects">Choisir une matière</button>')+'</nav></article>';try{main().scrollIntoView({block:'start'})}catch(_e){window.nxLog&&window.nxLog(_e)}}
+function renderCourse(id,index){var s=subject(id),l=s&&s.lessons[index];if(!l)return renderLessons(id);state.subject=id;state.lesson=index;setHeader(s.name+' · Leçon '+(index+1));setBack(true);var done=isDone(s,index),z=l.sections||{},order=[['introduction','','Introduction','p'],['historique','','Origine ou historique','p'],['definition','','Définition','p'],['developpement','','Développement approfondi','p'],['fonctionnement','','Fonctionnement','p'],['importance','','Importance et objectifs','p'],['exemples','','Exemples concrets','ol'],['retenir','','À retenir','ul'],['exercices','','Exercices d’application','ol']],nxNum=0,body='';order.forEach(function(sec){var values=Array.isArray(z[sec[0]])?z[sec[0]].filter(Boolean):[];if(!values.length)return;nxNum++;body+='<h3><span class="nx7-section-num-v485">'+nxNum+'</span>'+sec[2]+'</h3>';if(sec[3]==='p'){body+=values.map(function(v){return '<p>'+esc(v)+'</p>'}).join('')}else{var cls=sec[0]==='retenir'?' class="nx7-retain-v485"':(sec[0]==='exercices'?' class="nx7-exercises-v485"':'');body+='<'+sec[3]+cls+'>'+values.map(function(v){return '<li>'+esc(v)+'</li>'}).join('')+'</'+sec[3]+'>'}});if(!body){var text=String(l.lesson_text||l.course||''),paras=text.split(/\n\s*\n/).filter(Boolean);body=paras.map(function(p){return '<p>'+esc(p)+'</p>'}).join('')}main().innerHTML='<article class="nx7-course-v349" style="--s:'+esc(s.accent)+'"><header class="nx7-course-hero-v349"><small>9ème année · '+esc(s.name)+' · Leçon '+(index+1)+'/'+s.lessons.length+'</small><span class="nx7-kicker-v349">Thème</span><h2>'+esc(l.title)+'</h2><p>'+esc(l.chapter)+'</p><div class="nx7-course-tools-v349"><span>Leçon complète · 55 à 75 min</span><button type="button" data-nx9-action="speak">🔊 Écouter la leçon</button></div></header><section class="nx7-course-text-v349">'+body+'</section><nav class="nx7-nav-v349"><button type="button" data-nx9-action="lessons">← Toutes les leçons</button>'+(index>0?'<button type="button" data-nx9-action="previous">Précédente</button>':'')+'<button type="button" data-nx9-action="complete">'+(done?'✓ Leçon lue':'Marquer comme lue')+'</button>'+(index<s.lessons.length-1?'<button type="button" class="primary" data-nx9-action="next">Suivante →</button>':'<button type="button" class="primary" data-nx9-action="subjects">Choisir une matière</button>')+'</nav></article>';try{main().scrollIntoView({block:'start'})}catch(_e){window.nxLog&&window.nxLog(_e)} }
 function openGranted(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){openGranted.apply(__nxThis,__nxArgs)},NX_FAIL);return;}var v=viewer();if(!v)return false;state.lastFocus=document.activeElement;syncTheme();v.hidden=false;document.body.classList.add('nx7-open-v349');renderHome();setTimeout(function(){var c=q('[data-nx9-action="close"]',v);if(c)c.focus()},30);return true}
-function open(){var __nxArgs=arguments,__nxThis=this;function granted(){if(!NX_READY){NX_LOAD().then(function(){openGranted.apply(__nxThis,__nxArgs)},NX_FAIL);return;}return openGranted.apply(__nxThis,__nxArgs)}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',granted);return granted()}
+function open(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){open.apply(__nxThis,__nxArgs)},NX_FAIL);return;}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('academy',openGranted);return openGranted()}
 function close(){var v=viewer();if(!v)return;try{speechSynthesis.cancel()}catch(_e){window.nxLog&&window.nxLog(_e)}v.hidden=true;document.body.classList.remove('nx7-open-v349');if(state.lastFocus&&state.lastFocus.focus)try{state.lastFocus.focus()}catch(_e2){window.nxLog&&window.nxLog(_e2)}}
 function back(){if(state.lesson>=0){renderLessons(state.subject);return}if(state.subject){renderHome();return}close()}
 function speak(){var s=subject(state.subject),l=s&&s.lessons[state.lesson];if(!l||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(l.lesson_text||l.course||l.title);u.lang='fr-FR';u.rate=.9;speechSynthesis.speak(u)}catch(_e){window.nxLog&&window.nxLog(_e)}}
@@ -1359,13 +1208,63 @@ function renderSubjects(){var list=available();if(list.indexOf(state.subject)<0)
    definition, plan[[titre,texte]], formules[], pieges[] et exercices[].
    Les lecons non encore reecrites gardent p1/p2/p3 : les deux formes
    cohabitent sans rupture. */
-function nxLyceeCorps_v472(l){return window.NexoraCourseLayout.lycee(l,esc)}
+function nxLyceeCorps_v472(l, c){
+  var P = 'nx-lecon-v524';
+  function bloc(titre, contenu, cls){
+    if(!contenu) return '';
+    return '<div class="'+P+'-box'+(cls?' '+P+'-'+cls:'')+'"><b>'+esc(titre)+'</b><span>'+contenu+'</span></div>';
+  }
+  function liste(tab, puce){
+    if(!Array.isArray(tab)) return '';
+    var propre = tab.filter(function(x){return String(x==null?'':x).trim()});
+    if(!propre.length) return '';
+    return propre.map(function(x){return (puce||'')+esc(x)}).join('<br>');
+  }
+  function txt(x){ return String(x==null?'':x).trim(); }
+  var out='';
 
-function renderContent(){var x=DATA[state.subject],el=document.querySelector('[data-nx-eleventh-content-v368]');if(!x||!el)return;el.style.setProperty('--sc',x.color);el.innerHTML='<header class="nx-eleventh-subject-head-v368"><b>'+esc(x.abbr)+'</b><div><h3>'+esc(x.name)+'</h3><p>'+x.lessons.length+' leçons organisées en '+Math.ceil(x.lessons.length/5)+' séquences progressives</p></div></header><div class="nx-eleventh-lessons-v368">'+x.lessons.map(function(l,i){return window.NexoraCourseLayout.sequenceHeader(i,x.lessons.length)+'<article class="nx-eleventh-lesson-v368" style="--sc:'+x.color+'"><button type="button" class="nx-eleventh-lesson-btn-v368" data-lesson-toggle aria-expanded="false"><span class="nx-eleventh-num-v368">'+(i+1)+'</span><strong>'+esc(l.title)+'</strong><i>›</i></button><div class="nx-eleventh-body-v368">'+nxLyceeCorps_v472(l)+'</div></article>'}).join('')+'</div>'}
+  if(txt(l.definition)) out+=bloc('Définition du thème', esc(l.definition), 'def');
+  out+=bloc('Objectif de la leçon', esc(txt(l.objective)||'Comprendre et appliquer les notions essentielles de cette leçon.'));
+
+  var plan = Array.isArray(l.plan) ? l.plan.filter(function(s){return s && txt(s[0]) && txt(s[1])}) : [];
+  if(plan.length){
+    out+='<div class="'+P+'-plan"><b class="'+P+'-plan-title">Le cours, point par point</b>'+
+      plan.map(function(sec,k){
+        return '<section class="'+P+'-sec"><h5><u>'+(k+1)+'</u>'+esc(sec[0])+'</h5><p>'+esc(sec[1])+'</p></section>';
+      }).join('')+'</div>';
+  } else {
+    var libres=[l.p1,l.p2,l.p3].map(txt).filter(Boolean);
+    out+=libres.map(function(p){return '<p>'+esc(p)+'</p>'}).join('');
+  }
+
+  out+=bloc('Formulaire à connaître', liste(l.formules,'▸ '), 'formul');
+  out+=bloc('Notions essentielles', liste(l.key_points,'• '));
+  out+=bloc('Erreurs fréquentes à éviter', liste(l.pieges,'✗ '), 'piege');
+  if(txt(l.example)) out+=bloc('Exemple expliqué', esc(l.example));
+  out+=bloc('Méthode de travail', esc(txt(l.method)||'Identifier les données, choisir la notion adaptée, raisonner par étapes et vérifier la réponse.'));
+
+  var exos = Array.isArray(l.exercices) ? l.exercices.filter(function(e){return e && txt(e.enonce)}) : [];
+  if(exos.length){
+    out+='<div class="'+P+'-exos"><b class="'+P+'-plan-title">Exercices d’application ('+exos.length+')</b>'+
+      exos.map(function(ex,k){
+        var corr = txt(ex.correction);
+        return '<section class="'+P+'-exo"><h5><u>'+(k+1)+'</u>Énoncé</h5><p>'+esc(ex.enonce)+'</p>'+
+          (corr?'<details class="'+P+'-corr"><summary>Voir la correction détaillée</summary><p>'+esc(corr)+'</p></details>':'')+'</section>';
+      }).join('')+'</div>';
+  } else if(txt(l.exercise)){
+    out+=bloc('Exercice d’application', esc(l.exercise));
+    out+=bloc('Correction guidée', esc(txt(l.correction)||'La correction reprend les étapes du raisonnement et justifie clairement la réponse.'));
+  }
+
+  out+=bloc('À retenir', esc(txt(l.recap)||'Relire les notions essentielles et refaire l’exercice sans consulter la correction.'), 'retenir');
+  return '<div class="'+P+'">'+out+'</div>';
+}
+
+function renderContent(){var x=DATA[state.subject],el=document.querySelector('[data-nx-eleventh-content-v368]');if(!x||!el)return;el.style.setProperty('--sc',x.color);el.innerHTML='<header class="nx-eleventh-subject-head-v368"><b>'+esc(x.abbr)+'</b><div><h3>'+esc(x.name)+'</h3><p>'+x.lessons.length+' leçons complètes · objectifs, méthodes et corrections guidées</p></div></header><div class="nx-eleventh-lessons-v368">'+x.lessons.map(function(l,i){var points=Array.isArray(l.key_points)?l.key_points.map(function(point){return '• '+esc(point)}).join('<br>'):'';return '<article class="nx-eleventh-lesson-v368" style="--sc:'+x.color+'"><button type="button" class="nx-eleventh-lesson-btn-v368" data-lesson-toggle aria-expanded="false"><span class="nx-eleventh-num-v368">'+(i+1)+'</span><strong>'+esc(l.title)+'</strong><i>›</i></button><div class="nx-eleventh-body-v368">'+nxLyceeCorps_v472(l,'nx-eleventh-v472')+'</div></article>'}).join('')+'</div>'}
 function render(){renderStreams();renderSubjects();renderContent()}
 function open(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){open.apply(__nxThis,__nxArgs)},NX_FAIL);return;}var p=panel();if(!p)return;p.hidden=false;document.body.style.overflow='hidden';render();setTimeout(function(){p.scrollTop=0},0)}
 function close(){var p=panel();if(!p)return;p.hidden=true;document.body.style.overflow=''}
-document.addEventListener('click',function(e){var o=e.target.closest('[data-nx-open-eleventh-v368]');if(o){e.preventDefault();open();return}var c=e.target.closest('[data-nx-eleventh-close-v368]');if(c){e.preventDefault();close();return}var s=e.target.closest('[data-stream]');if(s&&panel()&&!panel().hidden){state.stream=s.getAttribute('data-stream');state.subject=available()[0];render();return}var b=e.target.closest('[data-subject]');if(b&&panel()&&!panel().hidden){state.subject=b.getAttribute('data-subject');renderSubjects();renderContent();return}var t=e.target.closest('[data-lesson-toggle]');if(t){var a=t.closest('.nx-eleventh-lesson-v368');if(a)window.NexoraCourseLayout.toggleExclusive(t,a)}});
+document.addEventListener('click',function(e){var o=e.target.closest('[data-nx-open-eleventh-v368]');if(o){e.preventDefault();open();return}var c=e.target.closest('[data-nx-eleventh-close-v368]');if(c){e.preventDefault();close();return}var s=e.target.closest('[data-stream]');if(s&&panel()&&!panel().hidden){state.stream=s.getAttribute('data-stream');state.subject=available()[0];render();return}var b=e.target.closest('[data-subject]');if(b&&panel()&&!panel().hidden){state.subject=b.getAttribute('data-subject');renderSubjects();renderContent();return}var t=e.target.closest('[data-lesson-toggle]');if(t){var a=t.closest('.nx-eleventh-lesson-v368');if(a){a.classList.toggle('open');t.setAttribute('aria-expanded',a.classList.contains('open')?'true':'false')}}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!panel().hidden)close()});
 })();
 
@@ -1401,13 +1300,63 @@ function renderSubjects(){var list=available();if(list.indexOf(state.subject)<0)
    definition, plan[[titre,texte]], formules[], pieges[] et exercices[].
    Les lecons non encore reecrites gardent p1/p2/p3 : les deux formes
    cohabitent sans rupture. */
-function nxLyceeCorps_v472(l){return window.NexoraCourseLayout.lycee(l,esc)}
+function nxLyceeCorps_v472(l, c){
+  var P = 'nx-lecon-v524';
+  function bloc(titre, contenu, cls){
+    if(!contenu) return '';
+    return '<div class="'+P+'-box'+(cls?' '+P+'-'+cls:'')+'"><b>'+esc(titre)+'</b><span>'+contenu+'</span></div>';
+  }
+  function liste(tab, puce){
+    if(!Array.isArray(tab)) return '';
+    var propre = tab.filter(function(x){return String(x==null?'':x).trim()});
+    if(!propre.length) return '';
+    return propre.map(function(x){return (puce||'')+esc(x)}).join('<br>');
+  }
+  function txt(x){ return String(x==null?'':x).trim(); }
+  var out='';
 
-function renderContent(){var x=DATA[state.subject],el=document.querySelector('[data-nx-twelfth-content-v369]');if(!x||!el)return;el.style.setProperty('--sc',x.color);el.innerHTML='<header class="nx-twelfth-subject-head-v369"><b>'+esc(x.abbr)+'</b><div><h3>'+esc(x.name)+'</h3><p>'+x.lessons.length+' leçons organisées en '+Math.ceil(x.lessons.length/5)+' séquences progressives</p></div></header><div class="nx-twelfth-lessons-v369">'+x.lessons.map(function(l,i){return window.NexoraCourseLayout.sequenceHeader(i,x.lessons.length)+'<article class="nx-twelfth-lesson-v369" style="--sc:'+x.color+'"><button type="button" class="nx-twelfth-lesson-btn-v369" data-nx-twelfth-lesson-v369 aria-expanded="false"><span class="nx-twelfth-num-v369">'+(i+1)+'</span><strong>'+esc(l.title)+'</strong><i>›</i></button><div class="nx-twelfth-body-v369">'+nxLyceeCorps_v472(l)+'</div></article>'}).join('')+'</div>'}
+  if(txt(l.definition)) out+=bloc('Définition du thème', esc(l.definition), 'def');
+  out+=bloc('Objectif de la leçon', esc(txt(l.objective)||'Comprendre et appliquer les notions essentielles de cette leçon.'));
+
+  var plan = Array.isArray(l.plan) ? l.plan.filter(function(s){return s && txt(s[0]) && txt(s[1])}) : [];
+  if(plan.length){
+    out+='<div class="'+P+'-plan"><b class="'+P+'-plan-title">Le cours, point par point</b>'+
+      plan.map(function(sec,k){
+        return '<section class="'+P+'-sec"><h5><u>'+(k+1)+'</u>'+esc(sec[0])+'</h5><p>'+esc(sec[1])+'</p></section>';
+      }).join('')+'</div>';
+  } else {
+    var libres=[l.p1,l.p2,l.p3].map(txt).filter(Boolean);
+    out+=libres.map(function(p){return '<p>'+esc(p)+'</p>'}).join('');
+  }
+
+  out+=bloc('Formulaire à connaître', liste(l.formules,'▸ '), 'formul');
+  out+=bloc('Notions essentielles', liste(l.key_points,'• '));
+  out+=bloc('Erreurs fréquentes à éviter', liste(l.pieges,'✗ '), 'piege');
+  if(txt(l.example)) out+=bloc('Exemple expliqué', esc(l.example));
+  out+=bloc('Méthode de travail', esc(txt(l.method)||'Identifier les données, choisir la notion adaptée, raisonner par étapes et vérifier la réponse.'));
+
+  var exos = Array.isArray(l.exercices) ? l.exercices.filter(function(e){return e && txt(e.enonce)}) : [];
+  if(exos.length){
+    out+='<div class="'+P+'-exos"><b class="'+P+'-plan-title">Exercices d’application ('+exos.length+')</b>'+
+      exos.map(function(ex,k){
+        var corr = txt(ex.correction);
+        return '<section class="'+P+'-exo"><h5><u>'+(k+1)+'</u>Énoncé</h5><p>'+esc(ex.enonce)+'</p>'+
+          (corr?'<details class="'+P+'-corr"><summary>Voir la correction détaillée</summary><p>'+esc(corr)+'</p></details>':'')+'</section>';
+      }).join('')+'</div>';
+  } else if(txt(l.exercise)){
+    out+=bloc('Exercice d’application', esc(l.exercise));
+    out+=bloc('Correction guidée', esc(txt(l.correction)||'La correction reprend les étapes du raisonnement et justifie clairement la réponse.'));
+  }
+
+  out+=bloc('À retenir', esc(txt(l.recap)||'Relire les notions essentielles et refaire l’exercice sans consulter la correction.'), 'retenir');
+  return '<div class="'+P+'">'+out+'</div>';
+}
+
+function renderContent(){var x=DATA[state.subject],el=document.querySelector('[data-nx-twelfth-content-v369]');if(!x||!el)return;el.style.setProperty('--sc',x.color);el.innerHTML='<header class="nx-twelfth-subject-head-v369"><b>'+esc(x.abbr)+'</b><div><h3>'+esc(x.name)+'</h3><p>'+x.lessons.length+' leçons complètes · objectifs, méthodes et corrections guidées</p></div></header><div class="nx-twelfth-lessons-v369">'+x.lessons.map(function(l,i){var points=Array.isArray(l.key_points)?l.key_points.map(function(point){return '• '+esc(point)}).join('<br>'):'';return '<article class="nx-twelfth-lesson-v369" style="--sc:'+x.color+'"><button type="button" class="nx-twelfth-lesson-btn-v369" data-nx-twelfth-lesson-v369 aria-expanded="false"><span class="nx-twelfth-num-v369">'+(i+1)+'</span><strong>'+esc(l.title)+'</strong><i>›</i></button><div class="nx-twelfth-body-v369">'+nxLyceeCorps_v472(l,'nx-twelfth-v472')+'</div></article>'}).join('')+'</div>'}
 function render(){renderStreams();renderSubjects();renderContent()}
 function open(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){open.apply(__nxThis,__nxArgs)},NX_FAIL);return;}var p=panel();if(!p)return;p.hidden=false;document.body.style.overflow='hidden';render();setTimeout(function(){p.scrollTop=0},0)}
 function close(){var p=panel();if(!p)return;p.hidden=true;document.body.style.overflow=''}
-document.addEventListener('click',function(e){var o=e.target.closest('[data-nx-open-twelfth-v369]');if(o){e.preventDefault();open();return}var c=e.target.closest('[data-nx-twelfth-close-v369]');if(c){e.preventDefault();close();return}var s=e.target.closest('[data-nx-twelfth-stream-v369]');if(s&&panel()&&!panel().hidden){state.stream=s.getAttribute('data-nx-twelfth-stream-v369');state.subject=available()[0];render();return}var b=e.target.closest('[data-nx-twelfth-subject-v369]');if(b&&panel()&&!panel().hidden){state.subject=b.getAttribute('data-nx-twelfth-subject-v369');renderSubjects();renderContent();return}var t=e.target.closest('[data-nx-twelfth-lesson-v369]');if(t){var a=t.closest('.nx-twelfth-lesson-v369');if(a)window.NexoraCourseLayout.toggleExclusive(t,a)}});
+document.addEventListener('click',function(e){var o=e.target.closest('[data-nx-open-twelfth-v369]');if(o){e.preventDefault();open();return}var c=e.target.closest('[data-nx-twelfth-close-v369]');if(c){e.preventDefault();close();return}var s=e.target.closest('[data-nx-twelfth-stream-v369]');if(s&&panel()&&!panel().hidden){state.stream=s.getAttribute('data-nx-twelfth-stream-v369');state.subject=available()[0];render();return}var b=e.target.closest('[data-nx-twelfth-subject-v369]');if(b&&panel()&&!panel().hidden){state.subject=b.getAttribute('data-nx-twelfth-subject-v369');renderSubjects();renderContent();return}var t=e.target.closest('[data-nx-twelfth-lesson-v369]');if(t){var a=t.closest('.nx-twelfth-lesson-v369');if(a){a.classList.toggle('open');t.setAttribute('aria-expanded',a.classList.contains('open')?'true':'false')}}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!panel().hidden)close()});
 })();
 
@@ -1443,13 +1392,63 @@ function renderSubjects(){var list=available();if(list.indexOf(state.subject)<0)
    definition, plan[[titre,texte]], formules[], pieges[] et exercices[].
    Les lecons non encore reecrites gardent p1/p2/p3 : les deux formes
    cohabitent sans rupture. */
-function nxLyceeCorps_v472(l){return window.NexoraCourseLayout.lycee(l,esc)}
+function nxLyceeCorps_v472(l, c){
+  var P = 'nx-lecon-v524';
+  function bloc(titre, contenu, cls){
+    if(!contenu) return '';
+    return '<div class="'+P+'-box'+(cls?' '+P+'-'+cls:'')+'"><b>'+esc(titre)+'</b><span>'+contenu+'</span></div>';
+  }
+  function liste(tab, puce){
+    if(!Array.isArray(tab)) return '';
+    var propre = tab.filter(function(x){return String(x==null?'':x).trim()});
+    if(!propre.length) return '';
+    return propre.map(function(x){return (puce||'')+esc(x)}).join('<br>');
+  }
+  function txt(x){ return String(x==null?'':x).trim(); }
+  var out='';
 
-function renderContent(){var x=DATA[state.subject],el=document.querySelector('[data-nx-terminal-content-v475]');if(!x||!el)return;el.style.setProperty('--sc',x.color);el.innerHTML='<header class="nx-terminal-subject-head-v475"><b>'+esc(x.abbr)+'</b><div><h3>'+esc(x.name)+'</h3><p>'+x.lessons.length+' leçons organisées en '+Math.ceil(x.lessons.length/5)+' séquences progressives</p></div></header><div class="nx-terminal-lessons-v475">'+x.lessons.map(function(l,i){return window.NexoraCourseLayout.sequenceHeader(i,x.lessons.length)+'<article class="nx-terminal-lesson-v475" style="--sc:'+x.color+'"><button type="button" class="nx-terminal-lesson-btn-v475" data-nx-terminal-lesson-v475 aria-expanded="false"><span class="nx-terminal-num-v475">'+(i+1)+'</span><strong>'+esc(l.title)+'</strong><i>›</i></button><div class="nx-terminal-body-v475">'+nxLyceeCorps_v472(l)+'</div></article>'}).join('')+'</div>'}
+  if(txt(l.definition)) out+=bloc('Définition du thème', esc(l.definition), 'def');
+  out+=bloc('Objectif de la leçon', esc(txt(l.objective)||'Comprendre et appliquer les notions essentielles de cette leçon.'));
+
+  var plan = Array.isArray(l.plan) ? l.plan.filter(function(s){return s && txt(s[0]) && txt(s[1])}) : [];
+  if(plan.length){
+    out+='<div class="'+P+'-plan"><b class="'+P+'-plan-title">Le cours, point par point</b>'+
+      plan.map(function(sec,k){
+        return '<section class="'+P+'-sec"><h5><u>'+(k+1)+'</u>'+esc(sec[0])+'</h5><p>'+esc(sec[1])+'</p></section>';
+      }).join('')+'</div>';
+  } else {
+    var libres=[l.p1,l.p2,l.p3].map(txt).filter(Boolean);
+    out+=libres.map(function(p){return '<p>'+esc(p)+'</p>'}).join('');
+  }
+
+  out+=bloc('Formulaire à connaître', liste(l.formules,'▸ '), 'formul');
+  out+=bloc('Notions essentielles', liste(l.key_points,'• '));
+  out+=bloc('Erreurs fréquentes à éviter', liste(l.pieges,'✗ '), 'piege');
+  if(txt(l.example)) out+=bloc('Exemple expliqué', esc(l.example));
+  out+=bloc('Méthode de travail', esc(txt(l.method)||'Identifier les données, choisir la notion adaptée, raisonner par étapes et vérifier la réponse.'));
+
+  var exos = Array.isArray(l.exercices) ? l.exercices.filter(function(e){return e && txt(e.enonce)}) : [];
+  if(exos.length){
+    out+='<div class="'+P+'-exos"><b class="'+P+'-plan-title">Exercices d’application ('+exos.length+')</b>'+
+      exos.map(function(ex,k){
+        var corr = txt(ex.correction);
+        return '<section class="'+P+'-exo"><h5><u>'+(k+1)+'</u>Énoncé</h5><p>'+esc(ex.enonce)+'</p>'+
+          (corr?'<details class="'+P+'-corr"><summary>Voir la correction détaillée</summary><p>'+esc(corr)+'</p></details>':'')+'</section>';
+      }).join('')+'</div>';
+  } else if(txt(l.exercise)){
+    out+=bloc('Exercice d’application', esc(l.exercise));
+    out+=bloc('Correction guidée', esc(txt(l.correction)||'La correction reprend les étapes du raisonnement et justifie clairement la réponse.'));
+  }
+
+  out+=bloc('À retenir', esc(txt(l.recap)||'Relire les notions essentielles et refaire l’exercice sans consulter la correction.'), 'retenir');
+  return '<div class="'+P+'">'+out+'</div>';
+}
+
+function renderContent(){var x=DATA[state.subject],el=document.querySelector('[data-nx-terminal-content-v475]');if(!x||!el)return;el.style.setProperty('--sc',x.color);el.innerHTML='<header class="nx-terminal-subject-head-v475"><b>'+esc(x.abbr)+'</b><div><h3>'+esc(x.name)+'</h3><p>'+x.lessons.length+' leçons complètes · objectifs, méthodes et corrections guidées</p></div></header><div class="nx-terminal-lessons-v475">'+x.lessons.map(function(l,i){var points=Array.isArray(l.key_points)?l.key_points.map(function(point){return '• '+esc(point)}).join('<br>'):'';return '<article class="nx-terminal-lesson-v475" style="--sc:'+x.color+'"><button type="button" class="nx-terminal-lesson-btn-v475" data-nx-terminal-lesson-v475 aria-expanded="false"><span class="nx-terminal-num-v475">'+(i+1)+'</span><strong>'+esc(l.title)+'</strong><i>›</i></button><div class="nx-terminal-body-v475">'+nxLyceeCorps_v472(l,'nx-terminal-v472')+'</div></article>'}).join('')+'</div>'}
 function render(){renderStreams();renderSubjects();renderContent()}
 function open(){var __nxArgs=arguments,__nxThis=this;if(!NX_READY){NX_LOAD().then(function(){open.apply(__nxThis,__nxArgs)},NX_FAIL);return;}var p=panel();if(!p)return;p.hidden=false;document.body.style.overflow='hidden';render();setTimeout(function(){p.scrollTop=0},0)}
 function close(){var p=panel();if(!p)return;p.hidden=true;document.body.style.overflow=''}
-document.addEventListener('click',function(e){var o=e.target.closest('[data-nx-open-terminal-v475]');if(o){e.preventDefault();open();return}var c=e.target.closest('[data-nx-terminal-close-v475]');if(c){e.preventDefault();close();return}var s=e.target.closest('[data-nx-terminal-stream-v475]');if(s&&panel()&&!panel().hidden){state.stream=s.getAttribute('data-nx-terminal-stream-v475');state.subject=available()[0];render();return}var b=e.target.closest('[data-nx-terminal-subject-v475]');if(b&&panel()&&!panel().hidden){state.subject=b.getAttribute('data-nx-terminal-subject-v475');renderSubjects();renderContent();return}var t=e.target.closest('[data-nx-terminal-lesson-v475]');if(t){var a=t.closest('.nx-terminal-lesson-v475');if(a)window.NexoraCourseLayout.toggleExclusive(t,a)}});
+document.addEventListener('click',function(e){var o=e.target.closest('[data-nx-open-terminal-v475]');if(o){e.preventDefault();open();return}var c=e.target.closest('[data-nx-terminal-close-v475]');if(c){e.preventDefault();close();return}var s=e.target.closest('[data-nx-terminal-stream-v475]');if(s&&panel()&&!panel().hidden){state.stream=s.getAttribute('data-nx-terminal-stream-v475');state.subject=available()[0];render();return}var b=e.target.closest('[data-nx-terminal-subject-v475]');if(b&&panel()&&!panel().hidden){state.subject=b.getAttribute('data-nx-terminal-subject-v475');renderSubjects();renderContent();return}var t=e.target.closest('[data-nx-terminal-lesson-v475]');if(t){var a=t.closest('.nx-terminal-lesson-v475');if(a){a.classList.toggle('open');t.setAttribute('aria-expanded',a.classList.contains('open')?'true':'false')}}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!panel().hidden)close()});
 })();
 
@@ -1610,4 +1609,5 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!p
     }catch(_error){ done(); notify('Ouverture impossible pour le moment.'); }
   }, false);
 })();
+
 
