@@ -196,8 +196,6 @@
    sans aucun style.
    ═══════════════════════════════════════════════════════════════════════ */
 
-.nx-course-sequence{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 2px;padding:12px 14px;border-left:4px solid var(--sc,#2F77C9);border-radius:6px;background:#EEF3F8;color:#16324F}.nx-course-sequence b{font-size:14px}.nx-course-sequence span{font-size:12px;font-weight:700;color:#5F6976}.nx-lecon-v524-objectif{border-left-color:var(--lec-accent);background:#F5F9FF}.nx-lecon-v524-exemple,.nx-lecon-v524-methode{border-left-color:var(--lec-accent)}[data-theme="dark"] .nx-course-sequence{background:#171A1E;color:#DDE4ED}[data-theme="dark"] .nx-lecon-v524-objectif{background:#101A26}@media(max-width:520px){.nx-course-sequence{align-items:flex-start;flex-direction:column;gap:3px}}
-
 .nx-lecon-v524{
   --lec-encre:#21252B;
   --lec-encre-douce:#4A515A;
@@ -520,21 +518,3 @@
   .nx-lecon-v524-exo,
   .nx7-course-text-v349 h3{break-inside:avoid;page-break-inside:avoid}
 }
-
-/* V527.2 — fenêtres officielles BAC et Brevet restaurées */
-.nx-bac-viewer-v90,.nx10-viewer-v91{position:fixed;inset:0;z-index:12050;background:var(--bg,#f5f7fb);display:grid;grid-template-rows:auto minmax(0,1fr);color:var(--ink,#172033)}
-.nx-bac-viewer-v90[hidden],.nx10-viewer-v91[hidden]{display:none!important}
-.nx-bac-head-v90,.nx10-head-v91{min-height:68px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(15,23,42,.12);background:var(--surface,#fff);box-shadow:0 3px 18px rgba(15,23,42,.06)}
-.nx-bac-head-copy-v90,.nx10-head-copy-v91{min-width:0}.nx-bac-head-copy-v90 span,.nx10-head-copy-v91 span{display:block;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#64748b)}
-.nx-bac-head-copy-v90 h2,.nx10-head-copy-v91 h2{margin:2px 0 0;font-size:clamp(15px,4vw,20px);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nx-bac-close-v90,.nx10-close-v91,.nx-bac-reload-v90,.nx10-reload-v91{min-height:42px;border:1px solid rgba(15,23,42,.12);border-radius:12px;background:var(--surface,#fff);color:inherit;font-weight:800;padding:0 13px;cursor:pointer}
-.nx-bac-close-v90,.nx10-close-v91{width:44px;padding:0;font-size:21px}
-.nx-bac-frame-wrap-v90,.nx10-frame-wrap-v91{position:relative;min-height:0;overflow:hidden;background:#fff}
-#nxBacAcademyFrame,#nx10AcademyFrame{display:block;width:100%;height:100%;border:0;background:#fff}
-.nx-bac-loader-v90,.nx10-loader-v91{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:rgba(248,250,252,.96)}
-.nx-bac-loader-v90[hidden],.nx10-loader-v91[hidden]{display:none!important}
-.nx-bac-loader-inner-v90,.nx10-loader-inner-v91{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:22px}
-.nx-bac-spinner-v90,.nx10-spinner-v91{width:34px;height:34px;border-radius:50%;border:4px solid rgba(37,99,235,.16);border-top-color:#2563eb;animation:nxExamSpinV5272 .8s linear infinite}
-@keyframes nxExamSpinV5272{to{transform:rotate(360deg)}}
-body.nx-bac-open-v90,body.nx10-open-v91{overflow:hidden!important}
-@media(max-width:600px){.nx-bac-head-v90,.nx10-head-v91{gap:8px;padding:8px}.nx-bac-reload-v90,.nx10-reload-v91{font-size:11px;padding:0 9px}.nx-bac-head-copy-v90 h2,.nx10-head-copy-v91 h2{font-size:14px}}
