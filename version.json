@@ -1,6 +1,6 @@
 {
   "version": "V524",
-  "message": "Nexora V524 : affichage premium des leçons — Terminale enfin mise en forme, corrections des sujets habillées, texte des cours élargi et allégé.",
+  "message": "Nexora V529 : affichage premium des leçons — Terminale enfin mise en forme, corrections des sujets habillées, texte des cours élargi et allégé.",
   "critical": false,
   "updated_at": "2026-08-13T00:00:00Z",
   "update_system": "controlled-service-worker-v523-version-gated",
