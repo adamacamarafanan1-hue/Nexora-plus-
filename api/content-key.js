@@ -1,16 +1,6 @@
-// NEXORA — /api/content-key
-// Restauration du 15/08/2026 : la version en ligne renvoyait un HTTP 410
-// (« ancienne méthode d'activation remplacée par la sécurité V525 »), ce qui
-// fermait la porte à tous les abonnés alors que leur abonnement était valide.
-// Ce fichier reprend la version qui fonctionnait, avec la seule modification
-// nécessaire : CONTENT_VERSION passe à v525-20260813-1 pour correspondre au
-// client nexora-secure-v525.js et à protected/manifest.json.
-//
-// Variable Vercel requise : NEXORA_CONTENT_KEY_B64 (32 octets une fois décodée).
-
 import { createHash, webcrypto } from "node:crypto";
 
-const CONTENT_VERSION = "v525-20260813-1";
+const CONTENT_VERSION = "v523-20260813-1";
 const MAX_BODY_BYTES = 16 * 1024;
 const FETCH_TIMEOUT_MS = 8_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
