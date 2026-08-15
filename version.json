@@ -1,16 +1,5 @@
 {
-  "version": "V524",
-  "message":"version":"V529" affichage premium des leçons — Terminale enfin mise en forme, corrections des sujets habillées, texte des cours élargi et allégé.",
-  "critical": false,
-  "updated_at": "2026-08-13T00:00:00Z",
-  "update_system": "controlled-service-worker-v523-version-gated",
-  "subscription": "server-plan-id-required-v519.2-supabase-catalog-8-plans",
-  "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
-  "secure_content": "nxe-v523-product-gated",
-  "ouverture": "head-14ko-lazy-groups-timers-260-2600-3200",
-  "account_creation": "essential-fields-first-no-overlay",
-  "subscription_cta": "activate-account-visible-v523",
-  "subscription_spaces": "eleves-pro-separated-v523",
-  "audio": "primary-autostart-timer-cancelled-v523",
-  "lecons": "lecture-v524-prefixe-unique-nx-lecon-terminale-corrigee"
+  "version": "V529",
+  "message": "Nexora V529 : BAC et Brevet retablis.",
+  "critical": false
 }
