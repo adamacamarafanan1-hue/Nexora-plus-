@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<!-- Nexora V525 : deux espaces payants séparés — Élèves et Pro.
-     Le contenu pédagogique reste inchangé ; l’autorisation de lecture est contrôlée côté serveur. -->
+<!-- Nexora V508 : deux espaces — élèves (maternelle, primaire, collège, lycée, sujets, romans)
+     et professionnel (les 22 modules). Aucune règle d’accès ni de contenu modifiée. -->
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' blob:; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://lzypxingcykvgxdifccq.supabase.co; media-src 'self' data: blob: https://lzypxingcykvgxdifccq.supabase.co; connect-src 'self' https://lzypxingcykvgxdifccq.supabase.co wss://lzypxingcykvgxdifccq.supabase.co https://nexora-plus-beta.vercel.app; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' blob: https://nexora-plus-beta.vercel.app; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" http-equiv="Content-Security-Policy"/>
@@ -12,9 +12,9 @@
 <meta content="Nexora Académie — cours, sujets, romans, formations, communauté, Jeu Adams et défis éducatifs." name="description"/>
 <meta content="#143B67" name="theme-color"/>
 <meta content="Nexora Académie" name="application-name"/>
-<meta content="v528.0-unified-course-gateway" name="nexora-build"/>
-<meta content="V528.0" name="nexora-release"/>
-<meta content="V528.0 — ouverture unifiée et sécurisée des cours Élèves et Pro" name="nexora-version"/>
+<meta content="v524-affichage-lecons" name="nexora-build"/>
+<meta content="V524" name="nexora-release"/>
+<meta content="V524 — affichage premium des leçons" name="nexora-version"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Nexora Académie" name="apple-mobile-web-app-title"/>
@@ -5624,7 +5624,7 @@ html{scroll-behavior:smooth;text-size-adjust:100%}body{-webkit-tap-highlight-col
 .nx7-course-v349{--s:#1A5EAB;display:grid;gap:13px}.nx7-course-hero-v349{border-radius:10px;padding:22px;background:linear-gradient(145deg,color-mix(in srgb,var(--s) 90%,#09213D),var(--s));color:#fff}.nx7-course-hero-v349 small{font-size:10px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.78)}.nx7-course-hero-v349 h2{margin:7px 0 7px;font-size:clamp(27px,5vw,40px);line-height:1.04;letter-spacing:-.04em}.nx7-course-hero-v349 p{margin:0;color:rgba(255,255,255,.84);font-size:13px;line-height:1.6;font-weight:700}.nx7-course-tools-v349{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.nx7-course-tools-v349 button,.nx7-course-tools-v349 span{min-height:35px;display:inline-flex;align-items:center;padding:0 11px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:10.5px;font-weight:900}.nx7-course-tools-v349 button{cursor:pointer}
 .nx7-two-v349{display:grid;grid-template-columns:1fr 1fr;gap:12px}.nx7-box-v349{padding:17px;border:1px solid #D7E1EC;border-radius:8px;background:#fff}.nx7-box-v349 small{display:block;margin-bottom:5px;color:var(--s);font-size:9.8px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}.nx7-box-v349 h3{margin:0 0 7px;font-size:17px}.nx7-box-v349 p{margin:0;color:#484F59;font-size:12.7px;line-height:1.65;font-weight:650}.nx7-course-text-v349{max-width:68ch;margin:0 auto;padding:22px;border:1px solid #D7E1EC;border-radius:10px;background:#fff;text-wrap:pretty}.nx7-course-text-v349 h3{display:flex;align-items:center;gap:10px;margin:30px 0 12px;padding-bottom:9px;border-bottom:1px solid #DDE4ED;color:var(--nx-ardoise,#16324F);font-size:19px;font-weight:800;line-height:1.3;letter-spacing:-.015em}.nx7-course-text-v349 h3:first-child{margin-top:0}.nx7-section-num-v485{flex:0 0 auto;display:grid;place-items:center;min-width:28px;height:28px;border-radius:6px;background:var(--s);color:#fff;font-size:13px;font-weight:800}.nx7-course-text-v349 p{margin:0 0 16px;color:#21252B;font-size:16px;line-height:1.78;font-weight:400}.nx7-course-text-v349 ul,.nx7-course-text-v349 ol{margin:0 0 18px;padding-left:24px;color:#21252B}.nx7-course-text-v349 li{margin:0 0 10px;color:#21252B;font-size:15.5px;line-height:1.75;font-weight:400}.nx7-course-text-v349 .nx7-retain-v485{padding:16px 18px;border:1px solid #DDE4ED;border-left:3px solid var(--s);border-radius:8px;background:#F7F9FB}
 .nx7-course-text-v349 .nx7-retain-v485 li{font-weight:500}.nx7-course-text-v349 .nx7-exercises-v485{padding:17px 19px;border:1px solid #CDE1F8;border-left:3px solid var(--s);border-radius:8px;background:#EAF2FC}
-.nx7-course-text-v349 .nx7-exercises-v485 li{margin-bottom:13px}.nx-course-correction-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin:2px 0 12px;padding:0 16px;border:1px solid var(--s);border-radius:7px;background:#fff;color:var(--s);font:inherit;font-size:13px;font-weight:800;cursor:pointer}.nx-course-correction{margin:0 0 18px;padding:16px 18px;border:1px solid #CDE1F8;border-left:3px solid var(--s);border-radius:8px;background:#F7F9FB}.nx-course-correction b{display:block;margin-bottom:7px;color:var(--s)}.nx-course-correction p{margin:0}
+.nx7-course-text-v349 .nx7-exercises-v485 li{margin-bottom:13px}
 .nx7-points-v349{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.nx7-point-v349{display:flex;align-items:flex-start;gap:9px;padding:12px;border:1px solid color-mix(in srgb,var(--s) 16%,#D7E1EC);border-radius:6px;background:color-mix(in srgb,var(--s) 5%,#fff);color:#373D44;font-size:12px;line-height:1.5;font-weight:750}.nx7-point-v349 i{font-style:normal;display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border-radius:5px;background:var(--s);color:#fff;font-size:11px}
 .nx7-example-v349{padding:17px;border-left:5px solid var(--s);border-radius:6px 8px 8px 6px;background:color-mix(in srgb,var(--s) 7%,#fff)}.nx7-example-v349 h3{margin:0 0 7px;color:var(--s);font-size:16px}.nx7-example-v349 p{margin:0;color:#373D44;font-size:13px;line-height:1.65;font-weight:700}
 .nx7-exercise-v349{padding:18px;border:1px solid #AAD1FE;border-radius:8px;background:#EDF5FF}.nx7-exercise-v349 small{color:#0C61C2;font-size:9.8px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}.nx7-exercise-v349 h3{margin:5px 0 8px;font-size:18px}.nx7-exercise-v349 p{margin:0;color:#7c2d12;font-size:13px;line-height:1.6;font-weight:750}.nx7-exercise-actions-v349{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.nx7-exercise-actions-v349 button{min-height:40px;padding:0 13px;border:1px solid #74B4FD;border-radius:6px;background:#fff;color:#9a3412;font-weight:900;cursor:pointer}.nx7-exercise-actions-v349 button.primary{background:#0C74EA;border-color:#0C74EA;color:#fff}.nx7-correction-v349{margin-top:11px;padding:13px;border-radius:6px;background:#fff;border:1px dashed #3C95FB;color:#7c2d12;font-size:12.5px;line-height:1.62;font-weight:700}.nx7-correction-v349[hidden]{display:none!important}
@@ -14954,7 +14954,7 @@ function applyRealtimeStory(payload){try{
   function nxAcademyOpenCourse(moduleId){
     moduleId=String(moduleId||'');
     if(typeof window.nxRequireSubscriptionAccess==='function'){
-      window.nxRequireSubscriptionAccess('pro',function(){nxAcademyOpenCourseGranted(moduleId);});
+      window.nxRequireSubscriptionAccess('modules',function(){nxAcademyOpenCourseGranted(moduleId);});
       return;
     }
     toast('Abonnement Nexora requis pour ouvrir ce cours.');
@@ -18108,11 +18108,8 @@ function nxLearningBindEventsOnce(){
     document.addEventListener('click',function(e){
       var target=eventElementTarget?eventElementTarget(e):(e&&e.target);
       var btn=target&&target.closest?target.closest('[data-action]'):null;
-      if(!btn||!btn.closest)return;
+      if(!btn||!btn.closest||!btn.closest('[data-learn-center]'))return;
       var action=btn.getAttribute('data-action')||'';
-      var inLearnCenter=!!btn.closest('[data-learn-center]');
-      var inProfessionalModules=action==='open-official-course'&&!!btn.closest('.nx-pro-modules-v342');
-      if(!inLearnCenter&&!inProfessionalModules)return;
       if(action==='set-learn-filter'){e.preventDefault();nxLearningOpenModuleId='';nxLearningFilter=btn.getAttribute('data-filter')||'all';renderLearnCenter(readDB());return;}
       if(action==='open-official-course'){e.preventDefault();nxAcademyOpenCourse(btn.getAttribute('data-module-id')||'');return;}
       if(action==='show-module-course-access'){
@@ -22636,9 +22633,9 @@ function renderTeacherRequestCenter(db){
     promises[key]=new Promise(function(resolve,reject){var l=document.createElement('link');l.rel='stylesheet';l.href=url;l.setAttribute('data-nexora-style-group',name);l.onload=function(){ready[key]=true;resolve(true);};l.onerror=function(){promises[key]=null;reject(new Error('Styles Nexora indisponibles : '+name));};document.head.appendChild(l);});return promises[key];
   }
   function group(screen){screen=String(screen||'');if(screen==='access')return 'kdo';if(screen==='adams')return 'adams';if(screen==='academy'||screen==='subjects'||screen==='novels')return 'academy';return ''}
-  function load(screen){var g=group(screen);if(!g)return Promise.resolve(true);return script('secure','./assets/js/nexora-secure-v525.js?v=528.0').then(function(){if(g==='kdo')return style('kdo','./assets/css/nexora-kdo-v518.0.css').then(function(){return script('kdo','./assets/js/nexora-kdo-v521.js');});if(g==='academy')return style('academy','./assets/css/nexora-academy-v524.css?v=528.0').then(function(){return script('academy','./assets/js/nexora-academy-v524.js?v=528.0');});if(g==='adams')return style('adams','./assets/css/nexora-adams-v518.0.css').then(function(){return script('adams','./assets/js/nexora-adams-v521.js');});return true;});}
+  function load(screen){var g=group(screen);if(!g)return Promise.resolve(true);return script('secure','./assets/js/nexora-secure-v522.js').then(function(){if(g==='kdo')return style('kdo','./assets/css/nexora-kdo-v518.0.css').then(function(){return script('kdo','./assets/js/nexora-kdo-v521.js');});if(g==='academy')return style('academy','./assets/css/nexora-academy-v524.css').then(function(){return script('academy','./assets/js/nexora-academy-v524.js');});if(g==='adams')return style('adams','./assets/css/nexora-adams-v518.0.css').then(function(){return script('adams','./assets/js/nexora-adams-v521.js');});return true;});}
   window.NexoraSecureReadyV506=function(){return !!ready.secure;};
-  window.NexoraEnsureSecureV506=function(){return script('secure','./assets/js/nexora-secure-v525.js?v=528.0');};
+  window.NexoraEnsureSecureV506=function(){return script('secure','./assets/js/nexora-secure-v522.js');};
   window.NexoraFeatureGroupReadyV506=function(screen){var g=group(screen);if(!g)return true;if(!ready.secure)return false;if(g==='kdo')return !!ready.kdo;if(g==='academy')return !!ready.academy;if(g==='adams')return !!ready.adams;return true;};
   window.NexoraLoadFeatureGroupV506=load;
   window.NexoraLoadFeedV506=function(){return script('feed','./assets/js/nexora-feed-v521.js');};
@@ -22876,7 +22873,7 @@ function renderTeacherRequestCenter(db){
   }
 
   function registerNexoraServiceWorker(){
-    navigator.serviceWorker.register('./service-worker.js?v=528.0',{scope:'./',updateViaCache:'none'})
+    navigator.serviceWorker.register('./service-worker.js?v=523.0',{scope:'./',updateViaCache:'none'})
       .then(function(registration){
         registrationRef=registration;
         watchInstalling(registration);

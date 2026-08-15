@@ -1,11 +1,16 @@
 {
-  "version": "V528.0",
-  "message": "Nexora V528.0 : moteur commun Élèves/Pro fiabilisé ; le client Supabase est initialisé explicitement avant toute ouverture sécurisée.",
-  "critical": true,
-  "updated_at": "2026-08-14T22:01:00.000Z",
-  "update_system": "forced-service-worker-v528-unified-courses",
-  "subscription": "supabase-v528-explicit-client-readiness",
-  "secure_content": "nxe-v525-protocol-v528-server-authority",
-  "lecons": "lecture-v528-single-secure-client-path",
-  "secure_manifest": "v525-20260813-1"
+  "version": "V524",
+  "message": "Nexora V524 : affichage premium des leçons — Terminale enfin mise en forme, corrections des sujets habillées, texte des cours élargi et allégé.",
+  "critical": false,
+  "updated_at": "2026-08-13T00:00:00Z",
+  "update_system": "controlled-service-worker-v523-version-gated",
+  "subscription": "server-plan-id-required-v519.2-supabase-catalog-8-plans",
+  "primary_ce2": "78-lessons-protected-source-with-matched-visuals-v523",
+  "secure_content": "nxe-v523-product-gated",
+  "ouverture": "head-14ko-lazy-groups-timers-260-2600-3200",
+  "account_creation": "essential-fields-first-no-overlay",
+  "subscription_cta": "activate-account-visible-v523",
+  "subscription_spaces": "eleves-pro-separated-v523",
+  "audio": "primary-autostart-timer-cancelled-v523",
+  "lecons": "lecture-v524-prefixe-unique-nx-lecon-terminale-corrigee"
 }
