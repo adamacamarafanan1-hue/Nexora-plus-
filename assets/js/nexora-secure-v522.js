@@ -315,7 +315,30 @@
   async function entitlement(){var record=await loadRecord();if(record&&await validateRecord(record,true))return record;if(online())return activate({});throw errorMessage('Connexion Internet nécessaire pour ouvrir ce contenu premium.');}
   async function hasValidEntitlement(){try{await entitlement();return true;}catch(_e){return false;}}
 
-  async function encryptedBytes(entry){if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours ou ce jeu.');var target=/^https?:/i.test(String(entry.url||''))?entry.url:'/'+normalizePath(entry.url);var request=new Request(target,{credentials:'omit',cache:'no-store'});var response=await nxSecureFetchV506(request,{cache:'no-store',credentials:'same-origin'});if(!response||!response.ok)throw errorMessage('Chargement sécurisé impossible ('+(response&&response.status||0)+').');return new Uint8Array(await response.arrayBuffer());}
+  /* V535 : les fichiers de cours pesent de 1,2 a 2,7 Mo. Sur une 4G instable, une seule
+   coupure suffisait a afficher « Lecons indisponibles ». On retente donc trois fois,
+   avec une pause qui s'allonge, avant d'abandonner. Le message d'echec distingue
+   desormais une coupure reseau d'un vrai refus du serveur. */
+async function encryptedBytes(entry){
+  if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours ou ce jeu.');
+  var target=/^https?:/i.test(String(entry.url||''))?entry.url:'/'+normalizePath(entry.url);
+  var essais=0,derniere=null;
+  while(essais<3){
+    essais++;
+    try{
+      var request=new Request(target,{credentials:'omit',cache:'no-store'});
+      var response=await nxSecureFetchV506(request,{cache:'no-store',credentials:'same-origin'});
+      if(response&&response.ok)return new Uint8Array(await response.arrayBuffer());
+      derniere=errorMessage('Chargement sécurisé impossible ('+(response&&response.status||0)+').');
+      if(response&&response.status&&response.status<500&&response.status!==408&&response.status!==429)throw derniere;
+    }catch(erreurReseau){
+      derniere=erreurReseau;
+      window.nxLog&&window.nxLog(erreurReseau);
+    }
+    if(essais<3)await new Promise(function(r){setTimeout(r,essais*1200);});
+  }
+  throw derniere||errorMessage('Le cours n’a pas pu être téléchargé. Vérifie ta connexion, puis réessaie.');
+}
   async function decrypt(path){path=normalizePath(path);var record=await entitlement(),manifest=await loadManifest(),entry=manifest.byPath[path];if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);var packed=await encryptedBytes(entry);if(packed.length<33||String.fromCharCode.apply(null,packed.slice(0,4))!=='NXE1')throw errorMessage('Paquet sécurisé invalide.');var iv=packed.slice(4,16),cipher=packed.slice(16),plain;try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(path)},record.content_key,cipher);}finally{try{packed.fill(0);cipher.fill(0);}catch(_wipeError){}}return new Uint8Array(plain);}
   async function text(path){return dec.decode(await decrypt(path));}
   async function json(path){return JSON.parse(await text(path));}
