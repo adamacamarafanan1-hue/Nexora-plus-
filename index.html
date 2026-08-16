@@ -18,8 +18,8 @@
 <meta content="#143B67" name="theme-color"/>
 <meta content="Nexora Académie" name="application-name"/>
 <meta content="v524-affichage-lecons" name="nexora-build"/>
-<meta content="V529" name="nexora-release"/>
-<meta content="V529 — BAC et Brevet restaurés, affichage premium conservé" name="nexora-version"/>
+<meta content="V530" name="nexora-release"/>
+<meta content="V530 — ouverture des modules professionnels" name="nexora-version"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Nexora Académie" name="apple-mobile-web-app-title"/>
@@ -15491,7 +15491,7 @@ function applyRealtimeStory(payload){try{
   }
   function nxAcademyOpenCourseGranted(moduleId){
     moduleId=String(moduleId||'').trim();
-    var viewer=document.getElementById('nxAcademyViewer');if(!viewer)return Promise.resolve(null);
+    /* V530 : la fenêtre du cours vit dans un gabarit monté seulement sur l'écran Académie. Ouvert depuis l'Espace professionnel, il faut la monter d'abord. */var viewer=document.getElementById('nxAcademyViewer');if(!viewer){try{nxEnsureFeatureFragmentsV506('academy');}catch(_e){window.nxLog&&window.nxLog(_e)}viewer=document.getElementById('nxAcademyViewer');}if(!viewer)return Promise.resolve(null);
     viewer.hidden=false;
     document.body.style.overflow='hidden';
     var stage=viewer.querySelector('[data-nx-academy-stage]');
@@ -18687,7 +18687,7 @@ function nxLearningBindEventsOnce(){
     document.addEventListener('click',function(e){
       var target=eventElementTarget?eventElementTarget(e):(e&&e.target);
       var btn=target&&target.closest?target.closest('[data-action]'):null;
-      if(!btn||!btn.closest||!btn.closest('[data-learn-center]'))return;
+      if(!btn||!btn.closest)return;/* V530 : les cartes des modules pro vivent hors du centre de formation ; on les accepte partout. */if(!btn.closest('[data-learn-center]')&&!(btn.matches&&btn.matches('[data-action="open-official-course"][data-module-id]')))return;
       var action=btn.getAttribute('data-action')||'';
       if(action==='set-learn-filter'){e.preventDefault();nxLearningOpenModuleId='';nxLearningFilter=btn.getAttribute('data-filter')||'all';renderLearnCenter(readDB());return;}
       if(action==='open-official-course'){e.preventDefault();nxAcademyOpenCourse(btn.getAttribute('data-module-id')||'');return;}
