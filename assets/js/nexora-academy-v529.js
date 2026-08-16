@@ -1611,3 +1611,185 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!p
   }, false);
 })();
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   V532 · LECTEUR DES MODULES PROFESSIONNELS
+
+   Pourquoi ce bloc existe : l'écouteur d'origine des cartes de modules est
+   installé par renderLearnCenter(), qui sort immédiatement quand
+   [data-learn-center] n'est pas monté — c'est-à-dire partout hors de l'écran
+   « Formations », lequel n'est plus accessible depuis la refonte deux espaces.
+   Depuis l'Espace professionnel, un clic sur une carte ne déclenchait donc
+   rien du tout, sans le moindre message.
+
+   Ce lecteur est autonome : il n'utilise que des points d'entrée publics,
+   window.nxRequireSubscriptionAccess et window.NexoraAcademyContentV271.
+   Il vit dans ce fichier pour pouvoir être déployé sans toucher index.html.
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  if (window.__nxLecteurProV532) return;
+  window.__nxLecteurProV532 = true;
+
+  var etat = { module:'', cours:null, theme:0, ouvert:false };
+
+  function esc(x){
+    return String(x == null ? '' : x)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function cadre(){
+    var c = document.getElementById('nxLecteurProV532');
+    if (c) return c;
+    c = document.createElement('section');
+    c.id = 'nxLecteurProV532';
+    c.className = 'nx-pro-lecteur-v532';
+    c.setAttribute('aria-modal','true');
+    c.setAttribute('role','dialog');
+    c.hidden = true;
+    c.innerHTML =
+      '<header class="nx-pro-lecteur-tete-v532">' +
+        '<div><small data-pro-kicker>Module professionnel</small>' +
+        '<h2 data-pro-titre>Chargement…</h2></div>' +
+        '<button type="button" data-pro-fermer aria-label="Fermer">✕</button>' +
+      '</header>' +
+      '<nav class="nx-pro-lecteur-rail-v532" data-pro-rail></nav>' +
+      '<div class="nx-pro-lecteur-corps-v532" data-pro-corps></div>';
+    document.body.appendChild(c);
+    c.addEventListener('click', function(e){
+      var b = e.target && e.target.closest ? e.target.closest('[data-pro-theme],[data-pro-fermer]') : null;
+      if (!b) return;
+      if (b.hasAttribute('data-pro-fermer')) { fermer(); return; }
+      etat.theme = parseInt(b.getAttribute('data-pro-theme'), 10) || 0;
+      dessiner();
+    });
+    return c;
+  }
+
+  function fermer(){
+    var c = document.getElementById('nxLecteurProV532');
+    if (c) c.hidden = true;
+    etat.ouvert = false;
+    document.body.style.overflow = '';
+  }
+
+  function message(titre, texte){
+    var c = cadre();
+    c.hidden = false;
+    etat.ouvert = true;
+    document.body.style.overflow = 'hidden';
+    c.querySelector('[data-pro-titre]').textContent = titre;
+    c.querySelector('[data-pro-rail]').innerHTML = '';
+    c.querySelector('[data-pro-corps]').innerHTML =
+      '<p class="nx-pro-lecteur-message-v532">' + esc(texte) + '</p>';
+  }
+
+  function dessiner(){
+    var c = cadre(), cours = etat.cours;
+    if (!cours) return;
+    var themes = Array.isArray(cours.themes) ? cours.themes : [];
+    var t = themes[etat.theme] || {};
+
+    c.querySelector('[data-pro-kicker]').textContent =
+      'Module professionnel · ' + themes.length + ' thèmes';
+    c.querySelector('[data-pro-titre]').textContent = cours.title || 'Module';
+
+    c.querySelector('[data-pro-rail]').innerHTML = themes.map(function(x, i){
+      return '<button type="button" data-pro-theme="' + i + '"' +
+             (i === etat.theme ? ' class="actif"' : '') + '>' +
+             '<i>' + (i + 1) + '</i><span>' + esc(x && x.title) + '</span></button>';
+    }).join('');
+
+    var objectifs = Array.isArray(t.objectives) && t.objectives.length
+      ? '<div class="nx-pro-bloc-v532"><b>Objectifs</b><ul>' +
+        t.objectives.map(function(o){ return '<li>' + esc(o) + '</li>'; }).join('') +
+        '</ul></div>' : '';
+
+    var points = (Array.isArray(t.development) ? t.development : []).map(function(p, i){
+      return '<section class="nx-pro-point-v532"><h4><u>' + (i + 1) + '</u>' +
+             esc(p && p.title) + '</h4><p>' + esc(p && p.text) + '</p></section>';
+    }).join('');
+
+    var erreurs = Array.isArray(t.errors) && t.errors.length
+      ? '<div class="nx-pro-bloc-v532 nx-pro-bloc-piege-v532"><b>Erreurs fréquentes</b><ul>' +
+        t.errors.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') +
+        '</ul></div>' : '';
+
+    var q = t.question || {};
+    var quiz = Array.isArray(q.choices) && q.choices.length
+      ? '<div class="nx-pro-bloc-v532"><b>Question de contrôle</b>' +
+        '<p>' + esc(q.text || q.question || '') + '</p><ol class="nx-pro-choix-v532">' +
+        q.choices.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') +
+        '</ol></div>' : '';
+
+    var nav =
+      '<div class="nx-pro-nav-v532">' +
+        (etat.theme > 0
+          ? '<button type="button" data-pro-theme="' + (etat.theme - 1) + '">← Précédent</button>'
+          : '<span></span>') +
+        (etat.theme < themes.length - 1
+          ? '<button type="button" data-pro-theme="' + (etat.theme + 1) + '" class="primaire">Suivant →</button>'
+          : '<span></span>') +
+      '</div>';
+
+    c.querySelector('[data-pro-corps]').innerHTML =
+      '<article class="nx-pro-theme-v532">' +
+        '<span class="nx-pro-etape-v532">Thème ' + (etat.theme + 1) + ' sur ' + themes.length + '</span>' +
+        '<h3>' + esc(t.title) + '</h3>' +
+        objectifs + points + erreurs + quiz + nav +
+      '</article>';
+
+    c.scrollTop = 0;
+  }
+
+  function charger(moduleId){
+    etat.module = moduleId;
+    etat.theme = 0;
+    message('Chargement…', 'Le module s’ouvre, patiente quelques secondes.');
+
+    var contenu = window.NexoraAcademyContentV271;
+    if (!contenu || typeof contenu.json !== 'function') {
+      message('Module indisponible',
+        'Le chargeur de contenu de l’Académie n’est pas disponible sur cet écran. Ferme et rouvre Nexora.');
+      return;
+    }
+
+    contenu.json('modules/formation/' + moduleId + '/cours.json').then(function(donnees){
+      if (!donnees || !Array.isArray(donnees.themes) || !donnees.themes.length) {
+        message('Contenu du module invalide',
+          'Le fichier du module a bien été lu, mais il ne contient aucun thème.');
+        return;
+      }
+      etat.cours = donnees;
+      dessiner();
+    }).catch(function(err){
+      message('Module indisponible',
+        'Le contenu n’a pas pu être lu : ' + String(err && err.message || err));
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    var cible = e && e.target;
+    var btn = cible && cible.closest
+      ? cible.closest('[data-action="open-official-course"][data-module-id], .nx-pro-module-v342[data-module-id]')
+      : null;
+    if (!btn) return;
+    /* Dans le centre de formation, le lecteur d'origine fonctionne : on le laisse faire. */
+    if (btn.closest('[data-learn-center]')) return;
+    var id = btn.getAttribute('data-module-id') || '';
+    if (!id) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (typeof window.nxRequireSubscriptionAccess === 'function') {
+      window.nxRequireSubscriptionAccess('modules', function(){ charger(id); });
+    } else {
+      charger(id);
+    }
+  }, true);
+
+  document.addEventListener('keydown', function(e){
+    if (etat.ouvert && e && e.key === 'Escape') fermer();
+  });
+})();
