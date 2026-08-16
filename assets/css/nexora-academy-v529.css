@@ -1,1 +1,48 @@
 /* Le style est ecrit dans index.html. Ce fichier existe pour le chargeur. */
+/* V532 · lecteur des modules professionnels */
+.nx-pro-lecteur-v532{
+  position:fixed;inset:0;z-index:2147481500;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--nx-cendre-0,#EDEFF2);color:#21252B;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+.nx-pro-lecteur-v532[hidden]{display:none}
+.nx-pro-lecteur-tete-v532{
+  position:sticky;top:0;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:16px 16px calc(16px + env(safe-area-inset-top,0px));
+  background:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6);
+}
+.nx-pro-lecteur-tete-v532 small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:rgba(238,242,246,.7)}
+.nx-pro-lecteur-tete-v532 h2{margin:5px 0 0;font-size:19px;font-weight:800;line-height:1.25;letter-spacing:-.02em}
+.nx-pro-lecteur-tete-v532 button{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:8px;background:rgba(238,242,246,.16);color:#fff;font:inherit;font-size:17px;cursor:pointer}
+.nx-pro-lecteur-rail-v532{
+  position:sticky;top:0;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding:11px 14px;border-bottom:1px solid var(--nx-cendre-2,#C6CBD2);background:rgba(237,239,242,.97);
+}
+.nx-pro-lecteur-rail-v532 button{
+  flex:0 0 auto;display:flex;align-items:center;gap:7px;min-height:40px;padding:0 13px;
+  border:1px solid var(--nx-cendre-2,#C6CBD2);border-radius:8px;background:#fff;
+  color:#4A515A;font:inherit;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer;
+}
+.nx-pro-lecteur-rail-v532 button.actif{background:var(--nx-ardoise,#16324F);border-color:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6)}
+.nx-pro-lecteur-rail-v532 button i{display:grid;place-items:center;width:21px;height:21px;border-radius:5px;background:var(--nx-cendre-1,#DBDFE4);color:var(--nx-ardoise,#16324F);font-size:11px;font-style:normal;font-weight:800}
+.nx-pro-lecteur-rail-v532 button.actif i{background:rgba(238,242,246,.2);color:#fff}
+.nx-pro-lecteur-corps-v532{max-width:68ch;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+.nx-pro-lecteur-message-v532{margin:26px 0;padding:20px 18px;border:1px solid var(--nx-cendre-2,#C6CBD2);border-radius:10px;background:#fff;font-size:15.5px;line-height:1.7;text-align:center}
+.nx-pro-etape-v532{display:block;color:var(--nx-cendre-6,#5F656C);font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
+.nx-pro-theme-v532 h3{margin:7px 0 16px;color:var(--nx-ardoise,#16324F);font-size:22px;font-weight:800;line-height:1.25;letter-spacing:-.02em}
+.nx-pro-bloc-v532{margin:16px 0;padding:14px 16px;border:1px solid var(--nx-cendre-2,#C6CBD2);border-left:3px solid var(--nx-ardoise,#16324F);border-radius:8px;background:#fff}
+.nx-pro-bloc-v532 > b{display:block;margin-bottom:8px;color:var(--nx-ardoise,#16324F);font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
+.nx-pro-bloc-v532 ul,.nx-pro-bloc-v532 ol{margin:0;padding-left:20px}
+.nx-pro-bloc-v532 li{margin:0 0 8px;font-size:15.5px;line-height:1.7}
+.nx-pro-bloc-v532 p{margin:0 0 8px;font-size:15.5px;line-height:1.7}
+.nx-pro-bloc-piege-v532{border-left-color:#B4442E;background:#FFF6F4}
+.nx-pro-point-v532{margin:0 0 18px;padding-left:16px;border-left:2px solid var(--nx-cendre-2,#C6CBD2)}
+.nx-pro-point-v532 h4{display:flex;align-items:center;gap:9px;margin:0 0 7px;color:var(--nx-ardoise,#16324F);font-size:16px;font-weight:800;line-height:1.3}
+.nx-pro-point-v532 h4 u{flex:0 0 auto;display:grid;place-items:center;width:23px;height:23px;border-radius:5px;background:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6);font-size:11.5px;font-weight:800;text-decoration:none}
+.nx-pro-point-v532 p{margin:0;font-size:15.5px;line-height:1.78}
+.nx-pro-choix-v532 li{margin-bottom:7px}
+.nx-pro-nav-v532{display:flex;justify-content:space-between;gap:10px;margin-top:24px}
+.nx-pro-nav-v532 button{min-height:48px;padding:0 16px;border:1px solid var(--nx-cendre-2,#C6CBD2);border-radius:8px;background:#fff;color:var(--nx-ardoise,#16324F);font:inherit;font-size:14.5px;font-weight:800;cursor:pointer}
+.nx-pro-nav-v532 button.primaire{background:var(--nx-ardoise,#16324F);border-color:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6)}
+[data-theme="dark"] .nx-pro-lecteur-v532{background:#0F1216;color:#CDD1D7}
+[data-theme="dark"] .nx-pro-bloc-v532,[data-theme="dark"] .nx-pro-lecteur-message-v532,[data-theme="dark"] .nx-pro-lecteur-rail-v532 button{background:#171A1E;border-color:#2A2F36;color:#CDD1D7}
