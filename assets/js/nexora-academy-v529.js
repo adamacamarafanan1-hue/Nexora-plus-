@@ -591,7 +591,7 @@
         tries++;
         var target=document.querySelector('[data-nx-primary-action="class"][data-class-id="'+classId+'"]');
         if(target){try{target.click();}catch(_e){window.nxLog&&window.nxLog(_e)}return;}
-        if(tries<40)window.setTimeout(pick,120);
+        /* V534 : le fichier du primaire pese 2,4 Mo ; sur connexion lente il arrive apres les 4,8 s que laissait l'ancienne attente, et la carte de la classe n'existait pas encore. On attend desormais jusqu'a 45 s. */ if(tries<375)window.setTimeout(pick,120);
       })();
     });
   }
