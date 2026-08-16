@@ -319,16 +319,59 @@
    coupure suffisait a afficher « Lecons indisponibles ». On retente donc trois fois,
    avec une pause qui s'allonge, avant d'abandonner. Le message d'echec distingue
    desormais une coupure reseau d'un vrai refus du serveur. */
+/* V536 : les fichiers de cours pesent de 1,2 a 2,7 Mo et etaient retelecharges a
+   CHAQUE ouverture. On les garde desormais sur l'appareil, **toujours chiffres** :
+   le fichier au repos reste exactement celui du serveur, et la cle continue d'exiger
+   un abonnement valide a chaque session. Rien n'est affaibli, mais la deuxieme
+   ouverture est immediate et ne coute plus de donnees. Le cache est nomme d'apres
+   la version de contenu : une mise a jour des lecons le remplace toute seule. */
+var CACHE_CONTENU_V536 = 'nexora-contenu-' + VERSION;
+
+async function ouvrirCacheContenu(){
+  try{
+    if(!window.caches || typeof window.caches.open !== 'function') return null;
+    return await window.caches.open(CACHE_CONTENU_V536);
+  }catch(_e){ window.nxLog && window.nxLog(_e); return null; }
+}
+
+async function purgerAnciensContenus(){
+  try{
+    if(!window.caches || typeof window.caches.keys !== 'function') return;
+    var noms = await window.caches.keys();
+    for(var i=0;i<noms.length;i++){
+      if(noms[i].indexOf('nexora-contenu-')===0 && noms[i]!==CACHE_CONTENU_V536){
+        try{ await window.caches.delete(noms[i]); }catch(_e2){ window.nxLog && window.nxLog(_e2); }
+      }
+    }
+  }catch(_e3){ window.nxLog && window.nxLog(_e3); }
+}
+purgerAnciensContenus();
+
 async function encryptedBytes(entry){
-  if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours ou ce jeu.');
   var target=/^https?:/i.test(String(entry.url||''))?entry.url:'/'+normalizePath(entry.url);
+  var cache=await ouvrirCacheContenu();
+
+  if(cache){
+    try{
+      var garde=await cache.match(target);
+      if(garde && garde.ok){
+        var octets=new Uint8Array(await garde.arrayBuffer());
+        if(octets.length>32) return octets;
+      }
+    }catch(_eLecture){ window.nxLog && window.nxLog(_eLecture); }
+  }
+
+  if(!online())throw errorMessage('Connexion Internet nécessaire pour ouvrir ce cours ou ce jeu.');
   var essais=0,derniere=null;
   while(essais<3){
     essais++;
     try{
       var request=new Request(target,{credentials:'omit',cache:'no-store'});
       var response=await nxSecureFetchV506(request,{cache:'no-store',credentials:'same-origin'});
-      if(response&&response.ok)return new Uint8Array(await response.arrayBuffer());
+      if(response&&response.ok){
+        if(cache){ try{ await cache.put(target, response.clone()); }catch(_eEcriture){ window.nxLog && window.nxLog(_eEcriture); } }
+        return new Uint8Array(await response.arrayBuffer());
+      }
       derniere=errorMessage('Chargement sécurisé impossible ('+(response&&response.status||0)+').');
       if(response&&response.status&&response.status<500&&response.status!==408&&response.status!==429)throw derniere;
     }catch(erreurReseau){
@@ -339,7 +382,7 @@ async function encryptedBytes(entry){
   }
   throw derniere||errorMessage('Le cours n’a pas pu être téléchargé. Vérifie ta connexion, puis réessaie.');
 }
-  async function decrypt(path){path=normalizePath(path);var record=await entitlement(),manifest=await loadManifest(),entry=manifest.byPath[path];if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);var packed=await encryptedBytes(entry);if(packed.length<33||String.fromCharCode.apply(null,packed.slice(0,4))!=='NXE1')throw errorMessage('Paquet sécurisé invalide.');var iv=packed.slice(4,16),cipher=packed.slice(16),plain;try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(path)},record.content_key,cipher);}finally{try{packed.fill(0);cipher.fill(0);}catch(_wipeError){}}return new Uint8Array(plain);}
+async function decrypt(path){path=normalizePath(path);var record=await entitlement(),manifest=await loadManifest(),entry=manifest.byPath[path];if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);var packed=await encryptedBytes(entry);if(packed.length<33||String.fromCharCode.apply(null,packed.slice(0,4))!=='NXE1')throw errorMessage('Paquet sécurisé invalide.');var iv=packed.slice(4,16),cipher=packed.slice(16),plain;try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(path)},record.content_key,cipher);}finally{try{packed.fill(0);cipher.fill(0);}catch(_wipeError){}}return new Uint8Array(plain);}
   async function text(path){return dec.decode(await decrypt(path));}
   async function json(path){return JSON.parse(await text(path));}
   async function execute(path){path=normalizePath(path);var marker='data-nexora-secure-script';var old=Array.prototype.slice.call(document.scripts||[]).some(function(x){return x.getAttribute&&x.getAttribute(marker)===path;});if(old)return true;var code=await text(path);return new Promise(function(resolve,reject){var blob=new Blob([code+'\n//# sourceURL='+path],{type:'text/javascript'}),url=URL.createObjectURL(blob),s=document.createElement('script');s.setAttribute(marker,path);s.src=url;s.onload=function(){URL.revokeObjectURL(url);resolve(true);};s.onerror=function(){URL.revokeObjectURL(url);s.remove();reject(new Error('Exécution sécurisée impossible.'));};document.head.appendChild(s);});}
