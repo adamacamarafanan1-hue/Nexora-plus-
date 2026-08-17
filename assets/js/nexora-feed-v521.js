@@ -365,3 +365,185 @@ window.NexoraStudentWorkFeedV378={version:VERSION,refresh:function(){state.loade
 })();
 
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   V539 · PRÉSENCE EN DIRECT DANS LA COMMUNAUTÉ
+
+   Chaque application ouverte annonce sa présence sur un canal Supabase partagé
+   et reçoit la liste des autres en temps réel. Rien n'est enregistré en base :
+   la présence vit le temps de la connexion et disparaît à la fermeture.
+
+   Affichage : prénom et initiale du nom. Assez pour reconnaître un camarade,
+   pas assez pour identifier un élève auprès d'un inconnu.
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  if (window.__nxPresenceV539) return;
+  window.__nxPresenceV539 = true;
+
+  var CANAL = 'nexora-presence-v539';
+  var canal = null;
+  var moi = null;
+
+  function racineFil(){ return document.querySelector('[data-nx-student-feed-v371]'); }
+
+  function client(){
+    try {
+      if (window.NexoraApp && typeof window.NexoraApp.ensureSupabaseClientReady === 'function')
+        return window.NexoraApp.ensureSupabaseClientReady();
+      return Promise.resolve(window.NexoraApp && window.NexoraApp.getSupabaseClient
+        ? window.NexoraApp.getSupabaseClient() : null);
+    } catch(_e){ return Promise.resolve(null); }
+  }
+
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  /* « Mariama Diallo » devient « Mariama D. » */
+  function nomCourt(nom){
+    var parts = String(nom || 'Élève Nexora').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'Élève Nexora';
+    if (parts.length === 1) return parts[0];
+    return parts[0] + ' ' + parts[parts.length - 1].charAt(0).toUpperCase() + '.';
+  }
+
+  function initiales(nom){
+    var p = String(nom || 'Élève Nexora').trim().split(/\s+/).filter(Boolean);
+    return ((p[0] || 'E').charAt(0) + (p.length > 1 ? p[p.length-1].charAt(0) : '')).toUpperCase();
+  }
+
+  function styles(){
+    if (document.getElementById('nxPresenceStyleV539')) return;
+    var s = document.createElement('style');
+    s.id = 'nxPresenceStyleV539';
+    s.textContent =
+      '.nx-presence-v539{margin:0 0 14px;padding:14px 16px;border:1px solid var(--nx-cendre-2,#C6CBD2);' +
+      'border-radius:10px;background:#fff}' +
+      '.nx-presence-tete-v539{display:flex;align-items:center;gap:9px;margin-bottom:11px}' +
+      '.nx-presence-pastille-v539{width:9px;height:9px;border-radius:50%;background:#2F7A4F;flex:0 0 auto;' +
+      'box-shadow:0 0 0 3px rgba(47,122,79,.18)}' +
+      '.nx-presence-tete-v539 b{color:var(--nx-ardoise,#16324F);font-size:14.5px;font-weight:800}' +
+      '.nx-presence-tete-v539 span{margin-left:auto;color:var(--nx-cendre-6,#5F656C);font-size:11px;' +
+      'font-weight:800;letter-spacing:.12em;text-transform:uppercase}' +
+      '.nx-presence-liste-v539{display:flex;flex-wrap:wrap;gap:8px}' +
+      '.nx-presence-personne-v539{display:flex;align-items:center;gap:7px;padding:6px 11px 6px 6px;' +
+      'border:1px solid var(--nx-cendre-1,#DBDFE4);border-radius:999px;background:var(--nx-cendre-0,#EDEFF2);' +
+      'font-size:13px;font-weight:600;color:#21252B}' +
+      '.nx-presence-personne-v539 i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;' +
+      'background:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6);font-size:10.5px;font-style:normal;font-weight:800}' +
+      '.nx-presence-personne-v539.moi{border-color:var(--nx-ardoise,#16324F)}' +
+      '.nx-presence-vide-v539{color:var(--nx-cendre-6,#5F656C);font-size:13.5px}' +
+      '[data-theme="dark"] .nx-presence-v539{background:#121914;border-color:#2A2F36}' +
+      '[data-theme="dark"] .nx-presence-personne-v539{background:#171A1E;border-color:#2A2F36;color:#CDD1D7}';
+    document.head.appendChild(s);
+  }
+
+  function cadre(){
+    var racine = racineFil();
+    if (!racine) return null;
+    var c = document.getElementById('nxPresenceV539');
+    if (c && c.parentNode === racine) return c;
+    styles();
+    c = document.createElement('section');
+    c.id = 'nxPresenceV539';
+    c.className = 'nx-presence-v539';
+    c.setAttribute('aria-live', 'polite');
+    c.innerHTML =
+      '<div class="nx-presence-tete-v539"><i class="nx-presence-pastille-v539"></i>' +
+      '<b data-presence-titre>Connexion…</b><span data-presence-compte></span></div>' +
+      '<div class="nx-presence-liste-v539" data-presence-liste></div>';
+    racine.insertBefore(c, racine.firstChild);
+    return c;
+  }
+
+  function dessiner(personnes){
+    var c = cadre();
+    if (!c) return;
+    var n = personnes.length;
+    c.querySelector('[data-presence-titre]').textContent =
+      n <= 1 ? 'Tu es seul en ligne pour le moment' :
+      n + ' personnes en ligne';
+    c.querySelector('[data-presence-compte]').textContent = n ? 'en direct' : '';
+    c.querySelector('[data-presence-liste]').innerHTML = n
+      ? personnes.map(function(p){
+          return '<span class="nx-presence-personne-v539' + (p.moi ? ' moi' : '') + '">' +
+                 '<i>' + esc(initiales(p.nom)) + '</i>' + esc(nomCourt(p.nom)) +
+                 (p.moi ? ' (toi)' : '') + '</span>';
+        }).join('')
+      : '<span class="nx-presence-vide-v539">Personne d’autre n’est connecté en ce moment.</span>';
+  }
+
+  function lire(){
+    if (!canal || typeof canal.presenceState !== 'function') return [];
+    var etat = canal.presenceState() || {};
+    var vus = {}, sortie = [];
+    Object.keys(etat).forEach(function(cle){
+      (etat[cle] || []).forEach(function(entree){
+        var id = String(entree && entree.id || cle);
+        if (vus[id]) return;
+        vus[id] = true;
+        sortie.push({ nom: (entree && entree.nom) || 'Élève Nexora', moi: moi && id === moi.id });
+      });
+    });
+    sortie.sort(function(a,b){ return a.moi ? -1 : b.moi ? 1 : String(a.nom).localeCompare(String(b.nom)); });
+    return sortie;
+  }
+
+  async function demarrer(){
+    if (canal) { dessiner(lire()); return; }
+    if (!racineFil()) return;
+
+    var c = null;
+    try { c = await client(); } catch(_e){}
+    if (!c || typeof c.channel !== 'function') return;
+
+    var session = null;
+    try { session = (await c.auth.getSession()).data.session; } catch(_e){}
+    var u = session && session.user;
+    if (!u) return;
+
+    var meta = u.user_metadata || {};
+    moi = {
+      id: String(u.id),
+      nom: meta.full_name || meta.name || meta.prenom || (u.email || '').split('@')[0] || 'Élève Nexora'
+    };
+
+    canal = c.channel(CANAL, { config: { presence: { key: moi.id } } });
+    canal.on('presence', { event: 'sync' }, function(){ dessiner(lire()); });
+    canal.on('presence', { event: 'join' }, function(){ dessiner(lire()); });
+    canal.on('presence', { event: 'leave' }, function(){ dessiner(lire()); });
+    canal.subscribe(function(statut){
+      if (statut !== 'SUBSCRIBED') return;
+      try { canal.track({ id: moi.id, nom: moi.nom, depuis: Date.now() }); }
+      catch(_e){ window.nxLog && window.nxLog(_e); }
+    });
+  }
+
+  function arreter(){
+    if (!canal) return;
+    try { canal.unsubscribe(); } catch(_e){}
+    canal = null;
+    var c = document.getElementById('nxPresenceV539');
+    if (c && c.parentNode) c.parentNode.removeChild(c);
+  }
+
+  /* On ne se déclare présent que sur l'écran Communauté, et on se retire dès
+     qu'on le quitte ou que l'application passe en arrière-plan. */
+  function surEcranCommunaute(){
+    return !!document.querySelector('[data-screen-panel="network"].active');
+  }
+
+  function ajuster(){
+    if (surEcranCommunaute() && document.visibilityState === 'visible') demarrer();
+    else arreter();
+  }
+
+  document.addEventListener('nx-screen-change', function(){ setTimeout(ajuster, 300); });
+  document.addEventListener('visibilitychange', ajuster);
+  window.addEventListener('pagehide', arreter);
+  window.addEventListener('nexora:remote-ready', function(){ setTimeout(ajuster, 600); });
+  setTimeout(ajuster, 1200);
+})();
