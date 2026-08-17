@@ -1,6 +1,6 @@
 /* Nexora V538 — coque d'ouverture rapide et mise à jour immédiate. */
 
-const CACHE_NAME = "nexora-v538-coque-1";
+const CACHE_NAME = "nexora-v539-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 /* V538 : le controle passe de 6 heures a 5 minutes. Un eleve qui vient de payer
