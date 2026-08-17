@@ -366,8 +366,11 @@ async function encryptedBytes(entry){
   while(essais<3){
     essais++;
     try{
-      var request=new Request(target,{credentials:'omit',cache:'no-store'});
-      var response=await nxSecureFetchV506(request,{cache:'no-store',credentials:'same-origin'});
+      /* V537 : les fichiers de cours sont immuables (leur nom est une empreinte) et
+   desormais mis en cache par Vercel. On laisse donc le navigateur utiliser son
+   propre cache au lieu de le contourner : la 2e ouverture passe de ~3,8 s a ~30 ms. */
+      var request=new Request(target,{credentials:'omit'});
+      var response=await nxSecureFetchV506(request,{credentials:'same-origin'});
       if(response&&response.ok){
         if(cache){ try{ await cache.put(target, response.clone()); }catch(_eEcriture){ window.nxLog && window.nxLog(_eEcriture); } }
         return new Uint8Array(await response.arrayBuffer());
