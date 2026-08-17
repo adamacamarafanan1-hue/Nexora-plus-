@@ -1,13 +1,11 @@
-/* Nexora V524 — coque d'ouverture rapide et cache final cohérent.
-   Le document n'est plus retéléchargé à chaque
-   lancement. On lit d'abord version.json (467 octets, au plus une fois toutes
-   les 6 heures) ; le document n'est repris que si le numéro de version a
-   réellement changé. */
+/* Nexora V538 — coque d'ouverture rapide et mise à jour immédiate. */
 
-const CACHE_NAME = "nexora-v537-coque-1";
+const CACHE_NAME = "nexora-v538-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
-const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;
+/* V538 : le controle passe de 6 heures a 5 minutes. Un eleve qui vient de payer
+   ou qui rouvre apres une correction ne doit pas attendre une demi-journee. */
+const DELAI_CONTROLE_MS = 5 * 60 * 1000;
 
 const PUBLIC_ASSETS = [
   "/index.html",
@@ -34,6 +32,8 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+let versionAnnoncee = false;
+
 async function lireMeta(cache) {
   try {
     const reponse = await cache.match(META_URL);
@@ -52,7 +52,6 @@ async function ecrireMeta(cache, meta) {
   } catch (_erreur) { /* le cache peut être plein : ce n'est pas bloquant */ }
 }
 
-/* Contrôle économe : version.json d'abord, document seulement si nécessaire. */
 async function verifierVersion(cache) {
   const meta = await lireMeta(cache);
   const maintenant = Date.now();
@@ -79,7 +78,37 @@ async function verifierVersion(cache) {
     const documentFrais = await fetch("/index.html", { cache: "no-store" });
     if (documentFrais && documentFrais.ok) {
       await cache.put("/index.html", documentFrais.clone());
+
+      /* V538 : les fichiers d'/assets/ gardent souvent le meme nom d'une version
+         a l'autre. Sans ce menage, l'eleve recevrait le nouveau document mais
+         l'ancien code. On les retire pour qu'ils soient repris. */
+      try {
+        const clesGardees = await cache.keys();
+        for (const requete of clesGardees) {
+          if (new URL(requete.url).pathname.startsWith("/assets/")) {
+            await cache.delete(requete);
+          }
+        }
+      } catch (_menage) { /* sans consequence : ils seront repris plus tard */ }
+
       await ecrireMeta(cache, { version: version, verifieA: maintenant });
+
+      /* V538 : la page ouverte affiche encore l'ancienne version. On previent
+         l'application ; si personne n'ecoute, on la recharge nous-memes. */
+      try {
+        const pages = await self.clients.matchAll({ type: "window" });
+        for (const page of pages) {
+          page.postMessage({ type: "NEXORA_NOUVELLE_VERSION", version: version });
+        }
+        if (!versionAnnoncee) {
+          versionAnnoncee = true;
+          for (const page of pages) {
+            if (typeof page.navigate === "function") {
+              try { await page.navigate(page.url); } catch (_nav) {}
+            }
+          }
+        }
+      } catch (_avis) {}
     }
   } catch (_erreur) { /* hors ligne : on garde la version en cache */ }
 }
@@ -115,9 +144,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  /* Les fichiers d'/assets/ portent un numéro de version dans leur nom et sont
-     marqués immutable côté Vercel : une fois lus, ils sont gardés. La rubrique
-     s'ouvre alors sans réseau au coup suivant. */
   if (url.pathname.startsWith("/assets/")) {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
