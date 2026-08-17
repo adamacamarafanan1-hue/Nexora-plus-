@@ -4,7 +4,7 @@
    les 6 heures) ; le document n'est repris que si le numéro de version a
    réellement changé. */
 
-const CACHE_NAME = "nexora-v536-coque-1";
+const CACHE_NAME = "nexora-v537-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 6 * 60 * 60 * 1000;
