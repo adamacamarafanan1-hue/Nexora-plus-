@@ -1,23 +1,10 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   V543 · MES RÉGLAGES
-
-   Charge par le service worker, sans toucher a index.html.
-   Ajoute un bouton discret en haut de l'ecran Profil, qui ouvre un panneau :
-     - le compte (nom, adresse, changement de mot de passe)
-     - l'abonnement et sa date de fin
-     - « Vider et recharger Nexora » — le geste que l'on explique aujourd'hui
-       au telephone a chaque personne bloquee
-     - un lien vers le service client
-
-   Tout est enveloppe : si quoi que ce soit echoue, Nexora continue de
-   fonctionner normalement et le bouton n'apparait simplement pas.
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* V543.2 — Mes réglages, dans l'ecran d'abonnement. */
 (function () {
   'use strict';
   if (window.__nxReglagesV543) return;
   window.__nxReglagesV543 = true;
 
-  var WHATSAPP = '';   /* a renseigner : ex. '224620000000' */
+  var WHATSAPP = '';
 
   function esc(v) {
     return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
@@ -47,42 +34,31 @@
     var s = document.createElement('style');
     s.id = 'nxReglagesStyleV543';
     s.textContent =
-      '.nx-reg-ouvrir-v543{display:flex;align-items:center;gap:9px;width:100%;min-height:52px;margin:0 0 14px;' +
-      'padding:0 15px;border:1px solid var(--nx-cendre-2,#C6CBD2);border-radius:10px;background:#fff;' +
-      'color:var(--nx-ardoise,#16324F);font:inherit;font-size:15px;font-weight:800;text-align:left;cursor:pointer}' +
-      '.nx-reg-ouvrir-v543 span{margin-left:auto;font-weight:400;font-size:12.5px;color:var(--nx-cendre-6,#5F656C)}' +
-      /* V543.1 : l'ecran Profil n'est pas atteignable dans l'interface actuelle.
-         On pose donc un bouton flottant, visible partout, juste au-dessus de la
-         barre du bas. */
-      '.nx-reg-flottant-v543{position:fixed;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));' +
-      'z-index:2147481350;display:grid;place-items:center;width:48px;height:48px;border:1px solid var(--nx-cendre-2,#C6CBD2);' +
-      'border-radius:50%;background:#fff;color:var(--nx-ardoise,#16324F);font-size:20px;line-height:1;cursor:pointer;' +
-      'box-shadow:0 3px 12px rgba(22,50,79,.18)}' +
-      '[data-theme="dark"] .nx-reg-flottant-v543{background:#171A1E;border-color:#2A2F36}' +
-      '.nx-reg-v543{position:fixed;inset:0;z-index:2147481400;overflow-y:auto;background:var(--nx-cendre-0,#EDEFF2);' +
+      '.nx-reg-ouvrir-v543{display:flex;align-items:center;gap:9px;width:100%;min-height:52px;margin:14px 0 0;' +
+      'padding:0 15px;border:1px solid #C6CBD2;border-radius:10px;background:#fff;' +
+      'color:#16324F;font:inherit;font-size:15px;font-weight:800;text-align:left;cursor:pointer}' +
+      '.nx-reg-ouvrir-v543 span{margin-left:auto;font-weight:400;font-size:12.5px;color:#5F656C}' +
+      '.nx-reg-v543{position:fixed;inset:0;z-index:2147481400;overflow-y:auto;background:#EDEFF2;' +
       'color:#21252B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}' +
       '.nx-reg-v543[hidden]{display:none}' +
       '.nx-reg-tete-v543{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;' +
-      'padding:16px 16px calc(16px + env(safe-area-inset-top,0px));background:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6)}' +
+      'padding:16px 16px calc(16px + env(safe-area-inset-top,0px));background:#16324F;color:#EEF2F6}' +
       '.nx-reg-tete-v543 h2{margin:0;font-size:19px;font-weight:800}' +
       '.nx-reg-tete-v543 button{width:42px;height:42px;border:0;border-radius:8px;background:rgba(238,242,246,.16);' +
       'color:#fff;font:inherit;font-size:17px;cursor:pointer}' +
       '.nx-reg-corps-v543{max-width:60ch;margin:0 auto;padding:18px 16px calc(30px + env(safe-area-inset-bottom,0px))}' +
-      '.nx-reg-bloc-v543{margin:0 0 14px;padding:15px 16px;border:1px solid var(--nx-cendre-2,#C6CBD2);' +
-      'border-radius:10px;background:#fff}' +
-      '.nx-reg-bloc-v543 h3{margin:0 0 11px;color:var(--nx-ardoise,#16324F);font-size:11px;font-weight:800;' +
+      '.nx-reg-bloc-v543{margin:0 0 14px;padding:15px 16px;border:1px solid #C6CBD2;border-radius:10px;background:#fff}' +
+      '.nx-reg-bloc-v543 h3{margin:0 0 11px;color:#16324F;font-size:11px;font-weight:800;' +
       'letter-spacing:.15em;text-transform:uppercase}' +
       '.nx-reg-ligne-v543{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:14.5px;line-height:1.5}' +
-      '.nx-reg-ligne-v543 b{flex:0 0 auto;color:var(--nx-cendre-6,#5F656C);font-weight:600}' +
+      '.nx-reg-ligne-v543 b{flex:0 0 auto;color:#5F656C;font-weight:600}' +
       '.nx-reg-ligne-v543 span{text-align:right;font-weight:700;word-break:break-word}' +
       '.nx-reg-action-v543{display:block;width:100%;min-height:50px;margin:9px 0 0;padding:0 15px;' +
-      'border:1px solid var(--nx-cendre-2,#C6CBD2);border-radius:9px;background:var(--nx-cendre-0,#EDEFF2);' +
-      'color:var(--nx-ardoise,#16324F);font:inherit;font-size:14.5px;font-weight:800;text-align:left;cursor:pointer}' +
-      '.nx-reg-action-v543.principal{background:var(--nx-ardoise,#16324F);border-color:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6)}' +
-      '.nx-reg-note-v543{margin:7px 0 0;color:var(--nx-cendre-6,#5F656C);font-size:12.5px;line-height:1.55}' +
-      '.nx-reg-etat-v543{margin:9px 0 0;font-size:13.5px;font-weight:700}' +
-      '[data-theme="dark"] .nx-reg-v543{background:#0F1216;color:#CDD1D7}' +
-      '[data-theme="dark"] .nx-reg-bloc-v543,[data-theme="dark"] .nx-reg-ouvrir-v543{background:#171A1E;border-color:#2A2F36;color:#DDE4ED}';
+      'border:1px solid #C6CBD2;border-radius:9px;background:#EDEFF2;' +
+      'color:#16324F;font:inherit;font-size:14.5px;font-weight:800;text-align:left;cursor:pointer}' +
+      '.nx-reg-action-v543.principal{background:#16324F;border-color:#16324F;color:#EEF2F6}' +
+      '.nx-reg-note-v543{margin:7px 0 0;color:#5F656C;font-size:12.5px;line-height:1.55}' +
+      '.nx-reg-etat-v543{margin:9px 0 0;font-size:13.5px;font-weight:700}';
     document.head.appendChild(s);
   }
 
@@ -94,7 +70,6 @@
     p.id = 'nxReglagesV543';
     p.className = 'nx-reg-v543';
     p.setAttribute('role', 'dialog');
-    p.setAttribute('aria-modal', 'true');
     p.hidden = true;
     p.innerHTML =
       '<header class="nx-reg-tete-v543"><h2>Mes réglages</h2>' +
@@ -120,9 +95,7 @@
   }
 
   async function remplir() {
-    var p = panneau();
-    var corps = p.querySelector('[data-reg-corps]');
-
+    var corps = panneau().querySelector('[data-reg-corps]');
     var nom = '', adresse = '';
     try {
       var c = await client();
@@ -133,7 +106,7 @@
         nom = meta.full_name || meta.name || '';
         adresse = u.email || '';
       }
-    } catch (_e) { window.nxLog && window.nxLog(_e); }
+    } catch (_e) {}
 
     var abo = null;
     try {
@@ -151,26 +124,20 @@
         '<p class="nx-reg-note-v543">Un lien te sera envoyé à ton adresse.</p>' +
         '<p class="nx-reg-etat-v543" data-reg-etat-motdepasse></p>' +
       '</section>' +
-
       '<section class="nx-reg-bloc-v543"><h3>Mon abonnement</h3>' +
         '<div class="nx-reg-ligne-v543"><b>État</b><span>' + (actif ? 'Actif' : 'Aucun abonnement actif') + '</span></div>' +
-        (fin ? '<div class="nx-reg-ligne-v543"><b>Jusqu’au</b><span>' + esc(fin) + '</span></div>' : '') +
+        (fin ? '<div class="nx-reg-ligne-v543"><b>Jusqu\u2019au</b><span>' + esc(fin) + '</span></div>' : '') +
         '<p class="nx-reg-note-v543">' +
-          (actif
-            ? 'Tes cours restent ouverts jusqu’à cette date.'
-            : 'Pour ouvrir les cours, choisis une formule depuis l’Académie.') +
-        '</p>' +
+        (actif ? 'Tes cours restent ouverts jusqu\u2019à cette date.'
+               : 'Pour ouvrir les cours, choisis une formule ci-dessus.') + '</p>' +
       '</section>' +
-
       '<section class="nx-reg-bloc-v543"><h3>Un problème ?</h3>' +
         '<button type="button" class="nx-reg-action-v543 principal" data-reg-action="vider">Vider et recharger Nexora</button>' +
         '<p class="nx-reg-note-v543">À faire si une page reste bloquée ou si tu ne vois pas les nouveautés. ' +
-        'Tes cours et ton abonnement ne sont pas effacés — tu auras peut-être à te reconnecter.</p>' +
+        'Tes cours et ton abonnement ne sont pas effacés.</p>' +
         '<p class="nx-reg-etat-v543" data-reg-etat-vider></p>' +
-        (WHATSAPP
-          ? '<a class="nx-reg-action-v543" style="text-decoration:none;line-height:50px" ' +
-            'href="https://wa.me/' + esc(WHATSAPP) + '" target="_blank" rel="noopener">Écrire au service Nexora</a>'
-          : '') +
+        (WHATSAPP ? '<a class="nx-reg-action-v543" style="text-decoration:none;line-height:50px" ' +
+          'href="https://wa.me/' + esc(WHATSAPP) + '" target="_blank" rel="noopener">Écrire au service Nexora</a>' : '') +
       '</section>';
   }
 
@@ -184,7 +151,7 @@
       if (!c || !adresse) throw new Error('Adresse introuvable.');
       var r = await c.auth.resetPasswordForEmail(adresse, { redirectTo: location.origin });
       if (r && r.error) throw r.error;
-      if (etat) etat.textContent = 'Lien envoyé à ' + adresse + '. Regarde ta boîte mail.';
+      if (etat) etat.textContent = 'Lien envoyé à ' + adresse + '.';
     } catch (err) {
       if (etat) etat.textContent = 'Envoi impossible : ' + String(err && err.message || err);
     }
@@ -204,7 +171,7 @@
         var regs = await navigator.serviceWorker.getRegistrations();
         for (var j = 0; j < regs.length; j++) { try { await regs[j].unregister(); } catch (_e) {} }
       }
-    } catch (err) { window.nxLog && window.nxLog(err); }
+    } catch (_e) {}
     if (etat) etat.textContent = 'Rechargement…';
     setTimeout(function () { location.reload(); }, 600);
   }
@@ -217,37 +184,20 @@
     remplir();
   }
 
-  /* Le bouton d'entree, pose en haut de l'ecran Profil des qu'il est monte. */
   function poserBouton() {
     try {
+      var hote = document.querySelector('[data-nx-sub-modal-content]');
+      if (!hote) return;
+      if (hote.querySelector('#nxReglagesBoutonV543')) return;
       styles();
-
-      /* 1. Si l'ecran Profil est monte, on s'y insere : c'est sa place naturelle. */
-      var hote = document.querySelector('[data-screen-panel="profile"] [data-profile]');
-      if (hote && hote.parentNode && !document.getElementById('nxReglagesBoutonV543')) {
-        var b = document.createElement('button');
-        b.id = 'nxReglagesBoutonV543';
-        b.type = 'button';
-        b.className = 'nx-reg-ouvrir-v543';
-        b.innerHTML = '⚙️ Mes réglages <span>compte, abonnement, aide</span>';
-        b.addEventListener('click', ouvrir);
-        hote.parentNode.insertBefore(b, hote);
-      }
-
-      /* 2. Bouton flottant, toujours disponible — l'ecran Profil n'etant pas
-            atteignable depuis la navigation actuelle. */
-      if (!document.getElementById('nxReglagesFlottantV543')) {
-        var f = document.createElement('button');
-        f.id = 'nxReglagesFlottantV543';
-        f.type = 'button';
-        f.className = 'nx-reg-flottant-v543';
-        f.setAttribute('aria-label', 'Mes réglages');
-        f.title = 'Mes réglages';
-        f.textContent = '⚙️';
-        f.addEventListener('click', ouvrir);
-        document.body.appendChild(f);
-      }
-    } catch (err) { window.nxLog && window.nxLog(err); }
+      var b = document.createElement('button');
+      b.id = 'nxReglagesBoutonV543';
+      b.type = 'button';
+      b.className = 'nx-reg-ouvrir-v543';
+      b.innerHTML = '⚙️ Mes réglages <span>compte, aide</span>';
+      b.addEventListener('click', ouvrir);
+      hote.appendChild(b);
+    } catch (_e) {}
   }
 
   document.addEventListener('nx-screen-change', function () { setTimeout(poserBouton, 300); });
