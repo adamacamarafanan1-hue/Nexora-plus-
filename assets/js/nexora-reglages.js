@@ -1,4 +1,4 @@
-/* V543.2 — Mes réglages, dans l'ecran d'abonnement. */
+/* V543.3 — Mes réglages, en tete de l'accueil. */
 (function () {
   'use strict';
   if (window.__nxReglagesV543) return;
@@ -34,7 +34,7 @@
     var s = document.createElement('style');
     s.id = 'nxReglagesStyleV543';
     s.textContent =
-      '.nx-reg-ouvrir-v543{display:flex;align-items:center;gap:9px;width:100%;min-height:52px;margin:14px 0 0;' +
+      '.nx-reg-ouvrir-v543{display:flex;align-items:center;gap:9px;width:100%;min-height:52px;margin:0 0 14px;' +
       'padding:0 15px;border:1px solid #C6CBD2;border-radius:10px;background:#fff;' +
       'color:#16324F;font:inherit;font-size:15px;font-weight:800;text-align:left;cursor:pointer}' +
       '.nx-reg-ouvrir-v543 span{margin-left:auto;font-weight:400;font-size:12.5px;color:#5F656C}' +
@@ -129,7 +129,7 @@
         (fin ? '<div class="nx-reg-ligne-v543"><b>Jusqu\u2019au</b><span>' + esc(fin) + '</span></div>' : '') +
         '<p class="nx-reg-note-v543">' +
         (actif ? 'Tes cours restent ouverts jusqu\u2019à cette date.'
-               : 'Pour ouvrir les cours, choisis une formule ci-dessus.') + '</p>' +
+               : 'Pour ouvrir les cours, choisis une formule depuis l\u2019Académie.') + '</p>' +
       '</section>' +
       '<section class="nx-reg-bloc-v543"><h3>Un problème ?</h3>' +
         '<button type="button" class="nx-reg-action-v543 principal" data-reg-action="vider">Vider et recharger Nexora</button>' +
@@ -186,17 +186,17 @@
 
   function poserBouton() {
     try {
-      var hote = document.querySelector('[data-nx-sub-modal-content]');
-      if (!hote) return;
-      if (hote.querySelector('#nxReglagesBoutonV543')) return;
+      var accueil = document.getElementById('screen-student-work-feed');
+      if (!accueil) return;
+      if (document.getElementById('nxReglagesBoutonV543')) return;
       styles();
       var b = document.createElement('button');
       b.id = 'nxReglagesBoutonV543';
       b.type = 'button';
       b.className = 'nx-reg-ouvrir-v543';
-      b.innerHTML = '⚙️ Mes réglages <span>compte, aide</span>';
+      b.innerHTML = '⚙️ Mes réglages <span>compte, abonnement, aide</span>';
       b.addEventListener('click', ouvrir);
-      hote.appendChild(b);
+      accueil.insertBefore(b, accueil.firstChild);
     } catch (_e) {}
   }
 
