@@ -1793,3 +1793,116 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!p
     if (etat.ouvert && e && e.key === 'Escape') fermer();
   });
 })();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   V541 · JOURNAL DE LECTURE DES COURS SCOLAIRES
+
+   Jusqu'ici, la progression du primaire, du college et du lycee n'existait que
+   sur le telephone de l'eleve. Impossible de savoir quelles classes et quelles
+   matieres sont reellement travaillees.
+
+   Ce bloc note, cote serveur, deux choses seulement :
+     - l'ouverture d'une classe
+     - l'ouverture d'une lecon
+   Rien d'autre. Aucun contenu, aucune reponse d'eleve, aucune donnee sensible.
+
+   Une meme lecon ouverte plusieurs fois dans la journee n'est comptee qu'une
+   fois : on mesure l'usage, pas le nombre de clics.
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  if (window.__nxJournalLectureV541) return;
+  window.__nxJournalLectureV541 = true;
+
+  var DEJA_VU = {};
+  var FENETRE_MS = 6 * 60 * 60 * 1000;
+
+  function client(){
+    try {
+      if (window.NexoraApp && typeof window.NexoraApp.ensureSupabaseClientReady === 'function')
+        return window.NexoraApp.ensureSupabaseClientReady();
+      return Promise.resolve(window.NexoraApp && window.NexoraApp.getSupabaseClient
+        ? window.NexoraApp.getSupabaseClient() : null);
+    } catch(_e){ return Promise.resolve(null); }
+  }
+
+  function noter(niveau, classe, matiere, lecon){
+    var cle = [niveau, classe, matiere, lecon].join('|');
+    var maintenant = Date.now();
+    if (DEJA_VU[cle] && (maintenant - DEJA_VU[cle]) < FENETRE_MS) return;
+    DEJA_VU[cle] = maintenant;
+
+    client().then(function(c){
+      if (!c || typeof c.rpc !== 'function') return;
+      return c.rpc('nexora_journal_lecture_v541', {
+        p_niveau:  String(niveau  || '').slice(0, 40),
+        p_classe:  String(classe  || '').slice(0, 60),
+        p_matiere: String(matiere || '').slice(0, 80),
+        p_lecon:   String(lecon   || '').slice(0, 160)
+      });
+    }).catch(function(err){ window.nxLog && window.nxLog(err); });
+  }
+
+  /* Quelle classe ? On la deduit du fichier de contenu demande. */
+  var CLASSES = {
+    'primaire.json':  ['primaire',  'primaire'],
+    '7eme.json':      ['college',   '7eme'],
+    '8eme.json':      ['college',   '8eme'],
+    '9eme.json':      ['college',   '9eme'],
+    'dixieme.json':   ['lycee',     '10eme'],
+    '11eme.json':     ['lycee',     '11eme'],
+    '12eme.json':     ['lycee',     '12eme'],
+    'terminale.json': ['lycee',     'terminale']
+  };
+
+  /* On observe les demandes de contenu protege : c'est le signal le plus sur
+     qu'une classe vient reellement d'etre ouverte. */
+  try {
+    var contenu = window.NexoraSecureContent;
+    if (contenu && typeof contenu.json === 'function' && !contenu.__journalV541) {
+      var jsonOrigine = contenu.json.bind(contenu);
+      contenu.json = function(chemin){
+        try {
+          var nom = String(chemin || '').split('/').pop();
+          if (CLASSES[nom]) noter(CLASSES[nom][0], CLASSES[nom][1], '', '');
+        } catch(_e){}
+        return jsonOrigine.apply(null, arguments);
+      };
+      contenu.__journalV541 = true;
+    }
+  } catch(_e){ window.nxLog && window.nxLog(_e); }
+
+  /* Ouverture d'une lecon : on ecoute les boutons de chaque cycle. */
+  document.addEventListener('click', function(e){
+    var t = e && e.target;
+    if (!t || !t.closest) return;
+
+    var b, titre;
+
+    /* College — 7eme, 8eme, 9eme */
+    b = t.closest('[data-nx7-lesson]');
+    if (b) {
+      titre = (b.querySelector('b') || {}).textContent || '';
+      noter('college', '', '', titre.trim());
+      return;
+    }
+
+    /* Lycee — 11eme, 12eme, Terminale */
+    b = t.closest('[data-lesson-toggle],[data-nx-terminal-lesson-v475],[data-nx-twelfth-lesson-v369]');
+    if (b) {
+      titre = (b.querySelector('strong') || {}).textContent || '';
+      noter('lycee', '', '', titre.trim());
+      return;
+    }
+
+    /* Primaire — choix d'une matiere puis d'une lecon */
+    b = t.closest('[data-nx-primary-action="subject"],[data-nx-primary-action="lesson"]');
+    if (b) {
+      var quoi = b.getAttribute('data-nx-primary-action');
+      noter('primaire', b.getAttribute('data-class-id') || '',
+            quoi === 'subject' ? (b.getAttribute('data-subject-id') || '') : '',
+            quoi === 'lesson'  ? (b.textContent || '').trim().slice(0, 120) : '');
+      return;
+    }
+  }, true);
+})();
