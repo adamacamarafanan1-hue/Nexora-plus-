@@ -1,10 +1,9 @@
-/* Nexora V538 — coque d'ouverture rapide et mise à jour immédiate. */
+/* Nexora V542 — coque d'ouverture rapide, mise a jour immediate et
+   chargement d'un fichier leger sans toucher a index.html. */
 
 const CACHE_NAME = "nexora-v542-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
-/* V538 : le controle passe de 6 heures a 5 minutes. Un eleve qui vient de payer
-   ou qui rouvre apres une correction ne doit pas attendre une demi-journee. */
 const DELAI_CONTROLE_MS = 5 * 60 * 1000;
 
 const PUBLIC_ASSETS = [
@@ -34,6 +33,38 @@ self.addEventListener("activate", (event) => {
 
 let versionAnnoncee = false;
 
+/* V542 : index.html pese 1,85 Mo et ne peut plus etre televerse depuis un
+   telephone. On ajoute au vol une seule ligne qui charge un fichier leger.
+   PROTECTION : a la moindre anomalie, on rend le document d'origine intact. */
+const LIGNE_AJOUTEE = '<script src="/assets/js/nexora-reglages.js" defer></' + 'script>';
+
+async function enrichir(reponse) {
+  try {
+    if (!reponse || !reponse.ok) return reponse;
+    const type = reponse.headers.get("Content-Type") || "";
+    if (type && type.indexOf("text/html") < 0) return reponse;
+
+    const texte = await reponse.clone().text();
+    if (!texte || texte.length < 10000) return reponse;
+    if (texte.indexOf("nexora-reglages.js") >= 0) return reponse;
+    const fin = texte.lastIndexOf("</body>");
+    if (fin < 0) return reponse;
+
+    const enrichi = texte.slice(0, fin) + LIGNE_AJOUTEE + texte.slice(fin);
+    if (enrichi.length <= texte.length) return reponse;
+
+    const entetes = new Headers(reponse.headers);
+    entetes.delete("Content-Length");
+    return new Response(enrichi, {
+      status: reponse.status,
+      statusText: reponse.statusText,
+      headers: entetes
+    });
+  } catch (_erreur) {
+    return reponse;
+  }
+}
+
 async function lireMeta(cache) {
   try {
     const reponse = await cache.match(META_URL);
@@ -49,7 +80,7 @@ async function ecrireMeta(cache, meta) {
     await cache.put(META_URL, new Response(JSON.stringify(meta), {
       headers: { "Content-Type": "application/json" }
     }));
-  } catch (_erreur) { /* le cache peut être plein : ce n'est pas bloquant */ }
+  } catch (_erreur) {}
 }
 
 async function verifierVersion(cache) {
@@ -79,9 +110,6 @@ async function verifierVersion(cache) {
     if (documentFrais && documentFrais.ok) {
       await cache.put("/index.html", documentFrais.clone());
 
-      /* V538 : les fichiers d'/assets/ gardent souvent le meme nom d'une version
-         a l'autre. Sans ce menage, l'eleve recevrait le nouveau document mais
-         l'ancien code. On les retire pour qu'ils soient repris. */
       try {
         const clesGardees = await cache.keys();
         for (const requete of clesGardees) {
@@ -89,12 +117,10 @@ async function verifierVersion(cache) {
             await cache.delete(requete);
           }
         }
-      } catch (_menage) { /* sans consequence : ils seront repris plus tard */ }
+      } catch (_menage) {}
 
       await ecrireMeta(cache, { version: version, verifieA: maintenant });
 
-      /* V538 : la page ouverte affiche encore l'ancienne version. On previent
-         l'application ; si personne n'ecoute, on la recharge nous-memes. */
       try {
         const pages = await self.clients.matchAll({ type: "window" });
         for (const page of pages) {
@@ -110,7 +136,7 @@ async function verifierVersion(cache) {
         }
       } catch (_avis) {}
     }
-  } catch (_erreur) { /* hors ligne : on garde la version en cache */ }
+  } catch (_erreur) {}
 }
 
 self.addEventListener("fetch", (event) => {
@@ -125,7 +151,7 @@ self.addEventListener("fetch", (event) => {
       const cached = await cache.match("/index.html");
       if (cached) {
         event.waitUntil(verifierVersion(cache));
-        return cached;
+        return await enrichir(cached);
       }
       try {
         const reponse = await fetch(event.request, { cache: "no-store" });
@@ -133,7 +159,7 @@ self.addEventListener("fetch", (event) => {
           await cache.put("/index.html", reponse.clone());
           await ecrireMeta(cache, { version: "", verifieA: 0 });
         }
-        return reponse;
+        return await enrichir(reponse);
       } catch (_erreur) {
         return new Response(
           "Nexora indisponible sans connexion lors de la première ouverture.",
