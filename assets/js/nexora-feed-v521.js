@@ -366,184 +366,200 @@ window.NexoraStudentWorkFeedV378={version:VERSION,refresh:function(){state.loade
 
 
 
+
 /* ═══════════════════════════════════════════════════════════════════════════
-   V539 · PRÉSENCE EN DIRECT DANS LA COMMUNAUTÉ
+   V547 · QUI EST LÀ — présence et dernière connexion
 
-   Chaque application ouverte annonce sa présence sur un canal Supabase partagé
-   et reçoit la liste des autres en temps réel. Rien n'est enregistré en base :
-   la présence vit le temps de la connexion et disparaît à la fermeture.
+   Remplace la présence instantanée de la V539, qui ne voyait que les personnes
+   ouvrant l'ecran Communaute au meme moment.
 
-   Affichage : prénom et initiale du nom. Assez pour reconnaître un camarade,
-   pas assez pour identifier un élève auprès d'un inconnu.
+   Ici on lit `profiles_public`, alimentee par le signal de presence deja
+   envoye par Nexora depuis longtemps. On voit donc TOUT LE MONDE :
+     - en ligne : vu il y a moins de 6 minutes, point vert
+     - sinon : « connecte il y a 12 minutes », « il y a 3 heures », « hier »
+
+   La vue `profiles_public` ne laisse sortir ni adresse, ni telephone, ni code :
+   verifie, ces colonnes y sont vides.
    ═══════════════════════════════════════════════════════════════════════════ */
-(function(){
+(function () {
   'use strict';
-  if (window.__nxPresenceV539) return;
-  window.__nxPresenceV539 = true;
+  if (window.__nxQuiEstLaV547) return;
+  window.__nxQuiEstLaV547 = true;
 
-  var CANAL = 'nexora-presence-v539';
-  var canal = null;
-  var moi = null;
+  var SEUIL_EN_LIGNE_MS = 6 * 60 * 1000;
+  var RAFRAICHIR_MS = 60 * 1000;
+  var LIMITE = 60;
+  var minuteur = null;
 
-  function racineFil(){ return document.querySelector('[data-nx-student-feed-v371]'); }
+  function racine() { return document.querySelector('[data-nx-student-feed-v371]'); }
 
-  function client(){
+  function client() {
     try {
       if (window.NexoraApp && typeof window.NexoraApp.ensureSupabaseClientReady === 'function')
         return window.NexoraApp.ensureSupabaseClientReady();
       return Promise.resolve(window.NexoraApp && window.NexoraApp.getSupabaseClient
         ? window.NexoraApp.getSupabaseClient() : null);
-    } catch(_e){ return Promise.resolve(null); }
+    } catch (_e) { return Promise.resolve(null); }
   }
 
-  function esc(v){
-    return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
 
   /* « Mariama Diallo » devient « Mariama D. » */
-  function nomCourt(nom){
-    var parts = String(nom || 'Élève Nexora').trim().split(/\s+/).filter(Boolean);
+  function nomCourt(p) {
+    var brut = p.prenom || p.first_name || p.display_name || p.full_name || p.nom || p.name || p.username || '';
+    var parts = String(brut).trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return 'Élève Nexora';
     if (parts.length === 1) return parts[0];
     return parts[0] + ' ' + parts[parts.length - 1].charAt(0).toUpperCase() + '.';
   }
 
-  function initiales(nom){
-    var p = String(nom || 'Élève Nexora').trim().split(/\s+/).filter(Boolean);
-    return ((p[0] || 'E').charAt(0) + (p.length > 1 ? p[p.length-1].charAt(0) : '')).toUpperCase();
+  function initiales(nom) {
+    var p = String(nom || 'E').trim().split(/\s+/).filter(Boolean);
+    return ((p[0] || 'E').charAt(0) + (p.length > 1 ? p[1].charAt(0) : '')).toUpperCase();
   }
 
-  function styles(){
-    if (document.getElementById('nxPresenceStyleV539')) return;
+  function photo(p) {
+    return p.photo_url || p.avatar_url || p.profile_photo_url || p.profile_photo || p.photo || p.avatar || '';
+  }
+
+  function depuis(quand) {
+    var t = Date.parse(quand);
+    if (!isFinite(t)) return '';
+    var m = Math.floor((Date.now() - t) / 60000);
+    if (m < 1) return 'à l’instant';
+    if (m < 60) return 'il y a ' + m + ' minute' + (m > 1 ? 's' : '');
+    var h = Math.floor(m / 60);
+    if (h < 24) return 'il y a ' + h + ' heure' + (h > 1 ? 's' : '');
+    var j = Math.floor(h / 24);
+    if (j === 1) return 'hier';
+    if (j < 7) return 'il y a ' + j + ' jours';
+    var sem = Math.floor(j / 7);
+    if (sem < 5) return 'il y a ' + sem + ' semaine' + (sem > 1 ? 's' : '');
+    return 'il y a longtemps';
+  }
+
+  function styles() {
+    if (document.getElementById('nxQuiEstLaStyleV547')) return;
     var s = document.createElement('style');
-    s.id = 'nxPresenceStyleV539';
+    s.id = 'nxQuiEstLaStyleV547';
     s.textContent =
-      '.nx-presence-v539{margin:0 0 14px;padding:14px 16px;border:1px solid var(--nx-cendre-2,#C6CBD2);' +
-      'border-radius:10px;background:#fff}' +
-      '.nx-presence-tete-v539{display:flex;align-items:center;gap:9px;margin-bottom:11px}' +
-      '.nx-presence-pastille-v539{width:9px;height:9px;border-radius:50%;background:#2F7A4F;flex:0 0 auto;' +
+      '.nx-qui-v547{margin:0 0 14px;padding:14px 16px;border:1px solid #C6CBD2;border-radius:10px;background:#fff}' +
+      '.nx-qui-tete-v547{display:flex;align-items:center;gap:9px;margin-bottom:12px}' +
+      '.nx-qui-pastille-v547{width:9px;height:9px;border-radius:50%;background:#2F7A4F;flex:0 0 auto;' +
       'box-shadow:0 0 0 3px rgba(47,122,79,.18)}' +
-      '.nx-presence-tete-v539 b{color:var(--nx-ardoise,#16324F);font-size:14.5px;font-weight:800}' +
-      '.nx-presence-tete-v539 span{margin-left:auto;color:var(--nx-cendre-6,#5F656C);font-size:11px;' +
-      'font-weight:800;letter-spacing:.12em;text-transform:uppercase}' +
-      '.nx-presence-liste-v539{display:flex;flex-wrap:wrap;gap:8px}' +
-      '.nx-presence-personne-v539{display:flex;align-items:center;gap:7px;padding:6px 11px 6px 6px;' +
-      'border:1px solid var(--nx-cendre-1,#DBDFE4);border-radius:999px;background:var(--nx-cendre-0,#EDEFF2);' +
-      'font-size:13px;font-weight:600;color:#21252B}' +
-      '.nx-presence-personne-v539 i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;' +
-      'background:var(--nx-ardoise,#16324F);color:var(--nx-craie,#EEF2F6);font-size:10.5px;font-style:normal;font-weight:800}' +
-      '.nx-presence-personne-v539.moi{border-color:var(--nx-ardoise,#16324F)}' +
-      '.nx-presence-vide-v539{color:var(--nx-cendre-6,#5F656C);font-size:13.5px}' +
-      '[data-theme="dark"] .nx-presence-v539{background:#121914;border-color:#2A2F36}' +
-      '[data-theme="dark"] .nx-presence-personne-v539{background:#171A1E;border-color:#2A2F36;color:#CDD1D7}';
+      '.nx-qui-tete-v547 b{color:#16324F;font-size:14.5px;font-weight:800}' +
+      '.nx-qui-tete-v547 i{margin-left:auto;color:#5F656C;font-size:11px;font-style:normal;font-weight:800;' +
+      'letter-spacing:.12em;text-transform:uppercase}' +
+      '.nx-qui-liste-v547{display:grid;gap:2px;max-height:340px;overflow-y:auto}' +
+      '.nx-qui-personne-v547{display:flex;align-items:center;gap:11px;padding:8px 4px;border-radius:8px}' +
+      '.nx-qui-personne-v547 figure{position:relative;flex:0 0 auto;width:38px;height:38px;margin:0}' +
+      '.nx-qui-personne-v547 img{width:38px;height:38px;border-radius:50%;object-fit:cover;display:block}' +
+      '.nx-qui-jeton-v547{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;' +
+      'background:#16324F;color:#EEF2F6;font-size:13px;font-weight:800}' +
+      '.nx-qui-point-v547{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;' +
+      'background:#2F7A4F;border:2px solid #fff}' +
+      '.nx-qui-nom-v547{min-width:0;display:grid;gap:1px}' +
+      '.nx-qui-nom-v547 b{color:#21252B;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.nx-qui-nom-v547 small{color:#5F656C;font-size:12px}' +
+      '.nx-qui-nom-v547 small.enligne{color:#2F7A4F;font-weight:700}' +
+      '.nx-qui-vide-v547{color:#5F656C;font-size:13.5px;padding:6px 0}' +
+      '.nx-qui-separateur-v547{margin:10px 0 4px;color:#5F656C;font-size:10.5px;font-weight:800;' +
+      'letter-spacing:.15em;text-transform:uppercase}';
     document.head.appendChild(s);
   }
 
-  function cadre(){
-    var racine = racineFil();
-    if (!racine) return null;
-    var c = document.getElementById('nxPresenceV539');
-    if (c && c.parentNode === racine) return c;
+  function cadre() {
+    var r = racine();
+    if (!r) return null;
+    var c = document.getElementById('nxQuiEstLaV547');
+    if (c && c.parentNode === r) return c;
     styles();
     c = document.createElement('section');
-    c.id = 'nxPresenceV539';
-    c.className = 'nx-presence-v539';
+    c.id = 'nxQuiEstLaV547';
+    c.className = 'nx-qui-v547';
     c.setAttribute('aria-live', 'polite');
     c.innerHTML =
-      '<div class="nx-presence-tete-v539"><i class="nx-presence-pastille-v539"></i>' +
-      '<b data-presence-titre>Connexion…</b><span data-presence-compte></span></div>' +
-      '<div class="nx-presence-liste-v539" data-presence-liste></div>';
-    racine.insertBefore(c, racine.firstChild);
+      '<div class="nx-qui-tete-v547"><i class="nx-qui-pastille-v547"></i>' +
+      '<b data-qui-titre>Chargement…</b><i data-qui-compte></i></div>' +
+      '<div class="nx-qui-liste-v547" data-qui-liste></div>';
+    r.insertBefore(c, r.firstChild);
     return c;
   }
 
-  function dessiner(personnes){
+  function ligne(p, enLigne) {
+    var nom = nomCourt(p);
+    var img = photo(p);
+    return '<div class="nx-qui-personne-v547">' +
+      '<figure>' +
+        (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer">'
+             : '<span class="nx-qui-jeton-v547">' + esc(initiales(nom)) + '</span>') +
+        (enLigne ? '<span class="nx-qui-point-v547"></span>' : '') +
+      '</figure>' +
+      '<span class="nx-qui-nom-v547"><b>' + esc(nom) + '</b>' +
+        '<small' + (enLigne ? ' class="enligne"' : '') + '>' +
+        (enLigne ? 'En ligne' : 'Connecté ' + esc(depuis(p.last_seen))) +
+        '</small></span></div>';
+  }
+
+  async function charger() {
     var c = cadre();
     if (!c) return;
-    var n = personnes.length;
-    c.querySelector('[data-presence-titre]').textContent =
-      n <= 1 ? 'Tu es seul en ligne pour le moment' :
-      n + ' personnes en ligne';
-    c.querySelector('[data-presence-compte]').textContent = n ? 'en direct' : '';
-    c.querySelector('[data-presence-liste]').innerHTML = n
-      ? personnes.map(function(p){
-          return '<span class="nx-presence-personne-v539' + (p.moi ? ' moi' : '') + '">' +
-                 '<i>' + esc(initiales(p.nom)) + '</i>' + esc(nomCourt(p.nom)) +
-                 (p.moi ? ' (toi)' : '') + '</span>';
-        }).join('')
-      : '<span class="nx-presence-vide-v539">Personne d’autre n’est connecté en ce moment.</span>';
-  }
+    var sb = null;
+    try { sb = await client(); } catch (_e) {}
+    if (!sb || typeof sb.from !== 'function') return;
 
-  function lire(){
-    if (!canal || typeof canal.presenceState !== 'function') return [];
-    var etat = canal.presenceState() || {};
-    var vus = {}, sortie = [];
-    Object.keys(etat).forEach(function(cle){
-      (etat[cle] || []).forEach(function(entree){
-        var id = String(entree && entree.id || cle);
-        if (vus[id]) return;
-        vus[id] = true;
-        sortie.push({ nom: (entree && entree.nom) || 'Élève Nexora', moi: moi && id === moi.id });
-      });
+    var res = null;
+    try {
+      res = await sb.from('profiles_public')
+        .select('id,prenom,first_name,display_name,full_name,nom,name,username,photo_url,avatar_url,profile_photo_url,profile_photo,photo,avatar,last_seen,online_status,is_online')
+        .not('last_seen', 'is', null)
+        .order('last_seen', { ascending: false })
+        .limit(LIMITE);
+    } catch (err) { window.nxLog && window.nxLog(err); return; }
+    if (!res || res.error || !Array.isArray(res.data)) return;
+
+    var maintenant = Date.now();
+    var enLigne = [], passes = [];
+    res.data.forEach(function (p) {
+      var t = Date.parse(p.last_seen);
+      if (isFinite(t) && (maintenant - t) < SEUIL_EN_LIGNE_MS) enLigne.push(p);
+      else passes.push(p);
     });
-    sortie.sort(function(a,b){ return a.moi ? -1 : b.moi ? 1 : String(a.nom).localeCompare(String(b.nom)); });
-    return sortie;
+
+    c.querySelector('[data-qui-titre]').textContent =
+      enLigne.length ? enLigne.length + (enLigne.length > 1 ? ' personnes en ligne' : ' personne en ligne')
+                     : 'Personne en ligne pour le moment';
+    c.querySelector('[data-qui-compte]').textContent = 'en direct';
+
+    var html = enLigne.map(function (p) { return ligne(p, true); }).join('');
+    if (passes.length) {
+      html += '<div class="nx-qui-separateur-v547">Vus récemment</div>' +
+              passes.map(function (p) { return ligne(p, false); }).join('');
+    }
+    if (!html) html = '<div class="nx-qui-vide-v547">Aucun membre à afficher pour le moment.</div>';
+    c.querySelector('[data-qui-liste]').innerHTML = html;
   }
 
-  async function demarrer(){
-    if (canal) { dessiner(lire()); return; }
-    if (!racineFil()) return;
-
-    var c = null;
-    try { c = await client(); } catch(_e){}
-    if (!c || typeof c.channel !== 'function') return;
-
-    var session = null;
-    try { session = (await c.auth.getSession()).data.session; } catch(_e){}
-    var u = session && session.user;
-    if (!u) return;
-
-    var meta = u.user_metadata || {};
-    moi = {
-      id: String(u.id),
-      nom: meta.full_name || meta.name || meta.prenom || (u.email || '').split('@')[0] || 'Élève Nexora'
-    };
-
-    canal = c.channel(CANAL, { config: { presence: { key: moi.id } } });
-    canal.on('presence', { event: 'sync' }, function(){ dessiner(lire()); });
-    canal.on('presence', { event: 'join' }, function(){ dessiner(lire()); });
-    canal.on('presence', { event: 'leave' }, function(){ dessiner(lire()); });
-    canal.subscribe(function(statut){
-      if (statut !== 'SUBSCRIBED') return;
-      try { canal.track({ id: moi.id, nom: moi.nom, depuis: Date.now() }); }
-      catch(_e){ window.nxLog && window.nxLog(_e); }
-    });
-  }
-
-  function arreter(){
-    if (!canal) return;
-    try { canal.unsubscribe(); } catch(_e){}
-    canal = null;
-    var c = document.getElementById('nxPresenceV539');
-    if (c && c.parentNode) c.parentNode.removeChild(c);
-  }
-
-  /* On ne se déclare présent que sur l'écran Communauté, et on se retire dès
-     qu'on le quitte ou que l'application passe en arrière-plan. */
-  function surEcranCommunaute(){
+  function surEcranCommunaute() {
     return !!document.querySelector('[data-screen-panel="network"].active');
   }
 
-  function ajuster(){
-    if (surEcranCommunaute() && document.visibilityState === 'visible') demarrer();
-    else arreter();
+  function ajuster() {
+    if (surEcranCommunaute() && document.visibilityState === 'visible') {
+      charger();
+      if (!minuteur) minuteur = setInterval(charger, RAFRAICHIR_MS);
+    } else if (minuteur) {
+      clearInterval(minuteur);
+      minuteur = null;
+    }
   }
 
-  document.addEventListener('nx-screen-change', function(){ setTimeout(ajuster, 300); });
+  document.addEventListener('nx-screen-change', function () { setTimeout(ajuster, 300); });
   document.addEventListener('visibilitychange', ajuster);
-  window.addEventListener('pagehide', arreter);
-  window.addEventListener('nexora:remote-ready', function(){ setTimeout(ajuster, 600); });
+  window.addEventListener('nexora:remote-ready', function () { setTimeout(ajuster, 600); });
   setTimeout(ajuster, 1200);
 })();
