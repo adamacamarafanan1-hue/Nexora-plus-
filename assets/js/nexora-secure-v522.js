@@ -1243,7 +1243,7 @@ async function decrypt(path){path=normalizePath(path);var record=await entitleme
 
   async function fetchSecureProductStatus(client,context){
     var product=secureProductCode(context);
-    var result=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:product}),10000,'La vérification officielle de l’accès prend trop de temps.');
+    var result=await withTimeout(client.rpc('nexora_my_subscription_status_v264',{p_product_code:product}),20000,'La vérification officielle de l’accès prend trop de temps.');
     if(result&&result.error)throw result.error;
     var raw=parseData(result&&result.data);raw.authoritative=true;raw.version='v264';
     return normalizeStatus(raw);
@@ -1302,8 +1302,26 @@ async function decrypt(path){path=normalizePath(path);var record=await entitleme
       openModal(CURRENT_REQUEST&&requestState()==='pending'?'payment':'plans');
       return false;
     }catch(err){
+      /* V540 : un abonne qui a paye ne doit JAMAIS revoir la grille tarifaire tant
+         que son abonnement court. Avant, n'importe quelle panne — delai depasse,
+         coupure reseau, serveur qui hoquette — tombait ici et ouvrait la grille des
+         prix devant un client en regle. On distingue desormais « le serveur dit non »
+         (grille legitime) de « je n'ai pas pu demander » (on fait confiance a la
+         derniere reponse connue, tant que sa date de fin n'est pas passee). */
       cached=cachedAccessStatus();
-      if(isNetworkError(err)&&cached.allowed){try{await secureReady(cached.snapshot);return grantPendingAccess('Connexion rétablie nécessaire pour ouvrir ce contenu premium.');}catch(_secureFallback){window.nxLog&&window.nxLog(_secureFallback)}}
+      var finConnue=Date.parse(String((cached.snapshot&&cached.snapshot.ends_at)||''));
+      var encoreValable=cached.allowed&&(!isFinite(finConnue)||finConnue>Date.now());
+      if(encoreValable){
+        try{
+          await secureReady(cached.snapshot);
+          return grantPendingAccess('');
+        }catch(_secureFallback){
+          window.nxLog&&window.nxLog(_secureFallback);
+          PENDING_ACCESS=null;
+          try{if(typeof window.toast==='function')window.toast('Ton abonnement est actif. Le serveur ne repond pas pour l\u2019instant : reessaie dans un instant.');}catch(_e){}
+          return false;
+        }
+      }
       PENDING_ACCESS=null;
       renderCatalogError(friendlyError(err));
       openModal('plans');
