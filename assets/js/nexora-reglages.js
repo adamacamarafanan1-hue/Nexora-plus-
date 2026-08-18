@@ -51,6 +51,14 @@
       'padding:0 15px;border:1px solid var(--nx-cendre-2,#C6CBD2);border-radius:10px;background:#fff;' +
       'color:var(--nx-ardoise,#16324F);font:inherit;font-size:15px;font-weight:800;text-align:left;cursor:pointer}' +
       '.nx-reg-ouvrir-v543 span{margin-left:auto;font-weight:400;font-size:12.5px;color:var(--nx-cendre-6,#5F656C)}' +
+      /* V543.1 : l'ecran Profil n'est pas atteignable dans l'interface actuelle.
+         On pose donc un bouton flottant, visible partout, juste au-dessus de la
+         barre du bas. */
+      '.nx-reg-flottant-v543{position:fixed;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));' +
+      'z-index:2147481350;display:grid;place-items:center;width:48px;height:48px;border:1px solid var(--nx-cendre-2,#C6CBD2);' +
+      'border-radius:50%;background:#fff;color:var(--nx-ardoise,#16324F);font-size:20px;line-height:1;cursor:pointer;' +
+      'box-shadow:0 3px 12px rgba(22,50,79,.18)}' +
+      '[data-theme="dark"] .nx-reg-flottant-v543{background:#171A1E;border-color:#2A2F36}' +
       '.nx-reg-v543{position:fixed;inset:0;z-index:2147481400;overflow-y:auto;background:var(--nx-cendre-0,#EDEFF2);' +
       'color:#21252B;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}' +
       '.nx-reg-v543[hidden]{display:none}' +
@@ -212,17 +220,33 @@
   /* Le bouton d'entree, pose en haut de l'ecran Profil des qu'il est monte. */
   function poserBouton() {
     try {
-      var hote = document.querySelector('[data-screen-panel="profile"] [data-profile]');
-      if (!hote || !hote.parentNode) return;
-      if (document.getElementById('nxReglagesBoutonV543')) return;
       styles();
-      var b = document.createElement('button');
-      b.id = 'nxReglagesBoutonV543';
-      b.type = 'button';
-      b.className = 'nx-reg-ouvrir-v543';
-      b.innerHTML = '⚙️ Mes réglages <span>compte, abonnement, aide</span>';
-      b.addEventListener('click', ouvrir);
-      hote.parentNode.insertBefore(b, hote);
+
+      /* 1. Si l'ecran Profil est monte, on s'y insere : c'est sa place naturelle. */
+      var hote = document.querySelector('[data-screen-panel="profile"] [data-profile]');
+      if (hote && hote.parentNode && !document.getElementById('nxReglagesBoutonV543')) {
+        var b = document.createElement('button');
+        b.id = 'nxReglagesBoutonV543';
+        b.type = 'button';
+        b.className = 'nx-reg-ouvrir-v543';
+        b.innerHTML = '⚙️ Mes réglages <span>compte, abonnement, aide</span>';
+        b.addEventListener('click', ouvrir);
+        hote.parentNode.insertBefore(b, hote);
+      }
+
+      /* 2. Bouton flottant, toujours disponible — l'ecran Profil n'etant pas
+            atteignable depuis la navigation actuelle. */
+      if (!document.getElementById('nxReglagesFlottantV543')) {
+        var f = document.createElement('button');
+        f.id = 'nxReglagesFlottantV543';
+        f.type = 'button';
+        f.className = 'nx-reg-flottant-v543';
+        f.setAttribute('aria-label', 'Mes réglages');
+        f.title = 'Mes réglages';
+        f.textContent = '⚙️';
+        f.addEventListener('click', ouvrir);
+        document.body.appendChild(f);
+      }
     } catch (err) { window.nxLog && window.nxLog(err); }
   }
 
