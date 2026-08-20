@@ -1,7 +1,7 @@
-/* Nexora V542 — coque d'ouverture rapide, mise a jour immediate et
-   chargement d'un fichier leger sans toucher a index.html. */
+/* Nexora V548 — coque d'ouverture rapide, chargement d'un fichier leger
+   sans toucher a index.html, sans rechargement automatique. */
 
-const CACHE_NAME = "nexora-v542-coque-1";
+const CACHE_NAME = "nexora-v548-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 5 * 60 * 1000;
@@ -30,8 +30,6 @@ self.addEventListener("activate", (event) => {
       .then(() => self.clients.claim())
   );
 });
-
-let versionAnnoncee = false;
 
 /* V542 : index.html pese 1,85 Mo et ne peut plus etre televerse depuis un
    telephone. On ajoute au vol une seule ligne qui charge un fichier leger.
@@ -121,18 +119,13 @@ async function verifierVersion(cache) {
 
       await ecrireMeta(cache, { version: version, verifieA: maintenant });
 
+      /* V548 : le rechargement automatique a ete retire — il pouvait relancer
+         l'application en boucle. La nouvelle version s'affiche a l'ouverture
+         suivante, ce qui est sans risque. */
       try {
         const pages = await self.clients.matchAll({ type: "window" });
         for (const page of pages) {
           page.postMessage({ type: "NEXORA_NOUVELLE_VERSION", version: version });
-        }
-        if (!versionAnnoncee) {
-          versionAnnoncee = true;
-          for (const page of pages) {
-            if (typeof page.navigate === "function") {
-              try { await page.navigate(page.url); } catch (_nav) {}
-            }
-          }
         }
       } catch (_avis) {}
     }
