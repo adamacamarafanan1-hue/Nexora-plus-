@@ -385,7 +385,10 @@ async function encryptedBytes(entry){
   }
   throw derniere||errorMessage('Le cours n’a pas pu être téléchargé. Vérifie ta connexion, puis réessaie.');
 }
-async function decrypt(path){path=normalizePath(path);var record=await entitlement(),manifest=await loadManifest(),entry=manifest.byPath[path];if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);var packed=await encryptedBytes(entry);if(packed.length<33||String.fromCharCode.apply(null,packed.slice(0,4))!=='NXE1')throw errorMessage('Paquet sécurisé invalide.');var iv=packed.slice(4,16),cipher=packed.slice(16),plain;try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(path)},record.content_key,cipher);}finally{try{packed.fill(0);cipher.fill(0);}catch(_wipeError){}}return new Uint8Array(plain);}
+async function decrypt(path){path=normalizePath(path);/* V549 : la cle et le manifeste etaient demandes l'un apres l'autre, soit deux
+   allers-retours reseau avant meme de commencer le telechargement du cours.
+   Ils sont independants : on les demande ensemble. */
+var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],manifest=_v549[1],entry=manifest.byPath[path];if(!entry)throw errorMessage('Contenu sécurisé inconnu : '+path);var packed=await encryptedBytes(entry);if(packed.length<33||String.fromCharCode.apply(null,packed.slice(0,4))!=='NXE1')throw errorMessage('Paquet sécurisé invalide.');var iv=packed.slice(4,16),cipher=packed.slice(16),plain;try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode(path)},record.content_key,cipher);}finally{try{packed.fill(0);cipher.fill(0);}catch(_wipeError){}}return new Uint8Array(plain);}
   async function text(path){return dec.decode(await decrypt(path));}
   async function json(path){return JSON.parse(await text(path));}
   async function execute(path){path=normalizePath(path);var marker='data-nexora-secure-script';var old=Array.prototype.slice.call(document.scripts||[]).some(function(x){return x.getAttribute&&x.getAttribute(marker)===path;});if(old)return true;var code=await text(path);return new Promise(function(resolve,reject){var blob=new Blob([code+'\n//# sourceURL='+path],{type:'text/javascript'}),url=URL.createObjectURL(blob),s=document.createElement('script');s.setAttribute(marker,path);s.src=url;s.onload=function(){URL.revokeObjectURL(url);resolve(true);};s.onerror=function(){URL.revokeObjectURL(url);s.remove();reject(new Error('Exécution sécurisée impossible.'));};document.head.appendChild(s);});}
@@ -407,6 +410,39 @@ async function decrypt(path){path=normalizePath(path);var record=await entitleme
     return false;
   }
 
+  /* V549 — prechargement.
+     `prefetch` telecharge le fichier chiffre d'une classe et le range dans le cache
+     de l'appareil, SANS le dechiffrer et SANS demander de cle. Le fichier au repos
+     reste exactement celui du serveur ; l'abonnement est toujours exige au moment
+     de lire. On ne gagne que du temps de transfert, jamais un acces.
+     `warm` prepare a l'avance la cle et le manifeste, pour que le moment ou l'eleve
+     touche une classe ne serve plus qu'a dechiffrer (8 a 17 ms mesurees). */
+  var prefetchsV549={};
+  async function prefetch(path){
+    path=normalizePath(path);
+    if(prefetchsV549[path])return prefetchsV549[path];
+    prefetchsV549[path]=(async function(){
+      if(!online())return false;
+      var manifest=await loadManifest();
+      var entry=manifest.byPath[path];
+      if(!entry)return false;
+      await encryptedBytes(entry);
+      return true;
+    })().catch(function(err){
+      prefetchsV549[path]=null;
+      window.nxLog&&window.nxLog(err,'secure-prefetch');
+      return false;
+    });
+    return prefetchsV549[path];
+  }
+  async function warm(){
+    var r=await Promise.all([
+      entitlement().catch(function(err){window.nxLog&&window.nxLog(err,'secure-warm');return null;}),
+      loadManifest().catch(function(err){window.nxLog&&window.nxLog(err,'secure-warm');return null;})
+    ]);
+    return !!(r[0]&&r[1]);
+  }
+
   window.NexoraSecureContent={
     version:VERSION,
     activate:activate,
@@ -417,6 +453,8 @@ async function decrypt(path){path=normalizePath(path);var record=await entitleme
     json:json,
     execute:execute,
     preloadAll:preloadAll,
+    prefetch:prefetch,
+    warm:warm,
     revoke:revoke,
     syncSnapshot:syncSnapshot
   };
