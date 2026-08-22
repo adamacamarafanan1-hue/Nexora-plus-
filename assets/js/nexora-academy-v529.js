@@ -1906,3 +1906,100 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!p
     }
   }, true);
 })();
+
+/* ===== nexora-preload-v549 ===== */
+(function(){
+'use strict';
+/* V549 — ouverture rapide des lecons.
+   Mesure de depart : 564 a 833 ms de verification d'abonnement, PUIS 3 815 ms de
+   telechargement du fichier de la classe, PUIS 8 a 17 ms de dechiffrement. Tout
+   etait en file indienne. Ce module fait deux gestes :
+
+   1) des que l'Academie s'ouvre, on prepare la cle et le manifeste (warm), et on
+      retelecharge d'avance la derniere classe ouverte par l'eleve ;
+   2) des que le doigt se pose sur une carte de classe — pointerdown, soit 100 a
+      300 ms avant le clic — on lance le telechargement de cette classe.
+
+   Le fichier prechargé reste CHIFFRE. La cle continue d'exiger un abonnement
+   valide au moment de lire : on gagne du transfert, jamais un acces.
+   Les eleves en mode economie de donnees ou en 2G sont exclus du prechargement. */
+
+var CHEMINS={
+  '[data-nx-open-eleventh-v368]':'modules/classes/11eme.json',
+  '[data-nx-open-twelfth-v369]':'modules/classes/12eme.json',
+  '[data-nx-open-terminal-v475]':'modules/classes/terminale.json'
+};
+var PAR_ACTION={
+  'seventh':'modules/classes/7eme.json',
+  'eighth':'modules/classes/8eme.json',
+  'ninth':'modules/classes/9eme.json',
+  'primary-class':'modules/classes/primaire.json'
+};
+var MEMOIRE='nexora.derniere.classe.v549';
+var demandes={};
+
+function secure(){return window.NexoraSecureContent}
+
+function reseauEconome(){
+  try{
+    var c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(!c)return false;
+    if(c.saveData)return true;
+    var t=String(c.effectiveType||'');
+    return t==='slow-2g'||t==='2g';
+  }catch(_e){return false}
+}
+
+function precharger(chemin,retenir){
+  if(!chemin||demandes[chemin])return;
+  if(reseauEconome())return;
+  var s=secure();
+  if(!s||typeof s.prefetch!=='function')return;
+  demandes[chemin]=true;
+  if(retenir){try{localStorage.setItem(MEMOIRE,chemin)}catch(_e){}}
+  try{s.prefetch(chemin)}catch(_e){window.nxLog&&window.nxLog(_e)}
+}
+
+function cheminDuBouton(cible){
+  if(!cible||!cible.closest)return '';
+  for(var sel in CHEMINS){if(CHEMINS.hasOwnProperty(sel)&&cible.closest(sel))return CHEMINS[sel]}
+  var b=cible.closest('[data-nx-open-v342]');
+  if(b){
+    var a=b.getAttribute('data-nx-open-v342')||'';
+    if(PAR_ACTION.hasOwnProperty(a))return PAR_ACTION[a];
+  }
+  return '';
+}
+
+function surDoigt(e){
+  try{precharger(cheminDuBouton(e&&e.target),true)}catch(_e){window.nxLog&&window.nxLog(_e)}
+}
+document.addEventListener('pointerdown',surDoigt,true);
+try{document.addEventListener('touchstart',surDoigt,{capture:true,passive:true})}
+catch(_e){document.addEventListener('touchstart',surDoigt,true)}
+
+var dejaPrepare=false;
+function preparer(){
+  if(dejaPrepare)return;
+  dejaPrepare=true;
+  var s=secure();
+  if(s&&typeof s.warm==='function'){try{s.warm()}catch(_e){window.nxLog&&window.nxLog(_e)}}
+  var derniere='';
+  try{derniere=localStorage.getItem(MEMOIRE)||''}catch(_e){}
+  /* On laisse d'abord l'ecran se dessiner : le prechargement ne doit jamais
+     concurrencer l'affichage de la liste des classes. */
+  if(derniere)setTimeout(function(){precharger(derniere,false)},400);
+}
+
+function surveiller(){
+  var v=document.getElementById('nxAcademyViewer');
+  if(!v){setTimeout(surveiller,1000);return}
+  if(!v.hidden)preparer();
+  try{
+    new MutationObserver(function(){if(!v.hidden)preparer()})
+      .observe(v,{attributes:true,attributeFilter:['hidden']});
+  }catch(_e){window.nxLog&&window.nxLog(_e)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',surveiller);
+else surveiller();
+})();
