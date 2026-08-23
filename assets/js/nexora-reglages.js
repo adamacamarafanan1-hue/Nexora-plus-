@@ -205,3 +205,185 @@
   setTimeout(poserBouton, 1500);
   setInterval(poserBouton, 4000);
 })();
+
+/* ===== V552 — invitation à installer Nexora =====
+   Le bloc nx-install-v468 existe déjà dans index.html, mais il est placé
+   en bas de l'écran d'entrée et reste masqué : presque personne ne le voit.
+   Ce module propose l'installation dès l'ouverture, avec une carte visible,
+   sans toucher à index.html (1,86 Mo, indéployable depuis un téléphone).
+
+   Règles de politesse appliquées :
+   - jamais si l'application est déjà installée ;
+   - « Plus tard » repousse d'une semaine ;
+   - trois refus et on n'insiste plus jamais ;
+   - sur iPhone, où le navigateur n'autorise aucune installation
+     automatique, on affiche les trois gestes à faire. */
+(function () {
+  'use strict';
+  if (window.__nxInstallV552) return;
+  window.__nxInstallV552 = true;
+
+  var CLE = 'nexora.install.v552';
+  var DELAI_AVANT = 3500;          /* laisser l'application s'ouvrir d'abord */
+  var REPOUSSE = 7 * 24 * 3600 * 1000;
+  var REFUS_MAX = 3;
+
+  var invite = null;               /* l'événement retenu par le navigateur */
+  var carteAffichee = false;
+
+  function etat() {
+    try { return JSON.parse(localStorage.getItem(CLE) || '{}') || {}; }
+    catch (_e) { return {}; }
+  }
+  function noter(o) {
+    try { localStorage.setItem(CLE, JSON.stringify(o)); } catch (_e) {}
+  }
+
+  function dejaInstallee() {
+    try {
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+      if (window.navigator && window.navigator.standalone === true) return true;  /* iOS */
+    } catch (_e) {}
+    return etat().installee === true;
+  }
+
+  function estIOS() {
+    try {
+      var ua = navigator.userAgent || '';
+      return /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    } catch (_e) { return false; }
+  }
+
+  function autorisee() {
+    if (dejaInstallee()) return false;
+    var e = etat();
+    if ((e.refus || 0) >= REFUS_MAX) return false;
+    if (e.prochaine && Date.now() < e.prochaine) return false;
+    return true;
+  }
+
+  function styles() {
+    if (document.getElementById('nxInstallStyleV552')) return;
+    var s = document.createElement('style');
+    s.id = 'nxInstallStyleV552';
+    s.textContent = [
+      '.nx-inst-v552{position:fixed;left:0;right:0;bottom:0;z-index:99999;',
+      'background:#eceae5;color:#2b3138;border-radius:18px 18px 0 0;',
+      'box-shadow:0 -8px 32px rgba(0,0,0,.28);padding:20px 18px 18px;',
+      'font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;',
+      'transform:translateY(110%);transition:transform .38s cubic-bezier(.22,.8,.3,1);}',
+      '.nx-inst-v552.on{transform:translateY(0);}',
+      '.nx-inst-tete-v552{display:flex;align-items:center;gap:12px;margin-bottom:12px;}',
+      '.nx-inst-ico-v552{width:46px;height:46px;border-radius:12px;flex:0 0 auto;',
+      'background:#2b3138;display:flex;align-items:center;justify-content:center;',
+      'font-size:24px;color:#fff;}',
+      '.nx-inst-tete-v552 strong{display:block;font-size:17px;line-height:1.25;}',
+      '.nx-inst-tete-v552 small{display:block;opacity:.7;font-size:13px;margin-top:2px;}',
+      '.nx-inst-list-v552{list-style:none;margin:0 0 16px;padding:0;}',
+      '.nx-inst-list-v552 li{display:flex;gap:9px;align-items:flex-start;margin:7px 0;font-size:14px;}',
+      '.nx-inst-list-v552 li b{color:#c8842a;flex:0 0 auto;font-size:15px;line-height:1.4;}',
+      '.nx-inst-btns-v552{display:flex;gap:10px;}',
+      '.nx-inst-btns-v552 button{flex:1;padding:14px 10px;border:0;border-radius:11px;',
+      'font-size:15px;font-weight:600;font-family:inherit;}',
+      '.nx-inst-oui-v552{background:#c8842a;color:#fff;}',
+      '.nx-inst-non-v552{background:transparent;color:#2b3138;opacity:.65;flex:0 0 38%!important;}',
+      '.nx-inst-pas-v552{margin:0 0 16px;padding:0 0 0 20px;font-size:14px;}',
+      '.nx-inst-pas-v552 li{margin:8px 0;}',
+      '@media(min-width:620px){.nx-inst-v552{left:auto;right:20px;bottom:20px;',
+      'width:380px;border-radius:18px;}}'
+    ].join('');
+    document.head.appendChild(s);
+  }
+
+  function fermer(carte, refus) {
+    carte.classList.remove('on');
+    setTimeout(function () { if (carte.parentNode) carte.parentNode.removeChild(carte); }, 400);
+    if (refus) {
+      var e = etat();
+      e.refus = (e.refus || 0) + 1;
+      e.prochaine = Date.now() + REPOUSSE;
+      noter(e);
+    }
+  }
+
+  function carteIOS() {
+    styles();
+    var c = document.createElement('div');
+    c.className = 'nx-inst-v552';
+    c.setAttribute('role', 'dialog');
+    c.innerHTML =
+      '<div class="nx-inst-tete-v552"><span class="nx-inst-ico-v552" aria-hidden="true">📚</span>' +
+      '<div><strong>Ajouter Nexora à votre écran d’accueil</strong>' +
+      '<small>Trois gestes, une seule fois.</small></div></div>' +
+      '<ol class="nx-inst-pas-v552">' +
+      '<li>Touchez l’icône <b>Partager</b> en bas de Safari.</li>' +
+      '<li>Choisissez <b>Sur l’écran d’accueil</b>.</li>' +
+      '<li>Touchez <b>Ajouter</b>.</li></ol>' +
+      '<div class="nx-inst-btns-v552">' +
+      '<button type="button" class="nx-inst-oui-v552">J’ai compris</button></div>';
+    document.body.appendChild(c);
+    c.querySelector('.nx-inst-oui-v552').addEventListener('click', function () { fermer(c, true); });
+    setTimeout(function () { c.classList.add('on'); }, 60);
+    carteAffichee = true;
+  }
+
+  function carte() {
+    if (carteAffichee || !autorisee()) return;
+    if (estIOS()) { carteIOS(); return; }
+    if (!invite) return;
+    styles();
+
+    var c = document.createElement('div');
+    c.className = 'nx-inst-v552';
+    c.setAttribute('role', 'dialog');
+    c.innerHTML =
+      '<div class="nx-inst-tete-v552"><span class="nx-inst-ico-v552" aria-hidden="true">📚</span>' +
+      '<div><strong>Installer Nexora</strong>' +
+      '<small>Gratuit, en quelques secondes.</small></div></div>' +
+      '<ul class="nx-inst-list-v552">' +
+      '<li><b>✓</b><span>S’ouvre depuis votre écran d’accueil, sans passer par le navigateur.</span></li>' +
+      '<li><b>✓</b><span>Vos cours restent disponibles même sans connexion.</span></li>' +
+      '<li><b>✓</b><span>Ouverture plus rapide et affichage en plein écran.</span></li>' +
+      '</ul><div class="nx-inst-btns-v552">' +
+      '<button type="button" class="nx-inst-oui-v552">Installer</button>' +
+      '<button type="button" class="nx-inst-non-v552">Plus tard</button></div>';
+    document.body.appendChild(c);
+
+    c.querySelector('.nx-inst-non-v552').addEventListener('click', function () { fermer(c, true); });
+    c.querySelector('.nx-inst-oui-v552').addEventListener('click', function () {
+      var p = invite; invite = null;
+      fermer(c, false);
+      try {
+        p.prompt();
+        if (p.userChoice && p.userChoice.then) {
+          p.userChoice.then(function (r) {
+            if (!r || r.outcome !== 'accepted') {
+              var e = etat(); e.refus = (e.refus || 0) + 1;
+              e.prochaine = Date.now() + REPOUSSE; noter(e);
+            }
+          });
+        }
+      } catch (_e) { window.nxLog && window.nxLog(_e, 'install-v552'); }
+    });
+
+    setTimeout(function () { c.classList.add('on'); }, 60);
+    carteAffichee = true;
+  }
+
+  /* Le navigateur signale que l'application est installable. index.html capte
+     déjà cet événement pour son propre bloc ; plusieurs écouteurs peuvent
+     coexister sans se gêner, chacun recevant le même objet. */
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    try { ev.preventDefault(); } catch (_e) {}
+    invite = ev;
+    if (autorisee()) setTimeout(carte, DELAI_AVANT);
+  });
+
+  window.addEventListener('appinstalled', function () {
+    invite = null;
+    var e = etat(); e.installee = true; noter(e);
+  });
+
+  /* Sur iPhone, aucun événement n'est émis : on décide seuls. */
+  if (estIOS() && autorisee()) setTimeout(carte, DELAI_AVANT + 1500);
+})();
