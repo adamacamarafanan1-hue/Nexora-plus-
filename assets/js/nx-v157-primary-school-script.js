@@ -1,13 +1,14 @@
-/* NEXORA — École primaire interactive V609
-   Pédagogie CP1 adaptative : audio, illustration, explication simple, petit essai, aide ciblée puis exercices corrigés.
+/* NEXORA — École primaire interactive V610
+   Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV609) return;
-  window.__nxPrimaryExercisesV609 = true;
+  if (window.__nxPrimaryExercisesV610) return;
+  window.__nxPrimaryExercisesV610 = true;
 
-  var VERSION = 'v609';
+  var VERSION = 'v610';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
+  var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
   var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, diagnostic: null, diagnosticAttempt: 0, diagnosticLocked: false, diagnosticPassed: false };
 
@@ -41,6 +42,31 @@
     try { var x = JSON.parse(localStorage.getItem(STORAGE) || '{}'); return x && typeof x === 'object' ? x : {}; }
     catch (_e) { return {}; }
   }
+  function lastCp1Read() {
+    try { var x = JSON.parse(localStorage.getItem(LAST_CP1) || 'null'); return x && typeof x === 'object' ? x : null; }
+    catch (_e) { return null; }
+  }
+  function lastCp1Write(subject, lesson) {
+    try { localStorage.setItem(LAST_CP1, JSON.stringify({ subject: subject, lesson: lesson, updated_at: new Date().toISOString() })); }
+    catch (_e) {}
+  }
+  function cp1NumericChoices(ex) {
+    if (!ex || ex.type !== 'input') return null;
+    var raw = String(ex.a == null ? '' : ex.a).replace(',', '.');
+    var value = Number(raw);
+    if (!isFinite(value) || Math.floor(value) !== value || value < 0 || value > 100) return null;
+    var vals = [value];
+    var candidates = [value - 1, value + 1, value - 2, value + 2, value + 3];
+    for (var i = 0; i < candidates.length && vals.length < 3; i++) {
+      if (candidates[i] >= 0 && vals.indexOf(candidates[i]) < 0) vals.push(candidates[i]);
+    }
+    return shuffle(vals.map(String));
+  }
+  function spokenChoices(ex, choices) {
+    if (!choices || !choices.length) return '';
+    return '. Réponses possibles. ' + choices.join('. ');
+  }
+
   function progressWrite(level, subject, good, total) {
     try {
       var x = progressRead();
@@ -65,7 +91,7 @@
   }
 
   var LEVELS = {
-    '1': { label: '1ère année', subtitle: 'Je comprends deux fois, puis je m’exerce', subjects: ['entretien','francais','maths','sciences','ecm','arts','eps'] },
+    '1': { label: '1ère année', subtitle: 'J’écoute, je regarde, je réponds', subjects: ['entretien','francais','maths','sciences','ecm','arts','eps'] },
     '2': { label: '2ème année', subtitle: 'Je lis mieux et je calcule', subjects: ['francais','maths','sciences','ecm'] },
     '3': { label: '3ème année', subtitle: 'Je comprends et je résous', subjects: ['francais','maths','sciences','histoiregeo','ecm'] },
     '4': { label: '4ème année', subtitle: 'J’explique et j’applique', subjects: ['francais','maths','sciences','histoiregeo','ecm'] },
@@ -1756,15 +1782,26 @@
 
   function renderCp1Lessons(subject) {
     var meta = SUBJECTS[subject], lessons = CP1_LESSONS[subject] || [];
-    state.subject = subject; state.lesson = -1; state.phase = 0; state.readText = '';
+    state.subject = subject; state.lesson = -1; state.phase = 0;
     state.list = []; state.index = 0; state.good = 0; state.wrong = [];
-    setHeader(meta.name, '1ère année · Comprendre puis pratiquer', true);
-    var html = '<section class="nx-px-hero"><h2>' + esc(meta.name) + '</h2><p>Choisis une leçon. Écoute une explication simple, fais un petit essai, puis Nexora t’aide davantage seulement si tu en as besoin.</p></section><div class="nx-px-grid">';
+    var last = lastCp1Read();
+    var startIndex = last && last.subject === subject && Number(last.lesson) >= 0 && Number(last.lesson) < lessons.length ? Number(last.lesson) : 0;
+    state.readText = 'Choisis une leçon. Pour aller facilement, touche le grand bouton ' + (startIndex ? 'Continuer' : 'Commencer') + '.';
+    setHeader(meta.name, '1ère année · Écoute et touche', true);
+    var html = '<section class="nx-px-hero nx-px-child-hero"><h2>' + esc(meta.icon + ' ' + meta.name) + '</h2><p>Écoute puis touche une grande carte.</p></section>';
+    if (lessons.length) {
+      html += '<button type="button" class="nx-px-start" data-lesson="' + startIndex + '"><span>▶️</span><b>' + (startIndex ? 'Continuer' : 'Commencer') + '</b><small>Leçon ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title) + '</small></button>';
+    }
+    html += '<div class="nx-px-grid nx-px-lesson-grid">';
     lessons.forEach(function (lesson, i) {
-      html += '<button type="button" class="nx-px-card" data-lesson="' + i + '"><em>🧠</em><strong>' + esc(lesson.title) + '</strong><small>🔊 Audio · 1 petit essai · ' + Math.max(0, (lesson.ex || []).length - 1) + ' exercices corrigés</small></button>';
+      html += '<button type="button" class="nx-px-card nx-px-child-card" data-lesson="' + i + '" aria-label="Leçon ' + (i + 1) + '. ' + esc(lesson.title) + '">' +
+        '<span class="nx-px-thumb" aria-hidden="true">' + esc(lesson.visual || meta.icon) + '</span>' +
+        '<strong>Leçon ' + (i + 1) + '</strong><span class="nx-px-lesson-title">' + esc(lesson.title) + '</span>' +
+        '<small>🔊 Écouter et apprendre</small></button>';
     });
     html += '</div>';
     main().innerHTML = html;
+    setTimeout(function () { speak(state.readText); }, 180);
   }
 
   function startCp1Lesson(index) {
@@ -1772,6 +1809,7 @@
     var i = Number(index);
     if (!isFinite(i) || i < 0 || i >= lessons.length) { renderCp1Lessons(state.subject); return; }
     state.lesson = i; state.phase = 1; state.list = []; state.index = 0; state.good = 0; state.wrong = [];
+    lastCp1Write(state.subject, i);
     state.diagnostic = (lessons[i].ex || [])[0] || null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;
     renderCp1Explanation();
   }
@@ -1802,14 +1840,16 @@
   function renderCp1Diagnostic() {
     var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson], ex = state.diagnostic || ((lesson && lesson.ex) ? lesson.ex[0] : null);
     if (!lesson || !ex) { startCp1Exercises(); return; }
-    state.phase = 10; state.diagnosticLocked = false; state.readText = 'Petit essai. ' + ex.q;
+    state.phase = 10; state.diagnosticLocked = false;
+    var diagChoices = ex.type === 'choice' ? ex.choices : cp1NumericChoices(ex);
+    state.readText = 'Petit essai. ' + ex.q + spokenChoices(ex, diagChoices);
     setHeader(SUBJECTS[state.subject].name, lesson.title, true);
     var html = '<section class="nx-px-question"><div class="nx-px-meta"><span>Petit essai</span><span>Je vérifie si j’ai compris</span></div>' +
       '<div class="nx-px-lesson-visual" role="img" aria-label="' + esc(lesson.visualLabel || lesson.title) + '">' + esc(lesson.visual || '📘') + '</div>' +
       '<h2 class="nx-px-q">' + esc(ex.q) + '</h2>';
     if (ex.visual) html += '<div class="nx-px-visual">' + esc(ex.visual) + '</div>';
-    if (ex.type === 'choice') {
-      html += '<div class="nx-px-choices">' + ex.choices.map(function (c) { return '<button type="button" class="nx-px-answer" data-diagnostic-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
+    if (diagChoices && diagChoices.length) {
+      html += '<div class="nx-px-choices">' + diagChoices.map(function (c) { return '<button type="button" class="nx-px-answer nx-px-big-answer" data-diagnostic-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
     } else {
       var mode = ex.type === 'input' ? 'inputmode="decimal"' : '';
       html += '<form class="nx-px-input" data-diagnostic-form><input ' + mode + ' autocomplete="off" aria-label="Ta réponse" placeholder="Écris ta réponse"><button type="submit">Vérifier</button></form>';
@@ -1885,7 +1925,8 @@
       '.nx-px-feedback{margin-top:15px;border-radius:13px;padding:14px;font-size:15px;line-height:1.5}.nx-px-feedback.ok{background:#edf7ef;color:#185c2b}.nx-px-feedback.no{background:#fff0f0;color:#8c1d18}.nx-px-feedback b{display:block;margin-bottom:4px}',
       '.nx-px-lesson-visual{display:flex;align-items:center;justify-content:center;min-height:128px;margin:0 0 16px;padding:16px;border-radius:16px;background:#f0f6ff;border:1px solid #d8e6f7;font-size:46px;line-height:1.25;text-align:center;letter-spacing:3px}.nx-px-listen{width:100%;border:0;border-radius:13px;background:#e7f1ff;color:#173a63;padding:13px 14px;font:inherit;font-weight:850;margin:0 0 14px}.nx-px-easy-text{font-size:18px;line-height:1.7;margin:0;color:#22303e}',
       '.nx-px-next{display:block;width:100%;margin-top:12px;min-height:50px}.nx-px-speak{margin-left:auto!important}.nx-px-result{text-align:center;background:white;border:1px solid #d9e0e8;border-radius:18px;padding:28px 18px}.nx-px-score{font-size:52px;font-weight:900;color:#173a63;margin:10px 0}.nx-px-actions{display:grid;gap:10px;margin-top:18px}.nx-px-actions button{min-height:50px;border-radius:13px;font:inherit;font-weight:850;border:1px solid #cbd4df;background:white}.nx-px-actions .primary{background:#173a63;color:white;border-color:#173a63}',
-      '@media(max-width:520px){.nx-px-grid{grid-template-columns:1fr}.nx-px-main{padding:14px 11px 32px}.nx-px-q{font-size:20px}.nx-px-card{min-height:92px}}'
+      '.nx-px-back{min-width:92px!important;padding:0 11px!important;font-size:14px!important;font-weight:850}.nx-px-child-hero{text-align:center}.nx-px-level-card,.nx-px-subject-card,.nx-px-child-card{touch-action:manipulation;cursor:pointer}.nx-px-level-card em,.nx-px-subject-card em{font-size:44px}.nx-px-subject-card{min-height:145px;text-align:center}.nx-px-subject-card strong{font-size:19px}.nx-px-thumb{display:flex;align-items:center;justify-content:center;min-height:64px;max-height:76px;overflow:hidden;margin:-2px 0 8px;padding:8px;border-radius:12px;background:#f0f6ff;font-size:30px;line-height:1.3;white-space:pre-line}.nx-px-lesson-title{display:block;font-size:16px;line-height:1.35;color:#233447;margin:4px 0 8px}.nx-px-start{width:100%;min-height:86px;border:0;border-radius:18px;background:#173a63;color:#fff;padding:14px 16px;margin:0 0 14px;text-align:left;font:inherit;box-shadow:0 5px 16px rgba(23,58,99,.16);touch-action:manipulation}.nx-px-start>span{font-size:28px;float:left;margin-right:12px}.nx-px-start b{display:block;font-size:20px}.nx-px-start small{display:block;margin-top:4px;font-size:13px;opacity:.9}.nx-px-big-answer{min-height:64px!important;font-size:19px!important;text-align:center!important}.nx-px-next,.nx-px-listen{min-height:58px;touch-action:manipulation}.nx-px-card:active,.nx-px-answer:active,.nx-px-next:active,.nx-px-start:active{transform:scale(.985)}',
+      '@media(max-width:520px){.nx-px-grid{grid-template-columns:1fr}.nx-px-main{padding:14px 11px 32px}.nx-px-q{font-size:20px}.nx-px-card{min-height:110px}.nx-px-subject-card{min-height:128px}.nx-px-child-card{min-height:138px}.nx-px-top{gap:6px}.nx-px-back{min-width:84px!important;font-size:13px!important}}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -1897,7 +1938,7 @@
     viewer.id = 'nxPrimaryExercisesV600';
     viewer.className = 'nx-px-v600';
     viewer.hidden = true;
-    viewer.innerHTML = '<header class="nx-px-top"><button type="button" data-back aria-label="Retour">‹</button><div><b data-title>École primaire</b><span data-subtitle>Exercices corrigés</span></div><button type="button" class="nx-px-speak" data-speak aria-label="Lire">🔊</button><button type="button" data-close aria-label="Fermer">✕</button></header><main class="nx-px-main" data-main></main>';
+    viewer.innerHTML = '<header class="nx-px-top"><button type="button" class="nx-px-back" data-back aria-label="Retour">← Retour</button><div><b data-title>École primaire</b><span data-subtitle>Exercices corrigés</span></div><button type="button" class="nx-px-speak" data-speak aria-label="Lire">🔊</button><button type="button" data-close aria-label="Fermer">✕</button></header><main class="nx-px-main" data-main></main>';
     document.body.appendChild(viewer);
     viewer.addEventListener('click', function (ev) {
       var close = ev.target.closest('[data-close]'); if (close) { closeViewer(); return; }
@@ -1942,32 +1983,37 @@
   function main() { return shell().querySelector('[data-main]'); }
 
   function renderLevels() {
-    state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.list = []; state.index = 0;
-    setHeader('École primaire', '100% exercices corrigés', false);
+    state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.list = []; state.index = 0;
+    state.readText = 'Bonjour. Choisis ta classe. Pour la première année, touche le grand numéro 1.';
+    setHeader('École primaire', 'Écoute puis touche ta classe', false);
     var p = progressRead();
-    var html = '<section class="nx-px-hero"><h2>Choisis ta classe</h2><p>Tu réponds à chaque exercice. Nexora te dit immédiatement si ta réponse est correcte, te donne la bonne réponse et t’explique pourquoi.</p></section><div class="nx-px-grid">';
+    var badges = { '1':'1️⃣', '2':'2️⃣', '3':'3️⃣', '4':'4️⃣', '5':'5️⃣', '6':'6️⃣' };
+    var html = '<section class="nx-px-hero nx-px-child-hero"><h2>🎒 Choisis ta classe</h2><p>Écoute. Puis touche le grand numéro de ta classe.</p></section><div class="nx-px-grid">';
     Object.keys(LEVELS).forEach(function (k) {
       var l = LEVELS[k], vals = [], total = 0;
-      l.subjects.forEach(function (s) { var x = p[k + ':' + s]; if (x && typeof x.best === 'number') { vals.push(x.best); total += x.best; } });
+      l.subjects.forEach(function (sub) { var x = p[k + ':' + sub]; if (x && typeof x.best === 'number') { vals.push(x.best); total += x.best; } });
       var avg = vals.length ? Math.round(total / vals.length) : null;
-      html += '<button type="button" class="nx-px-card" data-level="' + k + '"><em>🎒</em><strong>' + esc(l.label) + '</strong><small>' + esc(l.subtitle) + '</small>' + (avg != null ? '<div class="nx-px-progress">Meilleur niveau moyen : ' + avg + '%</div>' : '') + '</button>';
+      html += '<button type="button" class="nx-px-card nx-px-level-card" data-level="' + k + '"><em>' + badges[k] + '</em><strong>' + esc(l.label) + '</strong><small>' + esc(l.subtitle) + '</small>' + (avg != null ? '<div class="nx-px-progress">Niveau : ' + avg + '%</div>' : '') + '</button>';
     });
     html += '</div>';
     main().innerHTML = html;
+    setTimeout(function () { speak(state.readText); }, 180);
   }
 
   function renderSubjects() {
     var l = LEVELS[state.level]; if (!l) { renderLevels(); return; }
-    state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.list = []; state.index = 0;
-    setHeader(l.label, 'Choisis une matière', true);
+    state.subject = ''; state.lesson = -1; state.phase = 0; state.list = []; state.index = 0;
+    state.readText = state.level === '1' ? 'Choisis ta matière. Touche une grande image. Français. Mathématiques. Sciences. Éducation civique. Arts. Sport. Entretien du matin.' : '';
+    setHeader(l.label, state.level === '1' ? 'Écoute puis touche une matière' : 'Choisis une matière', true);
     var p = progressRead();
-    var html = '<section class="nx-px-hero"><h2>' + esc(l.label) + '</h2><p>' + (state.level === '1' ? 'Choisis une matière. Chaque leçon est illustrée et lue à voix haute. Après une explication simple, un petit essai permet à Nexora de donner une deuxième explication seulement si elle est utile.' : 'Chaque matière est présentée sous forme d’exercices. Après chaque réponse, la correction et l’explication apparaissent.') + '</p></section><div class="nx-px-grid">';
-    l.subjects.forEach(function (s) {
-      var meta = SUBJECTS[s], bank = build(state.level, s), pr = p[state.level + ':' + s];
-      html += '<button type="button" class="nx-px-card" data-subject="' + s + '"><em>' + meta.icon + '</em><strong>' + esc(meta.name) + '</strong><small>' + bank.length + ' exercices par série</small>' + (pr ? '<div class="nx-px-progress">Meilleur score : ' + (pr.best || 0) + '%</div>' : '') + '</button>';
+    var html = '<section class="nx-px-hero' + (state.level === '1' ? ' nx-px-child-hero' : '') + '"><h2>' + esc(l.label) + '</h2><p>' + (state.level === '1' ? 'Écoute. Puis touche une grande image.' : 'Choisis une matière pour commencer les exercices.') + '</p></section><div class="nx-px-grid">';
+    l.subjects.forEach(function (sub) {
+      var meta = SUBJECTS[sub], bank = build(state.level, sub), pr = p[state.level + ':' + sub];
+      html += '<button type="button" class="nx-px-card' + (state.level === '1' ? ' nx-px-subject-card' : '') + '" data-subject="' + sub + '"><em>' + meta.icon + '</em><strong>' + esc(meta.name) + '</strong><small>' + (state.level === '1' ? 'Touche pour ouvrir' : bank.length + ' exercices par série') + '</small>' + (pr ? '<div class="nx-px-progress">Meilleur score : ' + (pr.best || 0) + '%</div>' : '') + '</button>';
     });
     html += '</div>';
     main().innerHTML = html;
+    if (state.level === '1') setTimeout(function () { speak(state.readText); }, 180);
   }
 
   function startSubject(subject) {
@@ -1983,12 +2029,14 @@
     if (state.index >= state.list.length) { renderResult(); return; }
     state.locked = false;
     var ex = state.list[state.index], meta = SUBJECTS[state.subject], l = LEVELS[state.level];
-    state.readText = ex.q;
+    var autoChoices = state.level === '1' && ex.type !== 'choice' ? cp1NumericChoices(ex) : null;
+    var questionChoices = ex.type === 'choice' ? ex.choices : autoChoices;
+    state.readText = ex.q + (state.level === '1' ? spokenChoices(ex, questionChoices) : '');
     setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? (CP1_LESSONS[state.subject][state.lesson].title) : l.label, true);
     var html = '<section class="nx-px-question"><div class="nx-px-meta"><span>Exercice ' + (state.index + 1) + ' / ' + state.list.length + '</span><span>' + esc(meta.name) + '</span></div><h2 class="nx-px-q">' + esc(ex.q) + '</h2>';
     if (ex.visual) html += '<div class="nx-px-visual">' + esc(ex.visual) + '</div>';
-    if (ex.type === 'choice') {
-      html += '<div class="nx-px-choices">' + ex.choices.map(function (c) { return '<button type="button" class="nx-px-answer" data-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
+    if (questionChoices && questionChoices.length) {
+      html += '<div class="nx-px-choices">' + questionChoices.map(function (c) { return '<button type="button" class="nx-px-answer' + (state.level === '1' ? ' nx-px-big-answer' : '') + '" data-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
     } else {
       var mode = ex.type === 'input' ? 'inputmode="decimal"' : '';
       html += '<form class="nx-px-input" data-answer-form><input ' + mode + ' autocomplete="off" aria-label="Ta réponse" placeholder="Écris ta réponse"><button type="submit">Corriger</button></form>';
@@ -2024,8 +2072,10 @@
     progressWrite(state.level, state.subject, state.good, state.list.length);
     var score = state.list.length ? Math.round(state.good * 100 / state.list.length) : 0;
     var msg = score >= 80 ? 'Très bien !' : score >= 60 ? 'Bon travail. Continue.' : 'Tu progresses. Reprends les erreurs.';
+    state.readText = msg + ' Tu as ' + state.good + ' bonnes réponses sur ' + state.list.length + '.';
     setHeader(SUBJECTS[state.subject].name, LEVELS[state.level].label, true);
     main().innerHTML = '<section class="nx-px-result"><div style="font-size:40px">🏆</div><h2>' + esc(msg) + '</h2><div class="nx-px-score">' + score + '%</div><p>' + state.good + ' bonnes réponses sur ' + state.list.length + '.</p><div class="nx-px-actions">' + (state.wrong.length ? '<button type="button" class="primary" data-retry-wrong>Reprendre mes ' + state.wrong.length + ' erreur(s)</button>' : '') + '<button type="button" data-again>Refaire une nouvelle série</button><button type="button" data-subjects>Choisir une autre matière</button></div></section>';
+    if (state.level === '1') speak(state.readText);
   }
 
   function retryWrong() {
