@@ -1,5 +1,5 @@
 {
-  "version": "V600",
-  "message": "Nexora V600 : ecole primaire 1ere a 6eme annee, exercices corriges avec explications.",
+  "version": "V600.1",
+  "message": "Nexora V600.1 : mise a jour automatique du primaire et du cache PWA.",
   "critical": false
 }
