@@ -1,0 +1,23 @@
+name: Finaliser CP1 V608
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/migrate_cp1_entretien_v608.py'
+      - '.github/workflows/migrate-cp1-entretien-v608.yml'
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/migrate_cp1_entretien_v608.py
+      - run: node --check assets/js/nx-v157-primary-school-script.js
+      - run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nx-v157-primary-school-script.js version.json
+          if git diff --cached --quiet; then echo 'Aucun changement'; else git commit -m 'Finalize CP1 with 162 illustrated audio lessons V608' && git push; fi
