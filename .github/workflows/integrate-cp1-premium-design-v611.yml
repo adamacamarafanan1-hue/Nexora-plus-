@@ -1,0 +1,28 @@
+name: Integrer design premium CP1 V611
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/integrate_cp1_premium_design_v611.py'
+      - '.github/workflows/integrate-cp1-premium-design-v611.yml'
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/integrate_cp1_premium_design_v611.py
+      - run: node --check assets/js/nx-v157-primary-school-script.js
+      - run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nx-v157-primary-school-script.js version.json
+          if git diff --cached --quiet; then
+            echo 'Aucun changement'
+          else
+            git commit -m 'Integrate premium child-first CP1 design V611'
+            git push
+          fi
