@@ -1,19 +1,19 @@
-/* NEXORA — École primaire interactive V613.1
+/* NEXORA — École primaire interactive V613.2
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV613_1) return;
-  window.__nxPrimaryExercisesV613_1 = true;
+  if (window.__nxPrimaryExercisesV613_2) return;
+  window.__nxPrimaryExercisesV613_2 = true;
 
-  var VERSION = 'v613.1';
+  var VERSION = 'v613.2';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
   var autoTimer = null;
   var lastSpeechText = '';
   var lastSpeechAt = 0;
-  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, diagnostic: null, diagnosticAttempt: 0, diagnosticLocked: false, diagnosticPassed: false };
+  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false };
 
   function esc(v) {
     return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
@@ -65,6 +65,23 @@
     }
     return shuffle(vals.map(String));
   }
+  function cp1ClickChoices(ex) {
+    var numeric = cp1NumericChoices(ex);
+    if (numeric && numeric.length) return numeric;
+    if (!ex || (ex.type !== 'input' && ex.type !== 'text')) return null;
+    var answer = String(ex.a == null ? '' : ex.a).trim();
+    if (!answer) return null;
+    var vals = [answer];
+    function add(v) { v = String(v || '').trim(); if (v && vals.indexOf(v) < 0) vals.push(v); }
+    add(answer.replace(/[.!?]+$/,''));
+    if (answer.length) add(answer.charAt(0).toLocaleLowerCase('fr-FR') + answer.slice(1));
+    var words = answer.split(/\s+/);
+    if (words.length > 1) add(words.slice().reverse().join(' '));
+    if (vals.length < 3 && answer.length > 2) add(answer.slice(0,-1));
+    if (vals.length < 3) add('Je ne sais pas encore');
+    return shuffle(vals).slice(0,3);
+  }
+
   function spokenChoices(ex, choices) {
     if (!choices || !choices.length) return '';
     var seen = {}, unique = [];
@@ -1909,7 +1926,7 @@
     state.readText = 'Tu es en ' + meta.name + '. Choisis un défi et joue.';
     setHeader(meta.name, '1ère année · Observe, réfléchis, clique', true);
     var html = '<section class="nx-kid-subject-hero">' + cp1SubjectArt(subject) + '<div><h2>' + esc(meta.name) + '</h2><p>' + lessons.length + ' leçons · audio · images · exercices</p></div></section>';
-    if (lessons.length) html += '<button type="button" class="nx-kid-resume nx-kid-pulse" data-lesson="' + startIndex + '">▶ ' + (hasLast ? 'Continuer' : 'Commencer') + '<small>Leçon ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title) + '</small></button>';
+    if (lessons.length) html += '<button type="button" class="nx-kid-resume nx-kid-pulse" data-lesson="' + startIndex + '">▶ ' + (hasLast ? 'Continuer' : 'Commencer') + '<small>Défi ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title) + '</small></button>';
     html += '<div class="nx-kid-progress-card"><b>🌟 Mon parcours</b><span style="font-size:13px;color:#68798c">Choisis un défi</span></div><div class="nx-kid-lesson-grid">';
     lessons.forEach(function(lesson,i){ html += '<button type="button" class="nx-kid-lesson" data-lesson="' + i + '" aria-label="Défi ' + (i+1) + '. ' + esc(lesson.title) + '">' + cp1Scene(lesson,subject,true) + '<div><strong><span class="num">' + (i+1) + '</span>' + esc(lesson.title) + '</strong><small>🎮 Jouer et trouver</small></div></button>'; });
     html += '</div>'; main().innerHTML = html; setTimeout(function(){ speak(state.readText); },220);
@@ -1920,7 +1937,6 @@
     var i = Number(index);
     if (!isFinite(i) || i < 0 || i >= lessons.length) { renderCp1Lessons(state.subject); return; }
     state.lesson = i; state.phase = 3; state.list = []; state.index = 0; state.good = 0; state.wrong = [];
-    state.diagnostic = null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;
     lastCp1Write(state.subject, i);
     startCp1Exercises();
   }
@@ -2014,11 +2030,6 @@
       var lv = ev.target.closest('[data-level]'); if (lv) { state.level = lv.getAttribute('data-level'); state.subject = ''; renderSubjects(); return; }
       var resume = ev.target.closest('[data-resume]'); if (resume) { state.subject = resume.getAttribute('data-resume-subject'); startCp1Lesson(resume.getAttribute('data-resume-lesson')); return; }
       var lesson = ev.target.closest('[data-lesson]'); if (lesson) { startCp1Lesson(lesson.getAttribute('data-lesson')); return; }
-      var startDiag = ev.target.closest('[data-start-diagnostic]'); if (startDiag) { renderCp1Diagnostic(); return; }
-      var diagAns = ev.target.closest('[data-diagnostic-answer]'); if (diagAns) { answerCp1Diagnostic(diagAns.getAttribute('data-diagnostic-answer'), diagAns); return; }
-      var showSecond = ev.target.closest('[data-show-second]'); if (showSecond) { state.phase = 2; renderCp1Explanation(); return; }
-      var retryDiag = ev.target.closest('[data-retry-diagnostic]'); if (retryDiag) { renderCp1Diagnostic(); return; }
-      var startEx = ev.target.closest('[data-start-exercises]'); if (startEx) { startCp1Exercises(); return; }
       var sj = ev.target.closest('[data-subject]'); if (sj) { startSubject(sj.getAttribute('data-subject')); return; }
       var ans = ev.target.closest('[data-answer]'); if (ans) { answer(ans.getAttribute('data-answer'), ans); return; }
       var next = ev.target.closest('[data-next]'); if (next) { nextQuestion(); return; }
@@ -2027,12 +2038,6 @@
       var home = ev.target.closest('[data-subjects]'); if (home) { renderSubjects(); return; }
     });
     viewer.addEventListener('submit', function (ev) {
-      if (ev.target.matches('[data-diagnostic-form]')) {
-        ev.preventDefault();
-        var dinput = ev.target.querySelector('input');
-        answerCp1Diagnostic(dinput ? dinput.value : '', dinput);
-        return;
-      }
       if (!ev.target.matches('[data-answer-form]')) return;
       ev.preventDefault();
       var input = ev.target.querySelector('input');
@@ -2044,7 +2049,7 @@
   function setHeader(title, subtitle, backVisible) {
     var v = shell();
     v.querySelector('[data-title]').textContent = title || 'École primaire';
-    v.querySelector('[data-subtitle]').textContent = subtitle || 'Exercices corrigés';
+    v.querySelector('[data-subtitle]').textContent = subtitle || (state.level === '1' ? 'Défis pratiques' : 'Exercices corrigés');
     v.querySelector('[data-back]').style.visibility = backVisible ? 'visible' : 'hidden';
     v.querySelector('[data-speak]').style.visibility = (state.readText || (state.list.length && state.index < state.list.length)) ? 'visible' : 'hidden';
   }
@@ -2087,7 +2092,7 @@
         '<div class="nx-kid-voice"><span class="spk">🔊</span><div><b>Choisis ta matière</b><small>Je suis là pour t’aider.</small></div></div></section>';
       if (validLast) {
         var lm = SUBJECTS[last.subject]; var ll = CP1_LESSONS[last.subject][Number(last.lesson)];
-        html += '<button type="button" class="nx-kid-resume nx-kid-pulse" data-resume data-resume-subject="' + esc(last.subject) + '" data-resume-lesson="' + Number(last.lesson) + '">▶ Continuer ma leçon<small>' + esc(lm.name + ' · ' + ll.title) + '</small></button>';
+        html += '<button type="button" class="nx-kid-resume nx-kid-pulse" data-resume data-resume-subject="' + esc(last.subject) + '" data-resume-lesson="' + Number(last.lesson) + '">▶ Continuer mon défi<small>' + esc(lm.name + ' · ' + ll.title) + '</small></button>';
       }
       html += '<div class="nx-kid-progress-card"><div><b>⭐ Ma progression</b><div style="font-size:12px;color:#74808d;margin-top:3px">Continue pour gagner tes étoiles</div></div>' + cp1Stars(avg) + '</div>';
       html += '<div class="nx-kid-subject-grid">';
@@ -2127,7 +2132,7 @@
     state.locked = false;
     var ex = state.list[state.index], meta = SUBJECTS[state.subject], l = LEVELS[state.level];
     var currentLesson = state.level === '1' && state.lesson >= 0 && CP1_LESSONS[state.subject] ? CP1_LESSONS[state.subject][state.lesson] : null;
-    var autoChoices = state.level === '1' && ex.type !== 'choice' ? cp1NumericChoices(ex) : null;
+    var autoChoices = state.level === '1' && ex.type !== 'choice' ? cp1ClickChoices(ex) : null;
     var questionChoices = ex.type === 'choice' ? ex.choices : autoChoices;
     var challengeText = state.level === '1' ? cp1ChallengeText(currentLesson, ex, state.index) : ex.q;
     state.readText = challengeText + (state.level === '1' ? spokenChoices(ex, questionChoices) : '');
@@ -2179,9 +2184,9 @@
       var cp1Lessons = CP1_LESSONS[state.subject] || [], current = state.lesson, nextLesson = score >= 60 ? Math.min(current+1,Math.max(0,cp1Lessons.length-1)) : current;
       lastCp1Write(state.subject,nextLesson);
       var canAdvance = score >= 60 && nextLesson !== current;
-      if (canAdvance) state.readText += ' Bravo. La leçon suivante va commencer.'; else state.readText += ' Tu peux reprendre tes erreurs pour progresser.';
+      if (canAdvance) state.readText += ' Bravo. Le défi suivant va commencer.'; else state.readText += ' Tu peux reprendre tes erreurs pour progresser.';
       setHeader(SUBJECTS[state.subject].name,'Résultat',true);
-      main().innerHTML = '<section class="nx-kid-result"><div class="trophy">' + (score>=80?'🏆':'🌟') + '</div><h2>' + esc(msg) + '</h2><div class="score">' + score + '%</div>' + cp1Stars(score) + '<p>' + state.good + ' bonnes réponses sur ' + state.list.length + '.</p>' + (canAdvance?'<div class="nx-kid-auto">La prochaine leçon commence automatiquement</div>':'') + '<div class="nx-px-actions">' + (state.wrong.length?'<button type="button" class="primary" data-retry-wrong>Reprendre mes erreurs</button>':'') + (canAdvance?'<button type="button" class="primary" data-lesson="' + nextLesson + '">Continuer maintenant</button>':'<button type="button" data-again>Refaire la leçon</button>') + '<button type="button" data-subjects>Choisir une autre matière</button></div></section>';
+      main().innerHTML = '<section class="nx-kid-result"><div class="trophy">' + (score>=80?'🏆':'🌟') + '</div><h2>' + esc(msg) + '</h2><div class="score">' + score + '%</div>' + cp1Stars(score) + '<p>' + state.good + ' bonnes réponses sur ' + state.list.length + '.</p>' + (canAdvance?'<div class="nx-kid-auto">Le prochain défi commence automatiquement</div>':'') + '<div class="nx-px-actions">' + (state.wrong.length?'<button type="button" class="primary" data-retry-wrong>Reprendre mes erreurs</button>':'') + (canAdvance?'<button type="button" class="primary" data-lesson="' + nextLesson + '">Continuer maintenant</button>':'<button type="button" data-again>Refaire le défi</button>') + '<button type="button" data-subjects>Choisir une autre matière</button></div></section>';
       speak(state.readText); if (canAdvance) scheduleNext(function(){ startCp1Lesson(nextLesson); },3800); return;
     }
     setHeader(SUBJECTS[state.subject].name,LEVELS[state.level].label,true);
@@ -2218,7 +2223,7 @@
     if (!viewer) return;
     try { window.speechSynthesis && speechSynthesis.cancel(); } catch (_e) {}
     viewer.hidden = true; document.body.style.overflow = '';
-    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.diagnostic = null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;
+    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = '';
   }
 
   window.NexoraPrimarySchoolV157 = {
