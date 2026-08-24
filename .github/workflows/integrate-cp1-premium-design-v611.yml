@@ -13,7 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+          sparse-checkout: |
+            assets/js/nx-v157-primary-school-script.js
+            version.json
+            .github/scripts/integrate_cp1_premium_design_v611.py
+          sparse-checkout-cone-mode: false
       - run: python .github/scripts/integrate_cp1_premium_design_v611.py
       - run: node --check assets/js/nx-v157-primary-school-script.js
       - run: |
