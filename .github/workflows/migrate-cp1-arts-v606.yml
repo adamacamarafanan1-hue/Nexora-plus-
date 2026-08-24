@@ -1,0 +1,23 @@
+name: Integrer Arts CP1 V606
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/migrate_cp1_arts_v606.py'
+      - '.github/workflows/migrate-cp1-arts-v606.yml'
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/migrate_cp1_arts_v606.py
+      - run: node --check assets/js/nx-v157-primary-school-script.js
+      - run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nx-v157-primary-school-script.js version.json
+          if git diff --cached --quiet; then echo 'Aucun changement'; else git commit -m 'Complete CP1 arts with 15 illustrated audio lessons V606' && git push; fi
