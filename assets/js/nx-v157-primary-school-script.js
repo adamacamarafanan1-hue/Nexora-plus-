@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V610.1
+/* NEXORA — École primaire interactive V610.2
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV610_1) return;
-  window.__nxPrimaryExercisesV610_1 = true;
+  if (window.__nxPrimaryExercisesV610_2) return;
+  window.__nxPrimaryExercisesV610_2 = true;
 
-  var VERSION = 'v610.1';
+  var VERSION = 'v610.2';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -1791,7 +1791,7 @@
     setHeader(meta.name, '1ère année · Écoute et touche', true);
     var html = '<section class="nx-px-hero nx-px-child-hero"><h2>' + esc(meta.icon + ' ' + meta.name) + '</h2><p>Écoute puis touche une grande carte.</p></section>';
     if (lessons.length) {
-      html += '<button type="button" class="nx-px-start" data-lesson="' + startIndex + '"><span>▶️</span><b>' + (startIndex ? 'Continuer' : 'Commencer') + '</b><small>Leçon ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title) + '</small></button>';
+      html += '<button type="button" class="nx-px-start" data-lesson="' + startIndex + '"><span>▶️</span><b>' + (hasLast ? 'Continuer' : 'Commencer') + '</b><small>Leçon ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title) + '</small></button>';
     }
     html += '<div class="nx-px-grid nx-px-lesson-grid">';
     lessons.forEach(function (lesson, i) {
