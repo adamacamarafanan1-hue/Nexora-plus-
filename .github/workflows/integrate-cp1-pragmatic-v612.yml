@@ -1,0 +1,33 @@
+name: Integrer pedagogie pratique CP1 V612
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/integrate_cp1_pragmatic_v612.py'
+      - '.github/workflows/integrate-cp1-pragmatic-v612.yml'
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            assets/js/nx-v157-primary-school-script.js
+            version.json
+            .github/scripts/integrate_cp1_pragmatic_v612.py
+          sparse-checkout-cone-mode: false
+      - run: python .github/scripts/integrate_cp1_pragmatic_v612.py
+      - run: node --check assets/js/nx-v157-primary-school-script.js
+      - run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nx-v157-primary-school-script.js version.json
+          if git diff --cached --quiet; then
+            echo 'Aucun changement'
+          else
+            git commit -m 'Integrate slower audio and pragmatic CP1 pedagogy V612'
+            git push
+          fi
