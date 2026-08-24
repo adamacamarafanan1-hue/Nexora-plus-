@@ -1,15 +1,15 @@
-/* NEXORA — École primaire interactive V608
-   Pédagogie CP1 : audio, illustrations, deux explications simples puis exercices corrigés.
+/* NEXORA — École primaire interactive V609
+   Pédagogie CP1 adaptative : audio, illustration, explication simple, petit essai, aide ciblée puis exercices corrigés.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV608) return;
-  window.__nxPrimaryExercisesV608 = true;
+  if (window.__nxPrimaryExercisesV609) return;
+  window.__nxPrimaryExercisesV609 = true;
 
-  var VERSION = 'v608';
+  var VERSION = 'v609';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var viewer = null;
-  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false };
+  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, diagnostic: null, diagnosticAttempt: 0, diagnosticLocked: false, diagnosticPassed: false };
 
   function esc(v) {
     return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
@@ -1759,9 +1759,9 @@
     state.subject = subject; state.lesson = -1; state.phase = 0; state.readText = '';
     state.list = []; state.index = 0; state.good = 0; state.wrong = [];
     setHeader(meta.name, '1ère année · Comprendre puis pratiquer', true);
-    var html = '<section class="nx-px-hero"><h2>' + esc(meta.name) + '</h2><p>Choisis une leçon. Nexora te l’explique de deux façons différentes avant de te proposer les exercices.</p></section><div class="nx-px-grid">';
+    var html = '<section class="nx-px-hero"><h2>' + esc(meta.name) + '</h2><p>Choisis une leçon. Écoute une explication simple, fais un petit essai, puis Nexora t’aide davantage seulement si tu en as besoin.</p></section><div class="nx-px-grid">';
     lessons.forEach(function (lesson, i) {
-      html += '<button type="button" class="nx-px-card" data-lesson="' + i + '"><em>🧠</em><strong>' + esc(lesson.title) + '</strong><small>2 explications · ' + (lesson.ex || []).length + ' exercices corrigés</small></button>';
+      html += '<button type="button" class="nx-px-card" data-lesson="' + i + '"><em>🧠</em><strong>' + esc(lesson.title) + '</strong><small>🔊 Audio · 1 petit essai · ' + Math.max(0, (lesson.ex || []).length - 1) + ' exercices corrigés</small></button>';
     });
     html += '</div>';
     main().innerHTML = html;
@@ -1772,28 +1772,87 @@
     var i = Number(index);
     if (!isFinite(i) || i < 0 || i >= lessons.length) { renderCp1Lessons(state.subject); return; }
     state.lesson = i; state.phase = 1; state.list = []; state.index = 0; state.good = 0; state.wrong = [];
+    state.diagnostic = (lessons[i].ex || [])[0] || null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;
     renderCp1Explanation();
   }
 
   function renderCp1Explanation() {
     var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson];
     if (!lesson) { renderCp1Lessons(state.subject); return; }
-    var first = state.phase !== 2;
-    var title = first ? '1. Je découvre' : '2. Je comprends autrement';
-    var body = first ? lesson.one : lesson.two;
+    var second = state.phase === 2;
+    var title = second ? '2. Je comprends autrement' : '1. Je découvre';
+    var body = second ? lesson.two : lesson.one;
     var extra = lesson.example || '';
     state.readText = title + '. ' + lesson.title + '. ' + body + (extra ? ' ' + extra : '');
     setHeader(SUBJECTS[state.subject].name, lesson.title, true);
+    var action = second ? (state.diagnosticPassed ? 'data-start-exercises' : 'data-retry-diagnostic') : 'data-start-diagnostic';
+    var label = second ? (state.diagnosticPassed ? 'Passer aux exercices' : 'J’ai compris · Réessayer') : 'J’ai écouté · Faire un petit essai';
     main().innerHTML = '<section class="nx-px-question">' +
-      '<div class="nx-px-meta"><span>Étape ' + (first ? '1' : '2') + ' / 3</span><span>Écoute puis regarde</span></div>' +
+      '<div class="nx-px-meta"><span>' + (second ? 'Aide supplémentaire' : 'Je découvre') + '</span><span>Écoute · Regarde · Comprends</span></div>' +
       '<div class="nx-px-lesson-visual" role="img" aria-label="' + esc(lesson.visualLabel || lesson.title) + '">' + esc(lesson.visual || '📘') + '</div>' +
       '<h2 class="nx-px-q">' + esc(title) + '</h2>' +
       '<h3 style="margin:0 0 12px;color:#173a63">' + esc(lesson.title) + '</h3>' +
       '<button type="button" class="nx-px-listen" data-speak>🔊 Écouter / Réécouter</button>' +
       '<p class="nx-px-easy-text">' + esc(body) + '</p>' +
       (extra ? '<div class="nx-px-feedback ok" style="margin-top:16px"><b>💡 Exemple</b><span>' + esc(extra) + '</span></div>' : '') +
-      '<button type="button" class="nx-px-next" ' + (first ? 'data-study-next' : 'data-start-exercises') + '>' +
-      (first ? 'J’ai compris · Écouter la 2e explication' : 'J’ai compris · Passer aux exercices') + '</button></section>';
+      '<button type="button" class="nx-px-next" ' + action + '>' + label + '</button></section>';
+    speak(state.readText);
+  }
+
+  function renderCp1Diagnostic() {
+    var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson], ex = state.diagnostic || ((lesson && lesson.ex) ? lesson.ex[0] : null);
+    if (!lesson || !ex) { startCp1Exercises(); return; }
+    state.phase = 10; state.diagnosticLocked = false; state.readText = 'Petit essai. ' + ex.q;
+    setHeader(SUBJECTS[state.subject].name, lesson.title, true);
+    var html = '<section class="nx-px-question"><div class="nx-px-meta"><span>Petit essai</span><span>Je vérifie si j’ai compris</span></div>' +
+      '<div class="nx-px-lesson-visual" role="img" aria-label="' + esc(lesson.visualLabel || lesson.title) + '">' + esc(lesson.visual || '📘') + '</div>' +
+      '<h2 class="nx-px-q">' + esc(ex.q) + '</h2>';
+    if (ex.visual) html += '<div class="nx-px-visual">' + esc(ex.visual) + '</div>';
+    if (ex.type === 'choice') {
+      html += '<div class="nx-px-choices">' + ex.choices.map(function (c) { return '<button type="button" class="nx-px-answer" data-diagnostic-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
+    } else {
+      var mode = ex.type === 'input' ? 'inputmode="decimal"' : '';
+      html += '<form class="nx-px-input" data-diagnostic-form><input ' + mode + ' autocomplete="off" aria-label="Ta réponse" placeholder="Écris ta réponse"><button type="submit">Vérifier</button></form>';
+    }
+    html += '<div data-feedback></div></section>';
+    main().innerHTML = html;
+    speak(state.readText);
+  }
+
+  function answerCp1Diagnostic(value, control) {
+    var ex = state.diagnostic;
+    if (!ex || state.diagnosticLocked || !String(value || '').trim()) return;
+    var ok = normalize(value) === normalize(ex.a);
+    state.diagnosticLocked = true;
+    var box = main().querySelector('[data-feedback]');
+    var all = main().querySelectorAll('[data-diagnostic-answer]');
+    Array.prototype.forEach.call(all, function (b) { b.disabled = true; });
+    if (ok) {
+      state.diagnosticPassed = true;
+      if (control && control.classList) control.classList.add('good');
+      box.className = 'nx-px-feedback ok';
+      box.innerHTML = '<b>✅ Bravo, tu as compris !</b><span>' + esc(ex.why || 'Tu as bien utilisé l’explication.') + '</span>' +
+        '<button type="button" class="nx-px-next" data-start-exercises>Passer aux exercices</button>' +
+        '<button type="button" class="nx-px-next" data-show-second style="background:#fff;color:#173a63;border:1px solid #b9c6d5">Écouter aussi une autre explication</button>';
+      state.readText = 'Bravo, tu as compris. ' + (ex.why || '');
+      speak(state.readText);
+      return;
+    }
+    if (control && control.classList) control.classList.add('bad');
+    if (state.diagnosticAttempt === 0) {
+      state.diagnosticAttempt = 1;
+      box.className = 'nx-px-feedback no';
+      box.innerHTML = '<b>🙂 On va essayer autrement.</b><span>Je ne te donne pas encore la réponse. Écoute une deuxième explication, puis essaie encore.</span>' +
+        '<button type="button" class="nx-px-next" data-show-second>Écouter la deuxième explication</button>';
+      state.readText = 'On va essayer autrement. Écoute une deuxième explication, puis essaie encore.';
+      speak(state.readText);
+      return;
+    }
+    Array.prototype.forEach.call(all, function (b) { if (normalize(b.getAttribute('data-diagnostic-answer')) === normalize(ex.a)) b.classList.add('good'); });
+    box.className = 'nx-px-feedback no';
+    box.innerHTML = '<b>La bonne réponse est : ' + esc(ex.a) + '</b><span>' + esc(ex.why || 'Regarde bien la correction puis continue.') + '</span>' +
+      '<button type="button" class="nx-px-next" data-start-exercises>Continuer avec les exercices</button>';
+    state.readText = 'La bonne réponse est ' + ex.a + '. ' + (ex.why || '');
     speak(state.readText);
   }
 
@@ -1801,7 +1860,8 @@
     var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson];
     if (!lesson) { renderCp1Lessons(state.subject); return; }
     state.phase = 3; state.readText = '';
-    state.list = shuffle(lesson.ex || []); state.index = 0; state.good = 0; state.wrong = []; state.locked = false;
+    var practice = (lesson.ex || []).length > 1 ? (lesson.ex || []).slice(1) : (lesson.ex || []).slice();
+    state.list = shuffle(practice); state.index = 0; state.good = 0; state.wrong = []; state.locked = false;
     if (!state.list.length) { renderCp1Lessons(state.subject); return; }
     renderQuestion();
   }
@@ -1845,7 +1905,10 @@
       var sp = ev.target.closest('[data-speak]'); if (sp) { speakCurrent(); return; }
       var lv = ev.target.closest('[data-level]'); if (lv) { state.level = lv.getAttribute('data-level'); state.subject = ''; renderSubjects(); return; }
       var lesson = ev.target.closest('[data-lesson]'); if (lesson) { startCp1Lesson(lesson.getAttribute('data-lesson')); return; }
-      var studyNext = ev.target.closest('[data-study-next]'); if (studyNext) { state.phase = 2; renderCp1Explanation(); return; }
+      var startDiag = ev.target.closest('[data-start-diagnostic]'); if (startDiag) { renderCp1Diagnostic(); return; }
+      var diagAns = ev.target.closest('[data-diagnostic-answer]'); if (diagAns) { answerCp1Diagnostic(diagAns.getAttribute('data-diagnostic-answer'), diagAns); return; }
+      var showSecond = ev.target.closest('[data-show-second]'); if (showSecond) { state.phase = 2; renderCp1Explanation(); return; }
+      var retryDiag = ev.target.closest('[data-retry-diagnostic]'); if (retryDiag) { renderCp1Diagnostic(); return; }
       var startEx = ev.target.closest('[data-start-exercises]'); if (startEx) { startCp1Exercises(); return; }
       var sj = ev.target.closest('[data-subject]'); if (sj) { startSubject(sj.getAttribute('data-subject')); return; }
       var ans = ev.target.closest('[data-answer]'); if (ans) { answer(ans.getAttribute('data-answer'), ans); return; }
@@ -1855,6 +1918,12 @@
       var home = ev.target.closest('[data-subjects]'); if (home) { renderSubjects(); return; }
     });
     viewer.addEventListener('submit', function (ev) {
+      if (ev.target.matches('[data-diagnostic-form]')) {
+        ev.preventDefault();
+        var dinput = ev.target.querySelector('input');
+        answerCp1Diagnostic(dinput ? dinput.value : '', dinput);
+        return;
+      }
       if (!ev.target.matches('[data-answer-form]')) return;
       ev.preventDefault();
       var input = ev.target.querySelector('input');
@@ -1892,7 +1961,7 @@
     state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.list = []; state.index = 0;
     setHeader(l.label, 'Choisis une matière', true);
     var p = progressRead();
-    var html = '<section class="nx-px-hero"><h2>' + esc(l.label) + '</h2><p>' + (state.level === '1' ? 'Choisis une matière. Chaque leçon est illustrée et lue à voix haute deux fois avant les exercices corrigés.' : 'Chaque matière est présentée sous forme d’exercices. Après chaque réponse, la correction et l’explication apparaissent.') + '</p></section><div class="nx-px-grid">';
+    var html = '<section class="nx-px-hero"><h2>' + esc(l.label) + '</h2><p>' + (state.level === '1' ? 'Choisis une matière. Chaque leçon est illustrée et lue à voix haute. Après une explication simple, un petit essai permet à Nexora de donner une deuxième explication seulement si elle est utile.' : 'Chaque matière est présentée sous forme d’exercices. Après chaque réponse, la correction et l’explication apparaissent.') + '</p></section><div class="nx-px-grid">';
     l.subjects.forEach(function (s) {
       var meta = SUBJECTS[s], bank = build(state.level, s), pr = p[state.level + ':' + s];
       html += '<button type="button" class="nx-px-card" data-subject="' + s + '"><em>' + meta.icon + '</em><strong>' + esc(meta.name) + '</strong><small>' + bank.length + ' exercices par série</small>' + (pr ? '<div class="nx-px-progress">Meilleur score : ' + (pr.best || 0) + '%</div>' : '') + '</button>';
@@ -1987,7 +2056,7 @@
     if (!viewer) return;
     try { window.speechSynthesis && speechSynthesis.cancel(); } catch (_e) {}
     viewer.hidden = true; document.body.style.overflow = '';
-    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = '';
+    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.diagnostic = null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;
   }
 
   window.NexoraPrimarySchoolV157 = {
