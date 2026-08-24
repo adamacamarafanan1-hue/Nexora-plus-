@@ -1,0 +1,35 @@
+name: Integrer Francais CP1 V602
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/migrate_cp1_french_v602.py'
+      - '.github/workflows/migrate-cp1-french-v602.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Integrer les 45 lecons de Francais CP1
+        run: python .github/scripts/migrate_cp1_french_v602.py
+      - name: Verifier la syntaxe JavaScript
+        run: node --check assets/js/nx-v157-primary-school-script.js
+      - name: Committer la version integree
+        run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nx-v157-primary-school-script.js version.json
+          if git diff --cached --quiet; then
+            echo 'Aucun changement a committer'
+          else
+            git commit -m 'Complete CP1 French with audio illustrations and 45 lessons V602'
+            git push
+          fi
