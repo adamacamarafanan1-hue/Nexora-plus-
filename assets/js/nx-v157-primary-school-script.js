@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V610
+/* NEXORA — École primaire interactive V610.1
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV610) return;
-  window.__nxPrimaryExercisesV610 = true;
+  if (window.__nxPrimaryExercisesV610_1) return;
+  window.__nxPrimaryExercisesV610_1 = true;
 
-  var VERSION = 'v610';
+  var VERSION = 'v610.1';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -91,7 +91,7 @@
   }
 
   var LEVELS = {
-    '1': { label: '1ère année', subtitle: 'J’écoute, je regarde, je réponds', subjects: ['entretien','francais','maths','sciences','ecm','arts','eps'] },
+    '1': { label: '1ère année', subtitle: 'J’écoute, je regarde, je réponds', subjects: ['francais','maths','sciences','ecm','arts','eps','entretien'] },
     '2': { label: '2ème année', subtitle: 'Je lis mieux et je calcule', subjects: ['francais','maths','sciences','ecm'] },
     '3': { label: '3ème année', subtitle: 'Je comprends et je résous', subjects: ['francais','maths','sciences','histoiregeo','ecm'] },
     '4': { label: '4ème année', subtitle: 'J’explique et j’applique', subjects: ['francais','maths','sciences','histoiregeo','ecm'] },
@@ -1785,8 +1785,9 @@
     state.subject = subject; state.lesson = -1; state.phase = 0;
     state.list = []; state.index = 0; state.good = 0; state.wrong = [];
     var last = lastCp1Read();
-    var startIndex = last && last.subject === subject && Number(last.lesson) >= 0 && Number(last.lesson) < lessons.length ? Number(last.lesson) : 0;
-    state.readText = 'Choisis une leçon. Pour aller facilement, touche le grand bouton ' + (startIndex ? 'Continuer' : 'Commencer') + '.';
+    var hasLast = !!(last && last.subject === subject && Number(last.lesson) >= 0 && Number(last.lesson) < lessons.length);
+    var startIndex = hasLast ? Number(last.lesson) : 0;
+    state.readText = 'Choisis une leçon. Pour aller facilement, touche le grand bouton ' + (hasLast ? 'Continuer' : 'Commencer') + '.';
     setHeader(meta.name, '1ère année · Écoute et touche', true);
     var html = '<section class="nx-px-hero nx-px-child-hero"><h2>' + esc(meta.icon + ' ' + meta.name) + '</h2><p>Écoute puis touche une grande carte.</p></section>';
     if (lessons.length) {
@@ -2044,7 +2045,7 @@
     html += '<div data-feedback></div></section>';
     main().innerHTML = html;
     var input = main().querySelector('input'); if (input) setTimeout(function () { try { input.focus(); } catch (_e) {} }, 50);
-    if (state.level === '1') speak(ex.q);
+    if (state.level === '1') speak(state.readText);
   }
 
   function answer(value, control) {
@@ -2073,6 +2074,12 @@
     var score = state.list.length ? Math.round(state.good * 100 / state.list.length) : 0;
     var msg = score >= 80 ? 'Très bien !' : score >= 60 ? 'Bon travail. Continue.' : 'Tu progresses. Reprends les erreurs.';
     state.readText = msg + ' Tu as ' + state.good + ' bonnes réponses sur ' + state.list.length + '.';
+    if (state.level === '1' && state.lesson >= 0) {
+      var cp1Lessons = CP1_LESSONS[state.subject] || [];
+      var nextLesson = score >= 60 ? Math.min(state.lesson + 1, Math.max(0, cp1Lessons.length - 1)) : state.lesson;
+      lastCp1Write(state.subject, nextLesson);
+      state.readText += score >= 60 && nextLesson !== state.lesson ? ' Bravo. La prochaine fois, tu pourras continuer avec la leçon suivante.' : ' Tu peux reprendre cette leçon pour progresser.';
+    }
     setHeader(SUBJECTS[state.subject].name, LEVELS[state.level].label, true);
     main().innerHTML = '<section class="nx-px-result"><div style="font-size:40px">🏆</div><h2>' + esc(msg) + '</h2><div class="nx-px-score">' + score + '%</div><p>' + state.good + ' bonnes réponses sur ' + state.list.length + '.</p><div class="nx-px-actions">' + (state.wrong.length ? '<button type="button" class="primary" data-retry-wrong>Reprendre mes ' + state.wrong.length + ' erreur(s)</button>' : '') + '<button type="button" data-again>Refaire une nouvelle série</button><button type="button" data-subjects>Choisir une autre matière</button></div></section>';
     if (state.level === '1') speak(state.readText);
