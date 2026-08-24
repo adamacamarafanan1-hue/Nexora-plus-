@@ -1,8 +1,7 @@
 {
-  "version": "v523-20260813-1",
-  "generated_at": "2026-08-13T14:51:50.696Z",
+  "version": "v600-20260824-primary-exercises",
+  "generated_at": "2026-08-24T17:33:00Z",
   "entries": [
-    {"path": "assets/js/nx-v157-primary-school-script.js", "url": "/protected/files/ab3f1a6cceba9724f3a5d36d.nxe", "size": 316044},
     {"path": "modules/bac/index.html", "url": "/protected/files/a6a283ff94a2851e734c5ede.nxe", "size": 407735},
     {"path": "modules/classes/11eme.json", "url": "/protected/files/85530c20da9358e7492515a2.nxe", "size": 1837065},
     {"path": "modules/classes/12eme.json", "url": "/protected/files/c4e39149108b567b6aef2360.nxe", "size": 1316669},
@@ -44,7 +43,7 @@
     {"path": "modules/jeu-adams/ecole/index.html", "url": "/protected/files/df7970129fb5078c4d9b80f0.nxe", "size": 382001},
     {"path": "modules/jeu-adams/histoire/index.html", "url": "/protected/files/724b30787cb4a81865dc3892.nxe", "size": 675},
     {"path": "modules/jeu-adams/maternelle-v454/index.html", "url": "/protected/files/f8f841d4419df5851b1308f7.nxe", "size": 379197},
-    {"path": "modules/jeu-adams/musique/index.html", "url": "/protected/files/dfaa9629c4fa3098ae0b2150.nxe", "size": 676},
+    {"path": "modules/jeu-adams/musique/index.html", "url": "/protected/files/dfaa9629c205a20e69904fd864.nxe", "size": 676},
     {"path": "modules/jeu-adams/preuniv/index.html", "url": "/protected/files/ae8c1fc15ca20e69904fd864.nxe", "size": 690},
     {"path": "modules/jeu-adams/pro/index.html", "url": "/protected/files/d853106639d06718d008e1bd.nxe", "size": 665},
     {"path": "modules/jeu-adams/sante/index.html", "url": "/protected/files/d228572e3a1b7cbabf7f9e4a.nxe", "size": 669},
