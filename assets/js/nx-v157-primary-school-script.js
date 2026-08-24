@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V613
+/* NEXORA — École primaire interactive V613.1
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV613) return;
-  window.__nxPrimaryExercisesV613 = true;
+  if (window.__nxPrimaryExercisesV613_1) return;
+  window.__nxPrimaryExercisesV613_1 = true;
 
-  var VERSION = 'v613';
+  var VERSION = 'v613.1';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -68,7 +68,7 @@
   function spokenChoices(ex, choices) {
     if (!choices || !choices.length) return '';
     var seen = {}, unique = [];
-    choices.forEach(function(c){ var k = normalize(c); if (!seen[k]) { seen[k] = true; unique.push(String(c)); } });
+    choices.forEach(function(c){ var raw = String(c); if (!/[A-Za-zÀ-ÿ0-9]/.test(raw)) return; var k = normalize(raw); if (!seen[k]) { seen[k] = true; unique.push(raw); } });
     return unique.length ? '. Choisis parmi. ' + unique.join('. ') : '';
   }
 
@@ -1911,7 +1911,7 @@
     var html = '<section class="nx-kid-subject-hero">' + cp1SubjectArt(subject) + '<div><h2>' + esc(meta.name) + '</h2><p>' + lessons.length + ' leçons · audio · images · exercices</p></div></section>';
     if (lessons.length) html += '<button type="button" class="nx-kid-resume nx-kid-pulse" data-lesson="' + startIndex + '">▶ ' + (hasLast ? 'Continuer' : 'Commencer') + '<small>Leçon ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title) + '</small></button>';
     html += '<div class="nx-kid-progress-card"><b>🌟 Mon parcours</b><span style="font-size:13px;color:#68798c">Choisis un défi</span></div><div class="nx-kid-lesson-grid">';
-    lessons.forEach(function(lesson,i){ html += '<button type="button" class="nx-kid-lesson" data-lesson="' + i + '" aria-label="Leçon ' + (i+1) + '. ' + esc(lesson.title) + '">' + cp1Scene(lesson,subject,true) + '<div><strong><span class="num">' + (i+1) + '</span>' + esc(lesson.title) + '</strong><small>🎮 Jouer et trouver</small></div></button>'; });
+    lessons.forEach(function(lesson,i){ html += '<button type="button" class="nx-kid-lesson" data-lesson="' + i + '" aria-label="Défi ' + (i+1) + '. ' + esc(lesson.title) + '">' + cp1Scene(lesson,subject,true) + '<div><strong><span class="num">' + (i+1) + '</span>' + esc(lesson.title) + '</strong><small>🎮 Jouer et trouver</small></div></button>'; });
     html += '</div>'; main().innerHTML = html; setTimeout(function(){ speak(state.readText); },220);
   }
 
@@ -1925,65 +1925,6 @@
     startCp1Exercises();
   }
 
-  function renderCp1Explanation() {
-    clearAuto(); shell().classList.add('nx-cp1-mode');
-    var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson];
-    if (!lesson) { renderCp1Lessons(state.subject); return; }
-    var second = state.phase === 2;
-    var title = second ? 'Comment faire ?' : 'Je découvre';
-    var body = second ? lesson.two : lesson.one; var extra = lesson.example || '';
-    var rule = cp1RuleText(lesson, state.subject);
-    state.readText = title + '. ' + lesson.title + '. ' + body + (rule ? ' Règle à retenir. ' + rule : '') + (extra ? ' Exemple. ' + extra : '');
-    setHeader(SUBJECTS[state.subject].name, 'Leçon ' + (state.lesson + 1), true);
-    var action = second ? (state.diagnosticPassed ? 'data-start-exercises' : 'data-retry-diagnostic') : 'data-start-diagnostic';
-    var label = second ? (state.diagnosticPassed ? 'Continuer les exercices' : 'Réessayer') : 'J’essaie maintenant';
-    main().innerHTML = '<div class="nx-kid-flow"><span class="on">1</span><i class="' + (second?'on':'') + '"></i><span class="' + (second?'on':'') + '">2</span><i></i><span>3</span><i></i><span>★</span></div>' +
-      cp1Scene(lesson,state.subject,false) + '<section class="nx-kid-card"><div class="nx-kid-step listen"><span class="ico">👂🏾</span><div><b>1. J’écoute</b><small style="display:block;color:#6b7380">La leçon est lue à voix haute.</small></div></div>' +
-      '<h2 style="margin:9px 2px 4px;color:#5338a5;font-size:25px">' + esc(lesson.title) + '</h2><button type="button" class="nx-kid-listen" data-speak>🔊 Écouter / Réécouter</button>' +
-      '<div class="nx-kid-step look"><span class="ico">👀</span><div><b>2. Je regarde</b><small style="display:block;color:#6b7380">Regarde la grande image.</small></div></div>' + (second ? '<div class="nx-kid-method-title">🛠️ COMMENT FAIRE ?</div>' : '') + '<p class="nx-kid-easy">' + esc(body) + '</p>' +
-      (rule ? '<div class="nx-kid-rule"><b>📌 RÈGLE À RETENIR</b><span>' + esc(rule) + '</span></div>' : '') +
-      (extra ? '<div class="nx-kid-example"><b>💡 EXEMPLE CONCRET</b><br>' + esc(extra) + '</div>' : '') + '<div class="nx-kid-step try"><span class="ico">☝🏾</span><div><b>3. J’essaie</b><small style="display:block;color:#6b7380">Une grande réponse suffit.</small></div></div></section>' +
-      '<div class="nx-kid-action-wrap"><button type="button" class="nx-kid-main-action nx-kid-pulse" ' + action + '>▶ ' + label + '</button></div>';
-    speak(state.readText);
-  }
-
-  function renderCp1Diagnostic() {
-    clearAuto(); shell().classList.add('nx-cp1-mode');
-    var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson], ex = state.diagnostic || ((lesson && lesson.ex) ? lesson.ex[0] : null);
-    if (!lesson || !ex) { startCp1Exercises(); return; }
-    state.phase = 10; state.diagnosticLocked = false;
-    var diagChoices = ex.type === 'choice' ? ex.choices : cp1NumericChoices(ex);
-    state.readText = 'Petit essai. ' + ex.q + spokenChoices(ex, diagChoices);
-    setHeader(SUBJECTS[state.subject].name, 'À toi de jouer', true);
-    var longChoices = !!(diagChoices && diagChoices.some(function(c){ return String(c).length > 18; }));
-    var html = '<div class="nx-kid-flow"><span class="on">✓</span><i class="on"></i><span class="on">2</span><i></i><span class="on">3</span><i></i><span>★</span></div><section class="nx-kid-question">' + cp1Scene(lesson,state.subject,false) + '<div class="nx-kid-mission">🎯 DÉFI</div><h2>' + esc(challengeText) + '</h2>';
-    if (ex.visual) html += '<div class="nx-px-visual" style="text-align:center;font-size:38px">' + esc(ex.visual) + '</div>';
-    if (diagChoices && diagChoices.length) html += '<div class="nx-kid-choice-grid' + (longChoices?' long':'') + '">' + diagChoices.map(function(c){ return '<button type="button" class="nx-kid-answer" data-diagnostic-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
-    else html += '<form class="nx-px-input" data-diagnostic-form style="margin-top:12px"><input autocomplete="off" aria-label="Ta réponse" placeholder="Écris ici"><button type="submit">Vérifier</button></form>';
-    html += '<div data-feedback></div></section>'; main().innerHTML = html; speak(state.readText);
-  }
-
-  function answerCp1Diagnostic(value, control) {
-    clearAuto();
-    var ex = state.diagnostic;
-    if (!ex || state.diagnosticLocked || !String(value || '').trim()) return;
-    var ok = normalize(value) === normalize(ex.a); state.diagnosticLocked = true;
-    var box = main().querySelector('[data-feedback]'); var all = main().querySelectorAll('[data-diagnostic-answer]');
-    Array.prototype.forEach.call(all,function(b){ b.disabled = true; });
-    if (ok) {
-      state.diagnosticPassed = true; if (control && control.classList) control.classList.add('good');
-      box.className = 'nx-kid-feedback ok'; box.innerHTML = '<span class="face">⭐</span><b>Bravo !</b><span>' + esc(ex.why || 'Tu as bien compris.') + '</span><div class="nx-kid-auto">On continue tout seul</div><button type="button" class="nx-kid-main-action" data-start-exercises style="margin-top:11px">Continuer maintenant</button>';
-      state.readText = 'Bravo. Bonne réponse. ' + (ex.why || '') + ' On continue.'; speak(state.readText); scheduleNext(startCp1Exercises,2200); return;
-    }
-    if (control && control.classList) control.classList.add('bad');
-    if (state.diagnosticAttempt === 0) {
-      state.diagnosticAttempt = 1; box.className = 'nx-kid-feedback no'; box.innerHTML = '<span class="face">🙂</span><b>On essaie autrement</b><span>Je vais t’expliquer encore une fois, autrement.</span><div class="nx-kid-auto">La deuxième explication arrive</div><button type="button" class="nx-kid-main-action" data-show-second style="margin-top:11px">Écouter maintenant</button>';
-      state.readText = 'Ce n’est pas grave. On essaie autrement. Écoute une deuxième explication.'; speak(state.readText); scheduleNext(function(){ state.phase = 2; renderCp1Explanation(); },2500); return;
-    }
-    Array.prototype.forEach.call(all,function(b){ if(normalize(b.getAttribute('data-diagnostic-answer'))===normalize(ex.a)) b.classList.add('good'); });
-    box.className='nx-kid-feedback no'; box.innerHTML='<span class="face">💡</span><b>Regarde la bonne réponse : ' + esc(ex.a) + '</b><span>' + esc(ex.why || 'Regarde bien puis continue.') + '</span><div class="nx-kid-auto">On continue après la correction</div><button type="button" class="nx-kid-main-action" data-start-exercises style="margin-top:11px">Continuer maintenant</button>';
-    state.readText='La bonne réponse est ' + ex.a + '. ' + (ex.why || '') + ' On continue.'; speak(state.readText); scheduleNext(startCp1Exercises,3000);
-  }
 
   function startCp1Exercises() {
     clearAuto();
@@ -2190,12 +2131,12 @@
     var questionChoices = ex.type === 'choice' ? ex.choices : autoChoices;
     var challengeText = state.level === '1' ? cp1ChallengeText(currentLesson, ex, state.index) : ex.q;
     state.readText = challengeText + (state.level === '1' ? spokenChoices(ex, questionChoices) : '');
-    setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? ('Exercice ' + (state.index+1) + ' sur ' + state.list.length) : l.label, true);
+    setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? ('Défi ' + (state.index+1) + ' sur ' + state.list.length) : l.label, true);
     if (state.level === '1') {
       shell().classList.add('nx-cp1-mode');
       var longChoices = !!(questionChoices && questionChoices.some(function(c){ return String(c).length > 18; }));
       var pct = Math.round((state.index / Math.max(1,state.list.length))*100);
-      var html = '<div class="nx-kid-flow"><span class="on">✓</span><i class="on"></i><span class="on">✓</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><h2>' + esc(ex.q) + '</h2>';
+      var html = '<div class="nx-kid-flow"><span class="on">🎯</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><div class="nx-kid-mission">🎯 DÉFI</div><h2>' + esc(challengeText) + '</h2>';
       if (ex.visual) html += '<div class="nx-px-visual" style="text-align:center;font-size:40px">' + esc(ex.visual) + '</div>';
       if (questionChoices && questionChoices.length) html += '<div class="nx-kid-choice-grid' + (longChoices?' long':'') + '">' + questionChoices.map(function(c){ return '<button type="button" class="nx-kid-answer" data-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
       else { var mode = ex.type === 'input' ? 'inputmode="decimal"' : ''; html += '<form class="nx-px-input" data-answer-form style="margin-top:12px"><input ' + mode + ' autocomplete="off" aria-label="Ta réponse" placeholder="Écris ta réponse"><button type="submit">Corriger</button></form>'; }
