@@ -1,16 +1,18 @@
-/* NEXORA — École primaire interactive V612
+/* NEXORA — École primaire interactive V613
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV612) return;
-  window.__nxPrimaryExercisesV612 = true;
+  if (window.__nxPrimaryExercisesV613) return;
+  window.__nxPrimaryExercisesV613 = true;
 
-  var VERSION = 'v612';
+  var VERSION = 'v613';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
   var autoTimer = null;
+  var lastSpeechText = '';
+  var lastSpeechAt = 0;
   var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, diagnostic: null, diagnosticAttempt: 0, diagnosticLocked: false, diagnosticPassed: false };
 
   function esc(v) {
@@ -65,7 +67,9 @@
   }
   function spokenChoices(ex, choices) {
     if (!choices || !choices.length) return '';
-    return '. Réponses possibles. ' + choices.join('. ');
+    var seen = {}, unique = [];
+    choices.forEach(function(c){ var k = normalize(c); if (!seen[k]) { seen[k] = true; unique.push(String(c)); } });
+    return unique.length ? '. Choisis parmi. ' + unique.join('. ') : '';
   }
 
   function clearAuto() {
@@ -150,6 +154,23 @@
     return '';
   }
 
+  function firstUsefulSentence(text) {
+    var value = String(text || '').replace(/\s+/g,' ').trim();
+    if (!value) return '';
+    var m = value.match(/^(.{1,150}?[.!?])(?:\s|$)/);
+    return (m ? m[1] : value.slice(0,150)).trim();
+  }
+  function cp1ChallengeText(lesson, ex, index) {
+    var question = String((ex && ex.q) || '').trim();
+    if (!lesson) return question;
+    if (index === 0) {
+      var rule = cp1RuleText(lesson, state.subject);
+      var cue = rule || firstUsefulSentence(lesson.one);
+      if (cue && normalize(question).indexOf(normalize(cue)) < 0) return cue + ' ' + question;
+    }
+    return question;
+  }
+
   function progressWrite(level, subject, good, total) {
     try {
       var x = progressRead();
@@ -164,12 +185,25 @@
       localStorage.setItem(STORAGE, JSON.stringify(x));
     } catch (_e) {}
   }
+  function cleanSpeechText(value) {
+    var text = String(value || '');
+    try { text = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, ' '); } catch (_e) {}
+    text = text.replace(/[\uFE0E\uFE0F]/g,' ').replace(/\s+/g,' ').trim();
+    text = text.replace(/\b([A-Za-zÀ-ÿ0-9'’_-]{2,})\b(?:[\s,;:.!\-]+\1\b){2,}/gi, '$1');
+    return text;
+  }
   function speak(s) {
     try {
       if (!window.speechSynthesis) return;
+      var text = cleanSpeechText(s);
+      if (!text) return;
+      var now = Date.now();
+      if (text === lastSpeechText && (now - lastSpeechAt) < 1400) return;
+      lastSpeechText = text; lastSpeechAt = now;
       speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(String(s || ''));
-      u.lang = 'fr-FR'; u.rate = .72; u.pitch = .96; u.volume = 1; speechSynthesis.speak(u);
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'fr-FR'; u.rate = .72; u.pitch = .96; u.volume = 1;
+      setTimeout(function(){ try { speechSynthesis.speak(u); } catch (_e) {} }, 60);
     } catch (_e) {}
   }
 
@@ -1872,12 +1906,12 @@
     var last = lastCp1Read();
     var hasLast = !!(last && last.subject === subject && Number(last.lesson) >= 0 && Number(last.lesson) < lessons.length);
     var startIndex = hasLast ? Number(last.lesson) : 0;
-    state.readText = 'Tu es en ' + meta.name + '. Touche Continuer pour reprendre ta leçon, ou choisis une grande carte.';
-    setHeader(meta.name, '1ère année · Écoute et avance', true);
+    state.readText = 'Tu es en ' + meta.name + '. Choisis un défi et joue.';
+    setHeader(meta.name, '1ère année · Observe, réfléchis, clique', true);
     var html = '<section class="nx-kid-subject-hero">' + cp1SubjectArt(subject) + '<div><h2>' + esc(meta.name) + '</h2><p>' + lessons.length + ' leçons · audio · images · exercices</p></div></section>';
     if (lessons.length) html += '<button type="button" class="nx-kid-resume nx-kid-pulse" data-lesson="' + startIndex + '">▶ ' + (hasLast ? 'Continuer' : 'Commencer') + '<small>Leçon ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title) + '</small></button>';
-    html += '<div class="nx-kid-progress-card"><b>🌟 Mon parcours</b><span style="font-size:13px;color:#68798c">Touche une grande leçon</span></div><div class="nx-kid-lesson-grid">';
-    lessons.forEach(function(lesson,i){ html += '<button type="button" class="nx-kid-lesson" data-lesson="' + i + '" aria-label="Leçon ' + (i+1) + '. ' + esc(lesson.title) + '">' + cp1Scene(lesson,subject,true) + '<div><strong><span class="num">' + (i+1) + '</span>' + esc(lesson.title) + '</strong><small>🔊 Écouter et apprendre</small></div></button>'; });
+    html += '<div class="nx-kid-progress-card"><b>🌟 Mon parcours</b><span style="font-size:13px;color:#68798c">Choisis un défi</span></div><div class="nx-kid-lesson-grid">';
+    lessons.forEach(function(lesson,i){ html += '<button type="button" class="nx-kid-lesson" data-lesson="' + i + '" aria-label="Leçon ' + (i+1) + '. ' + esc(lesson.title) + '">' + cp1Scene(lesson,subject,true) + '<div><strong><span class="num">' + (i+1) + '</span>' + esc(lesson.title) + '</strong><small>🎮 Jouer et trouver</small></div></button>'; });
     html += '</div>'; main().innerHTML = html; setTimeout(function(){ speak(state.readText); },220);
   }
 
@@ -1885,10 +1919,10 @@
     var lessons = CP1_LESSONS[state.subject] || [];
     var i = Number(index);
     if (!isFinite(i) || i < 0 || i >= lessons.length) { renderCp1Lessons(state.subject); return; }
-    state.lesson = i; state.phase = 1; state.list = []; state.index = 0; state.good = 0; state.wrong = [];
+    state.lesson = i; state.phase = 3; state.list = []; state.index = 0; state.good = 0; state.wrong = [];
+    state.diagnostic = null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;
     lastCp1Write(state.subject, i);
-    state.diagnostic = (lessons[i].ex || [])[0] || null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;
-    renderCp1Explanation();
+    startCp1Exercises();
   }
 
   function renderCp1Explanation() {
@@ -1922,7 +1956,7 @@
     state.readText = 'Petit essai. ' + ex.q + spokenChoices(ex, diagChoices);
     setHeader(SUBJECTS[state.subject].name, 'À toi de jouer', true);
     var longChoices = !!(diagChoices && diagChoices.some(function(c){ return String(c).length > 18; }));
-    var html = '<div class="nx-kid-flow"><span class="on">✓</span><i class="on"></i><span class="on">2</span><i></i><span class="on">3</span><i></i><span>★</span></div><section class="nx-kid-question">' + cp1Scene(lesson,state.subject,false) + '<h2>' + esc(ex.q) + '</h2>';
+    var html = '<div class="nx-kid-flow"><span class="on">✓</span><i class="on"></i><span class="on">2</span><i></i><span class="on">3</span><i></i><span>★</span></div><section class="nx-kid-question">' + cp1Scene(lesson,state.subject,false) + '<div class="nx-kid-mission">🎯 DÉFI</div><h2>' + esc(challengeText) + '</h2>';
     if (ex.visual) html += '<div class="nx-px-visual" style="text-align:center;font-size:38px">' + esc(ex.visual) + '</div>';
     if (diagChoices && diagChoices.length) html += '<div class="nx-kid-choice-grid' + (longChoices?' long':'') + '">' + diagChoices.map(function(c){ return '<button type="button" class="nx-kid-answer" data-diagnostic-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
     else html += '<form class="nx-px-input" data-diagnostic-form style="margin-top:12px"><input autocomplete="off" aria-label="Ta réponse" placeholder="Écris ici"><button type="submit">Vérifier</button></form>';
@@ -1956,8 +1990,8 @@
     var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson];
     if (!lesson) { renderCp1Lessons(state.subject); return; }
     state.phase = 3; state.readText = '';
-    var practice = (lesson.ex || []).length > 1 ? (lesson.ex || []).slice(1) : (lesson.ex || []).slice();
-    state.list = shuffle(practice); state.index = 0; state.good = 0; state.wrong = []; state.locked = false;
+    var practice = (lesson.ex || []).slice();
+    state.list = practice; state.index = 0; state.good = 0; state.wrong = []; state.locked = false;
     if (!state.list.length) { renderCp1Lessons(state.subject); return; }
     renderQuestion();
   }
@@ -2011,7 +2045,7 @@
       .nx-kid-scene{position:relative;overflow:hidden;height:235px;border-radius:30px;margin:0 0 14px;background:linear-gradient(180deg,#5fc8ff 0 50%,#89db59 51% 100%);box-shadow:inset 0 -18px 30px rgba(20,95,35,.12),0 9px 24px rgba(36,89,122,.16)}.nx-kid-scene.compact{height:120px;border-radius:20px}.nx-kid-scene:after{content:'';position:absolute;left:-12%;right:-12%;bottom:-32px;height:90px;background:#67bd42;border-radius:50%}.nx-kid-scene-visual{position:absolute;z-index:3;inset:18px 14px 20px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:pre-line;font-size:56px;line-height:1.22;letter-spacing:4px;filter:drop-shadow(0 7px 4px rgba(0,0,0,.12))}.nx-kid-scene.compact .nx-kid-scene-visual{font-size:34px;inset:10px}.nx-kid-cloud{position:absolute;z-index:1;width:70px;height:25px;background:rgba(255,255,255,.88);border-radius:30px}.nx-kid-cloud:before,.nx-kid-cloud:after{content:'';position:absolute;background:inherit;border-radius:50%}.nx-kid-cloud:before{width:28px;height:28px;left:12px;top:-12px}.nx-kid-cloud:after{width:36px;height:36px;right:9px;top:-18px}.nx-kid-cloud.c1{left:20px;top:31px}.nx-kid-cloud.c2{right:16px;top:52px;transform:scale(.65)}.nx-kid-spark{position:absolute;z-index:2;color:#fff;font-size:25px}.nx-kid-spark.s1{right:24px;top:16px}.nx-kid-spark.s2{left:22px;bottom:18px;color:#ffe65b}
       .nx-kid-card{background:#fff;border-radius:27px;padding:16px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-step{display:flex;align-items:center;gap:11px;border-radius:21px;padding:13px 14px;margin:10px 0}.nx-kid-step.listen{background:#fff3c9}.nx-kid-step.look{background:#e7f8d9}.nx-kid-step.try{background:#e2f3ff}.nx-kid-step .ico{font-size:33px}.nx-kid-step b{font-size:17px;color:#26384c}.nx-kid-easy{font-size:19px;line-height:1.65;color:#26384c;margin:13px 3px}.nx-kid-example{background:#f2f8ff;border-radius:18px;padding:12px 13px;color:#28506f;font-size:15px;line-height:1.5}.nx-kid-listen{width:100%;min-height:72px;border:0;border-radius:22px;background:linear-gradient(180deg,#179dff,#0970dc);color:#fff;font:inherit;font-size:21px;font-weight:950;box-shadow:0 6px 0 #075cae;margin:6px 0 11px}.nx-kid-listen:active{transform:translateY(3px);box-shadow:0 3px 0 #075cae}
       .nx-kid-action-wrap{position:sticky;bottom:10px;z-index:5;padding:10px 0 2px;background:linear-gradient(180deg,transparent,rgba(245,251,255,.95) 28%)}.nx-kid-action-wrap .nx-kid-main-action{background:linear-gradient(180deg,#24c85d,#13a545);box-shadow:0 7px 0 #0b7d33,0 10px 20px rgba(16,153,64,.22)}
-      .nx-kid-question{background:#fff;border-radius:28px;padding:14px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-question h2{font-size:24px;line-height:1.25;text-align:center;color:#1f3a2b;margin:10px 5px 14px}.nx-kid-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.nx-kid-choice-grid.long{grid-template-columns:1fr}.nx-kid-answer{min-height:88px;border:4px solid #fff;border-radius:24px;font:inherit;font-weight:1000;font-size:25px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.16),0 8px 17px rgba(0,0,0,.11);touch-action:manipulation;text-align:center;padding:12px}.nx-kid-answer:nth-child(4n+1){background:linear-gradient(180deg,#a65bf4,#7740dc)}.nx-kid-answer:nth-child(4n+2){background:linear-gradient(180deg,#ff9c2d,#f06d18)}.nx-kid-answer:nth-child(4n+3){background:linear-gradient(180deg,#68d731,#39a90e)}.nx-kid-answer:nth-child(4n){background:linear-gradient(180deg,#35a7ff,#1475dc)}.nx-kid-answer.good{background:linear-gradient(180deg,#50d94b,#22a933)!important;outline:5px solid #d4ffb9}.nx-kid-answer.bad{background:linear-gradient(180deg,#ff6c6c,#d93c3c)!important;opacity:.82}.nx-kid-answer:disabled{color:#fff}
+      .nx-kid-mission{display:inline-block;margin:2px auto 7px;padding:7px 13px;border-radius:999px;background:#ffe45d;color:#704d00;font-size:14px;font-weight:1000;letter-spacing:.5px}.nx-kid-question{background:#fff;border-radius:28px;padding:14px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-question h2{font-size:24px;line-height:1.25;text-align:center;color:#1f3a2b;margin:10px 5px 14px}.nx-kid-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.nx-kid-choice-grid.long{grid-template-columns:1fr}.nx-kid-answer{min-height:88px;border:4px solid #fff;border-radius:24px;font:inherit;font-weight:1000;font-size:25px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.16),0 8px 17px rgba(0,0,0,.11);touch-action:manipulation;text-align:center;padding:12px}.nx-kid-answer:nth-child(4n+1){background:linear-gradient(180deg,#a65bf4,#7740dc)}.nx-kid-answer:nth-child(4n+2){background:linear-gradient(180deg,#ff9c2d,#f06d18)}.nx-kid-answer:nth-child(4n+3){background:linear-gradient(180deg,#68d731,#39a90e)}.nx-kid-answer:nth-child(4n){background:linear-gradient(180deg,#35a7ff,#1475dc)}.nx-kid-answer.good{background:linear-gradient(180deg,#50d94b,#22a933)!important;outline:5px solid #d4ffb9}.nx-kid-answer.bad{background:linear-gradient(180deg,#ff6c6c,#d93c3c)!important;opacity:.82}.nx-kid-answer:disabled{color:#fff}
       .nx-kid-feedback{margin-top:14px;border-radius:24px;padding:16px;text-align:center}.nx-kid-feedback.ok{background:#efffe4;color:#196b2d}.nx-kid-feedback.no{background:#fff0e5;color:#8d4219}.nx-kid-feedback .face{font-size:48px;display:block}.nx-kid-feedback b{display:block;font-size:22px;margin:4px}.nx-kid-feedback span{font-size:15px;line-height:1.45}.nx-kid-auto{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;color:#557181;font-weight:850;font-size:13px}.nx-kid-auto:before{content:'🚀';font-size:22px}.nx-kid-pulse{animation:nxKidPulse 1.15s ease-in-out infinite}@keyframes nxKidPulse{50%{transform:scale(1.025);filter:brightness(1.06)}}
       .nx-kid-result{text-align:center;background:linear-gradient(180deg,#fff,#f6fff0);border-radius:30px;padding:22px 16px;box-shadow:0 9px 25px rgba(42,87,57,.14)}.nx-kid-result .trophy{font-size:68px}.nx-kid-result h2{font-size:27px;color:#20743b;margin:4px}.nx-kid-result .score{font-size:56px;font-weight:1000;color:#206ec6}.nx-kid-result p{color:#627484}.nx-kid-result .nx-px-actions{margin-top:15px}
       .nx-kid-rule{margin:13px 0;background:#fff7c7;border:3px solid #ffd539;border-radius:20px;padding:14px 15px;color:#473400;box-shadow:0 4px 10px rgba(141,104,0,.08)}.nx-kid-rule b{display:block;font-size:16px;letter-spacing:.3px;margin-bottom:6px;color:#7c5600}.nx-kid-rule span{display:block;font-size:19px;line-height:1.48;font-weight:850}.nx-kid-method-title{margin:12px 0 6px;background:#e7f5ff;color:#075cae;border-radius:16px;padding:10px 12px;font-size:16px;font-weight:950;letter-spacing:.3px}
@@ -2151,13 +2185,14 @@
     if (state.index >= state.list.length) { renderResult(); return; }
     state.locked = false;
     var ex = state.list[state.index], meta = SUBJECTS[state.subject], l = LEVELS[state.level];
+    var currentLesson = state.level === '1' && state.lesson >= 0 && CP1_LESSONS[state.subject] ? CP1_LESSONS[state.subject][state.lesson] : null;
     var autoChoices = state.level === '1' && ex.type !== 'choice' ? cp1NumericChoices(ex) : null;
     var questionChoices = ex.type === 'choice' ? ex.choices : autoChoices;
-    state.readText = ex.q + (state.level === '1' ? spokenChoices(ex, questionChoices) : '');
+    var challengeText = state.level === '1' ? cp1ChallengeText(currentLesson, ex, state.index) : ex.q;
+    state.readText = challengeText + (state.level === '1' ? spokenChoices(ex, questionChoices) : '');
     setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? ('Exercice ' + (state.index+1) + ' sur ' + state.list.length) : l.label, true);
     if (state.level === '1') {
       shell().classList.add('nx-cp1-mode');
-      var currentLesson = state.lesson >= 0 && CP1_LESSONS[state.subject] ? CP1_LESSONS[state.subject][state.lesson] : null;
       var longChoices = !!(questionChoices && questionChoices.some(function(c){ return String(c).length > 18; }));
       var pct = Math.round((state.index / Math.max(1,state.list.length))*100);
       var html = '<div class="nx-kid-flow"><span class="on">✓</span><i class="on"></i><span class="on">✓</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><h2>' + esc(ex.q) + '</h2>';
@@ -2186,7 +2221,7 @@
     if (state.level === '1') {
       box.className = 'nx-kid-feedback ' + (ok?'ok':'no');
       box.innerHTML = '<span class="face">' + (ok?'⭐':'💡') + '</span><b>' + (ok?'Bravo !':'On apprend de l’erreur') + '</b>' + (ok?'':'<span>Bonne réponse : <strong>' + esc(ex.a) + '</strong></span>') + (ex.why?'<span style="display:block;margin-top:5px">'+esc(ex.why)+'</span>':'') + '<div class="nx-kid-auto">' + (state.index+1>=state.list.length?'Ton résultat arrive':'Exercice suivant automatique') + '</div><button type="button" class="nx-kid-main-action" data-next style="margin-top:11px">' + (state.index+1>=state.list.length?'Voir mon résultat':'Continuer maintenant') + '</button>';
-      state.readText = ok ? ('Bravo. Bonne réponse. ' + ex.why) : ('La bonne réponse est ' + ex.a + '. ' + ex.why); speak(state.readText); scheduleNext(nextQuestion, ok?1700:2800); return;
+      state.readText = ok ? 'Bravo !' : ('La bonne réponse est ' + ex.a + '.'); speak(state.readText); scheduleNext(nextQuestion, ok?1400:2300); return;
     }
     box.className='nx-px-feedback '+(ok?'ok':'no'); box.innerHTML='<b>'+(ok?'✅ Bonne réponse !':'❌ Ce n’est pas la bonne réponse.')+'</b>'+(ok?'':'Bonne réponse : <strong>'+esc(ex.a)+'</strong><br>')+(ex.why?'<span>'+esc(ex.why)+'</span>':'')+'<button type="button" class="nx-px-next" data-next>'+(state.index+1>=state.list.length?'Voir mon résultat':'Exercice suivant')+'</button>'; state.readText=ok?('Bonne réponse. '+ex.why):('La bonne réponse est '+ex.a+'. '+ex.why); speak(state.readText);
   }
