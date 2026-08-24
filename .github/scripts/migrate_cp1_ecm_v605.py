@@ -1,0 +1,177 @@
+from pathlib import Path
+import json
+p=Path('assets/js/nx-v157-primary-school-script.js')
+s=p.read_text(encoding='utf-8')
+s=s.replace('École primaire interactive V604','École primaire interactive V605',1)
+s=s.replace("var VERSION = 'v604';","var VERSION = 'v605';",1)
+s=s.replace('window.__nxPrimaryExercisesV604','window.__nxPrimaryExercisesV605')
+start=s.index('    ecm: [')
+end=s.index('\n\n    arts: [',start)
+ecm=r'''    ecm: [
+      cp1Lesson('Dire bonjour et parler poliment',
+        'La politesse commence par des mots simples : bonjour, s’il vous plaît, merci et au revoir. Nous les utilisons au bon moment.',
+        'Être poli, ce n’est pas réciter des mots. C’est aussi parler sans insulter, écouter la réponse et respecter la personne en face.',
+        'Exemple : « Bonjour maîtresse. Puis-je avoir mon cahier, s’il vous plaît ? »',
+        '👋🏾  🙂  💬','Enfant qui salue poliment',[
+          q('Le matin, tu dis :',['Bonjour','Bonne nuit','Rien'],'Bonjour','« Bonjour » sert à saluer.'),
+          q('Pour demander gentiment, tu peux dire :',['S’il vous plaît','Donne !','Va-t’en'],'S’il vous plaît','Cette formule rend la demande polie.'),
+          q('La politesse concerne aussi :',['la façon de parler','seulement les vêtements','seulement les nombres'],'la façon de parler','Le ton et le respect comptent autant que les mots.'),
+          q('Quel comportement est respectueux ?',['Saluer et écouter la réponse','Insulter','Crier pour passer devant'],'Saluer et écouter la réponse','La politesse facilite la vie avec les autres.')]),
+      cp1Lesson('Dire merci et demander pardon',
+        'Quand quelqu’un t’aide ou te donne quelque chose, tu peux dire « merci ». Si tu fais du tort à quelqu’un, même sans le vouloir, tu peux dire « pardon » et réparer si possible.',
+        'Les mots doivent être suivis d’un comportement. Dire pardon puis recommencer exprès la même mauvaise action ne suffit pas.',
+        'Exemple : tu renverses le cahier d’un camarade : « Pardon », puis tu l’aides à le ramasser.',
+        '🙏🏾  🤝🏾  📒','Merci, pardon et réparation',[
+          q('Quelqu’un t’aide. Tu dis :',['Merci','Tant pis','Pars'],'Merci','Remercier reconnaît l’aide reçue.'),
+          q('Tu bouscules un camarade. Tu :',['dis pardon et vérifies s’il va bien','ris de lui','pars sans regarder'],'dis pardon et vérifies s’il va bien','S’excuser s’accompagne d’attention.'),
+          q('Après avoir cassé quelque chose par erreur, que peux-tu faire ?',['Dire la vérité et chercher à réparer','Cacher toujours','Accuser quelqu’un au hasard'],'Dire la vérité et chercher à réparer','Reconnaître et réparer est responsable.'),
+          q('Pardon suffit-il si tu recommences volontairement ?',['Non','Oui toujours'],'Non','Le comportement doit aussi changer.')]),
+      cp1Lesson('Écouter et attendre son tour',
+        'Quand une personne parle, nous l’écoutons. En classe, nous pouvons lever la main et attendre notre tour pour parler.',
+        'Si tout le monde parle en même temps, on comprend moins bien. Attendre son tour permet à chacun d’être entendu.',
+        'Exemple : Fanta parle ; Sory écoute ; ensuite Sory prend la parole.',
+        '👧🏾💬  👂🏾🧒🏾  ✋🏾','Un enfant parle, un autre écoute',[
+          q('Quand un camarade répond, tu :',['écoutes','cries plus fort','le pousses'],'écoutes','L’écoute respecte sa parole.'),
+          q('Pour demander la parole en classe, tu peux :',['lever la main','jeter un cahier','crier'],'lever la main','C’est une règle simple d’organisation.'),
+          q('Pourquoi attendre son tour ?',['Pour que chacun puisse parler','Pour empêcher tout le monde de parler','Pour perdre du temps'],'Pour que chacun puisse parler','Un ordre commun rend l’échange plus clair.'),
+          q('Si tous parlent ensemble, on comprend :',['moins bien','toujours mieux','tout sans écouter'],'moins bien','Les voix se mélangent.')]),
+      cp1Lesson('Partager et aider',
+        'Partager, c’est mettre une chose à disposition quand c’est possible. Aider, c’est faire quelque chose d’utile pour une autre personne sans lui faire du mal.',
+        'Aider ne veut pas dire faire tout le travail de l’autre. Tu peux expliquer, prêter un crayon ou accompagner, tout en laissant l’autre apprendre à agir.',
+        'Exemple : ton camarade n’a pas de crayon et tu en as deux : tu peux lui en prêter un.',
+        '✏️🤝🏾✏️','Deux enfants qui partagent un crayon',[
+          q('Tu as deux crayons et ton camarade n’en a pas. Tu peux :',['lui en prêter un','casser les deux','te moquer'],'lui en prêter un','Le partage aide le groupe.'),
+          q('Aider un camarade à apprendre, c’est :',['lui expliquer sans faire tout à sa place','faire tous ses exercices à sa place','l’empêcher d’essayer'],'lui expliquer sans faire tout à sa place','L’aide doit aussi développer son autonomie.'),
+          q('Après avoir emprunté une règle, tu dois :',['la rendre','la garder toujours','la casser'],'la rendre','Un prêt implique de restituer l’objet.'),
+          q('Pourquoi partager quand c’est possible ?',['Pour favoriser l’entraide','Pour perdre tous ses objets','Pour empêcher les autres de travailler'],'Pour favoriser l’entraide','L’entraide améliore la vie du groupe.')]),
+      cp1Lesson('Respecter les différences',
+        'Les enfants peuvent être différents par leur taille, leur langue familiale, leurs habitudes, leurs capacités ou leurs goûts. Tous doivent être traités avec respect.',
+        'Une différence n’est pas une raison pour se moquer. Avant de juger, demande-toi comment tu aimerais être traité si tu étais à la place de l’autre.',
+        'Exemple : un camarade apprend plus lentement ; on l’encourage au lieu de rire.',
+        '🧒🏾  👧🏿  🧒🏻  🤝🏾','Enfants différents ensemble',[
+          q('Un camarade parle différemment. Tu :',['le respectes','te moques','l’exclus'],'le respectes','La différence ne retire pas le droit au respect.'),
+          q('Un enfant apprend plus lentement. Tu peux :',['l’encourager','l’insulter','cacher son cahier'],'l’encourager','L’encouragement aide davantage que la moquerie.'),
+          q('Quelle question aide à réfléchir ?',['Comment aimerais-je être traité ?','Comment puis-je le faire pleurer ?','Comment cacher sa place ?'],'Comment aimerais-je être traité ?','Se mettre à la place de l’autre développe l’empathie.'),
+          q('Être différent veut dire être moins important ?',['Non','Oui'],'Non','Chaque enfant mérite le respect.')]),
+      cp1Lesson('Respecter sa famille',
+        'Dans la famille, nous parlons avec respect, nous aidons selon notre âge et nous prenons soin des personnes et des biens.',
+        'Respecter ne veut pas dire rester silencieux quand on a un problème. Un enfant peut parler à un adulte de confiance s’il a peur, s’il est blessé ou s’il a besoin d’aide.',
+        'Exemple : ranger son petit espace et parler poliment aux adultes et aux autres enfants.',
+        '👨🏾‍👩🏾‍👧🏾‍👦🏾  🏠  🤝🏾','Famille dans une maison',[
+          q('Quel comportement aide la famille ?',['Ranger ce que tu peux','Casser exprès','Insulter'],'Ranger ce que tu peux','Chacun peut contribuer selon son âge.'),
+          q('Tu as un problème qui te fait peur. Tu peux :',['parler à un adulte de confiance','toujours le cacher','fuir seul très loin'],'parler à un adulte de confiance','Chercher une aide sûre est important.'),
+          q('Respecter sa famille signifie aussi :',['parler correctement','prendre sans demander toujours','faire mal aux autres'],'parler correctement','Le respect se montre dans les paroles et les actes.'),
+          q('Un enfant doit-il tout résoudre seul ?',['Non','Oui toujours'],'Non','Il peut et doit chercher l’aide d’adultes responsables quand nécessaire.')]),
+      cp1Lesson('Les règles de la classe',
+        'Une règle aide la classe à fonctionner : arriver prêt, écouter, lever la main, respecter le matériel et les personnes.',
+        'Une bonne règle protège l’apprentissage ou la sécurité. Demande-toi : « Que se passerait-il si personne ne respectait cette règle ? »',
+        'Exemple : si personne ne range les livres, ils se perdent ou s’abîment.',
+        '🏫  📚  ✋🏾  ✅','Classe avec règles simples',[
+          q('Pourquoi lever la main ?',['Pour organiser la parole','Pour faire peur','Pour casser la règle'],'Pour organiser la parole','Cela aide chacun à être entendu.'),
+          q('Le matériel de classe doit être :',['protégé','détruit','jeté'],'protégé','Il sert à plusieurs élèves.'),
+          q('Une règle utile sert souvent :',['à organiser ou protéger','à humilier','à favoriser seulement un élève'],'à organiser ou protéger','Les règles doivent avoir une fonction compréhensible.'),
+          q('Si personne ne range les livres, que peut-il arriver ?',['Ils peuvent se perdre ou s’abîmer','Ils deviennent neufs','Ils se rangent seuls'],'Ils peuvent se perdre ou s’abîmer','Réfléchir aux conséquences aide à comprendre la règle.')]),
+      cp1Lesson('Être honnête',
+        'Être honnête, c’est dire la vérité et ne pas prendre ce qui ne nous appartient pas. Si tu trouves un objet, cherche son propriétaire ou donne-le à un adulte responsable.',
+        'Dire la vérité peut parfois être difficile. Mais cacher une erreur peut créer un deuxième problème. Reconnaître ce qui s’est passé aide à chercher une solution.',
+        'Exemple : tu trouves un crayon dans la cour : tu demandes à qui il appartient.',
+        '✏️  ❓  🙋🏾','Objet trouvé et recherche du propriétaire',[
+          q('Tu trouves un cahier qui ne t’appartient pas. Tu :',['cherches le propriétaire ou un adulte','le caches','déchires son nom'],'cherches le propriétaire ou un adulte','Un objet trouvé doit être rendu.'),
+          q('Tu as fait une erreur. Quelle attitude est honnête ?',['Dire ce qui s’est passé','accuser au hasard','inventer toujours une histoire'],'Dire ce qui s’est passé','La vérité permet de résoudre le problème.'),
+          q('Prendre un objet sans permission est :',['incorrect','toujours permis','une forme de partage'],'incorrect','Il faut respecter le bien d’autrui.'),
+          q('Pourquoi l’honnêteté aide-t-elle la confiance ?',['Parce qu’on peut mieux croire la parole donnée','Parce qu’elle cache tout','Parce qu’elle évite toute discussion'],'Parce qu’on peut mieux croire la parole donnée','La confiance se construit par des actes cohérents.')]),
+      cp1Lesson('Tenir une petite promesse',
+        'Une promesse est un engagement. Si tu dis que tu vas rendre un livre demain, tu dois essayer de le faire.',
+        'Avant de promettre, demande-toi si tu peux réellement faire ce que tu annonces. Il vaut mieux dire la vérité que promettre quelque chose d’impossible.',
+        'Exemple : « Je te rends ta règle après l’exercice. » Puis tu la rends.',
+        '🤝🏾  📏  ✅','Engagement tenu',[
+          q('Tu promets de rendre une règle. Que fais-tu après ?',['Tu la rends','Tu la caches','Tu la casses'],'Tu la rends','Tenir un engagement construit la confiance.'),
+          q('Avant de promettre, tu dois :',['réfléchir si tu peux le faire','dire oui à tout','ne jamais écouter'],'réfléchir si tu peux le faire','Une promesse doit être réaliste.'),
+          q('Tu ne peux pas faire ce que tu avais annoncé. Tu :',['expliques honnêtement','inventes toujours une excuse','disparais'],'expliques honnêtement','La communication honnête est préférable au mensonge.'),
+          q('Tenir sa parole aide :',['la confiance','la confusion','la casse du matériel'],'la confiance','Les autres savent qu’ils peuvent compter sur toi.')]),
+      cp1Lesson('Régler un désaccord sans violence',
+        'Deux personnes peuvent ne pas être d’accord. On peut parler, écouter l’autre et chercher une solution sans frapper ni insulter.',
+        'Avant de répondre avec colère, arrête-toi et explique le problème avec des mots simples. Si le désaccord devient difficile, demande l’aide d’un adulte.',
+        'Exemple : deux enfants veulent le même ballon : ils peuvent décider de jouer à tour de rôle.',
+        '⚽  🧒🏾💬👧🏾  🤝🏾','Deux enfants discutent autour d’un ballon',[
+          q('Deux camarades veulent le même objet. Bonne solution :',['parler et chercher un tour de rôle','se battre','casser l’objet'],'parler et chercher un tour de rôle','Le dialogue peut produire une solution juste.'),
+          q('Tu es très en colère. Que peux-tu faire d’abord ?',['t’arrêter et parler calmement','frapper','jeter les affaires'],'t’arrêter et parler calmement','Prendre un moment aide à contrôler sa réaction.'),
+          q('Le problème devient dangereux. Tu :',['appelles un adulte','continues la bagarre','caches le problème'],'appelles un adulte','Un adulte peut sécuriser la situation.'),
+          q('Être en désaccord oblige-t-il à être violent ?',['Non','Oui'],'Non','On peut défendre son point de vue avec des mots.')]),
+      cp1Lesson('Protéger les biens communs',
+        'Une table d’école, un livre de classe, une fontaine ou une cour peuvent servir à plusieurs personnes. Ce sont des biens ou espaces communs qu’il faut protéger.',
+        'Si une personne abîme volontairement un bien commun, plusieurs personnes peuvent perdre son usage. Penser au bien commun, c’est penser aux autres aussi.',
+        'Exemple : utiliser un livre de classe proprement puis le ranger.',
+        '📚  🪑  🚰  🏫','Biens utilisés par plusieurs personnes',[
+          q('Après avoir utilisé un livre de classe, tu :',['le ranges','le déchires','le jettes'],'le ranges','Le rangement protège le livre.'),
+          q('Pourquoi ne pas casser une table d’école ?',['Elle sert à plusieurs élèves','Elle ne sert à personne','Pour la cacher'],'Elle sert à plusieurs élèves','Un bien commun est utile au groupe.'),
+          q('Qui doit protéger les biens communs ?',['Tout le monde selon sa responsabilité','personne','seulement un enfant'],'Tout le monde selon sa responsabilité','La protection est une responsabilité partagée.'),
+          q('Penser au bien commun, c’est penser :',['aux besoins du groupe aussi','seulement à soi','à détruire'],'aux besoins du groupe aussi','La vie collective demande de considérer les autres.')]),
+      cp1Lesson('Propreté et environnement',
+        'Garder la classe, la cour et le quartier propres est un geste citoyen. Les déchets vont dans les endroits prévus et nous évitons de salir volontairement.',
+        'Un seul papier semble petit, mais cent papiers font beaucoup de déchets. Chaque geste individuel peut avoir un effet collectif.',
+        'Exemple : mettre son emballage dans la poubelle ou le dispositif prévu.',
+        '🌿  🗑️  🧹  🏫','Environnement propre',[
+          q('Un papier est au sol. Tu :',['le mets au bon endroit','le disperses','le caches sous une chaise'],'le mets au bon endroit','Un déchet doit être géré proprement.'),
+          q('Pourquoi un petit geste compte ?',['Les gestes de chacun s’additionnent','Il ne compte jamais','Il change la météo'],'Les gestes de chacun s’additionnent','L’effet collectif vient de nombreuses actions individuelles.'),
+          q('Protéger l’environnement signifie :',['éviter de salir et prendre soin du milieu','casser les arbres','jeter partout'],'éviter de salir et prendre soin du milieu','Le milieu commun doit rester sain et utilisable.'),
+          q('La propreté est-elle seulement l’affaire du maître ?',['Non','Oui'],'Non','Chacun participe selon son rôle.')]),
+      cp1Lesson('Bien se comporter sur la route',
+        'Sur la route, un enfant doit être accompagné selon son âge et la situation. Avant de traverser, il s’arrête, regarde, écoute et suit les consignes de l’adulte.',
+        'La sécurité demande d’anticiper. Un véhicule peut arriver vite même quand la route semble calme.',
+        'Exemple : s’arrêter au bord, regarder des deux côtés puis traverser seulement quand c’est sûr avec l’adulte.',
+        '🚸  👧🏾🤝🏾🧑🏾  🚗','Enfant accompagné près d’une route',[
+          q('Avant de traverser, tu :',['t’arrêtes et observes','cours sans regarder','joues au milieu'],'t’arrêtes et observes','Observer aide à repérer les véhicules.'),
+          q('Pourquoi regarder des deux côtés ?',['Un danger peut venir de directions différentes','Pour compter les maisons seulement','Pour changer la route'],'Un danger peut venir de directions différentes','Il faut vérifier plusieurs directions.'),
+          q('Est-il prudent de jouer sur la chaussée ?',['Non','Oui'],'Non','La chaussée est destinée à la circulation des véhicules.'),
+          q('Avec qui un jeune enfant doit-il suivre les règles de traversée ?',['un adulte responsable','personne même si la route est dangereuse','un ballon'],'un adulte responsable','L’accompagnement adapté augmente la sécurité.')]),
+      cp1Lesson('Être solidaire',
+        'La solidarité, c’est ne pas rester indifférent quand quelqu’un a besoin d’une aide raisonnable. Nous pouvons aider une personne âgée, un camarade blessé ou quelqu’un qui ne comprend pas.',
+        'Aider doit rester sûr. Tu n’entreprends pas seul une action dangereuse. Tu peux appeler un adulte ou un service approprié quand la situation dépasse tes capacités.',
+        'Exemple : un camarade tombe : tu préviens l’enseignant et tu lui laisses de l’espace.',
+        '🤝🏾  ❤️  🧒🏾  👵🏾','Entraide entre personnes',[
+          q('Un camarade se blesse. Tu :',['préviens un adulte','ris','le pousses encore'],'préviens un adulte','Chercher une aide adaptée est solidaire et sûr.'),
+          q('Solidarité signifie :',['aider de façon utile et respectueuse','ignorer tout le monde','faire tout seul même si c’est dangereux'],'aider de façon utile et respectueuse','L’aide tient compte des besoins et de la sécurité.'),
+          q('Une action est dangereuse pour toi. Tu :',['appelles un adulte','te mets en danger','caches le problème'],'appelles un adulte','Aider ne signifie pas se mettre inutilement en danger.'),
+          q('Pourquoi soutenir un camarade qui apprend ?',['Pour l’encourager','Pour se moquer','Pour l’empêcher d’essayer'],'Pour l’encourager','L’entraide favorise la progression de chacun.')]),
+      cp1Lesson('Les droits de l’enfant',
+        'Un enfant a des droits. Il a notamment droit à une identité, à l’éducation, à la protection et aux soins nécessaires.',
+        'Un droit protège le développement de l’enfant. Si un enfant est en danger ou privé d’un besoin essentiel, il doit pouvoir demander de l’aide à un adulte ou une institution responsable.',
+        'Exemple : aller à l’école est lié au droit à l’éducation.',
+        '🧒🏾  🏫  🏥  🛡️','Enfant, école, soins et protection',[
+          q('Aller à l’école est lié au droit :',['à l’éducation','à casser','à insulter'],'à l’éducation','L’éducation fait partie des droits de l’enfant.'),
+          q('Un enfant doit être protégé contre :',['la violence','l’apprentissage','les soins'],'la violence','La protection de l’enfant est fondamentale.'),
+          q('Avoir un nom et une identité est :',['un droit','une punition','un jeu seulement'],'un droit','L’identité permet notamment de reconnaître légalement l’enfant.'),
+          q('Un enfant est en danger. Que doit-il pouvoir faire ?',['chercher l’aide d’un adulte ou service responsable','rester seul toujours','cacher toute situation'],'chercher l’aide d’un adulte ou service responsable','Un droit à la protection implique l’accès à une aide.')]),
+      cp1Lesson('Mes responsabilités d’élève',
+        'À l’école, l’élève a aussi des responsabilités : essayer de travailler, respecter les autres, prendre soin du matériel et suivre les règles de sécurité.',
+        'Avoir des responsabilités ne signifie pas être parfait. Quand tu fais une erreur, tu peux la reconnaître, apprendre et recommencer mieux.',
+        'Exemple : préparer son cahier et essayer l’exercice avant de demander la réponse.',
+        '🎒  📒  ✏️  ✅','Élève prêt à travailler',[
+          q('Une responsabilité d’élève est :',['respecter le matériel','le détruire','empêcher les autres d’apprendre'],'respecter le matériel','Le matériel sert à l’apprentissage.'),
+          q('Face à un exercice difficile, tu peux :',['essayer puis demander de l’aide','abandonner sans lire','copier toujours'],'essayer puis demander de l’aide','L’effort et la demande d’aide développent l’autonomie.'),
+          q('Tu fais une erreur. Tu :',['cherches à comprendre et corriger','caches toujours','accuses quelqu’un'],'cherches à comprendre et corriger','L’erreur peut servir à apprendre.'),
+          q('Droits et responsabilités peuvent-ils aller ensemble ?',['Oui','Non jamais'],'Oui','La vie en groupe associe protections et devoirs adaptés.')]),
+      cp1Lesson('Bien vivre dans le quartier',
+        'Dans le quartier, nous saluons, respectons le voisinage, évitons les violences et prenons soin des lieux communs.',
+        'Vivre ensemble demande de penser aux conséquences. Faire beaucoup de bruit près d’une personne malade ou jeter des déchets devant une porte peut gêner les autres.',
+        'Exemple : saluer un voisin et garder le passage propre.',
+        '🏘️  👋🏾  🧹  🤝🏾','Quartier et voisins',[
+          q('Quel comportement aide le voisinage ?',['saluer et respecter','insulter','jeter des déchets devant les portes'],'saluer et respecter','Le respect facilite les relations.'),
+          q('Pourquoi éviter de gêner volontairement les autres ?',['Ils ont aussi des besoins et des droits','Parce qu’ils ne comptent pas','Pour faire plus de bruit'],'Ils ont aussi des besoins et des droits','La vie commune demande de considérer autrui.'),
+          q('Un passage commun doit rester :',['accessible et propre','bloqué volontairement','plein de déchets'],'accessible et propre','Le lieu sert à plusieurs personnes.'),
+          q('Avant une action dans un lieu commun, tu peux te demander :',['Quel effet cela aura sur les autres ?','Comment cacher mon geste ?','Comment salir plus ?'],'Quel effet cela aura sur les autres ?','Penser aux conséquences développe le sens civique.')]),
+      cp1Lesson('Le drapeau et les symboles de la Guinée',
+        'Le drapeau de la République de Guinée porte trois bandes verticales : rouge, jaune et vert. Le drapeau est un symbole du pays.',
+        'Un symbole national représente une communauté politique entière. On le respecte sans l’utiliser pour se moquer ou abîmer volontairement ce qu’il représente.',
+        'Exemple : 🇬🇳 rouge, jaune, vert.',
+        '🇬🇳  ROUGE  JAUNE  VERT','Drapeau de la République de Guinée',[
+          q('Quelles sont les couleurs du drapeau guinéen ?',['rouge, jaune, vert','bleu, blanc, rouge','vert, blanc, orange'],'rouge, jaune, vert','Le drapeau guinéen porte ces trois couleurs.'),
+          q('Le drapeau est :',['un symbole national','un jouet à déchirer','un aliment'],'un symbole national','Il représente le pays.'),
+          q('Les bandes du drapeau guinéen sont :',['verticales','en cercle','sans ordre'],'verticales','Les trois bandes sont disposées verticalement.'),
+          q('Pourquoi respecter un symbole national ?',['Parce qu’il représente la communauté nationale','Parce qu’il appartient à un seul enfant','Pour empêcher les autres de le voir'],'Parce qu’il représente la communauté nationale','Le symbole dépasse les personnes individuelles.')])
+    ],'''
+s=s[:start]+ecm+s[end:]
+p.write_text(s,encoding='utf-8')
+Path('version.json').write_text(json.dumps({'version':'V605','message':'Nexora V605 : Education civique et morale CP1 complete en 18 lecons avec audio, illustrations, francais simple et situations de decision.','critical':False},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print('V605 ECM migration ready')
