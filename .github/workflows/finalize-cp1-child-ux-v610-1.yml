@@ -1,4 +1,4 @@
-name: Finaliser UX enfant CP1 V610.1
+name: Finaliser UX enfant CP1 V610.2
 on:
   push:
     branches: [main]
@@ -20,5 +20,5 @@ jobs:
           git config user.name 'Nexora Curriculum Bot'
           git config user.email 'actions@github.com'
           git add assets/js/nx-v157-primary-school-script.js version.json
-          if git diff --cached --quiet; then echo 'Aucun changement'; else git commit -m 'Finalize child-first CP1 UX V610.1' && git push; fi
-# trigger: final-child-ux-v610-1
+          if git diff --cached --quiet; then echo 'Aucun changement'; else git commit -m 'Finalize child-first CP1 UX V610.2' && git push; fi
+# trigger: final-child-ux-v610-2
