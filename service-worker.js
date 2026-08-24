@@ -1,7 +1,6 @@
-/* Nexora V548 — coque d'ouverture rapide, chargement d'un fichier leger
-   sans toucher a index.html, sans rechargement automatique. */
+/* Nexora V600 — mise à jour fiable des contenus sans vider le cache manuellement. */
 
-const CACHE_NAME = "nexora-v548-coque-1";
+const CACHE_NAME = "nexora-v600-coque-1";
 const CACHE_PREFIX = "nexora-";
 const META_URL = "/__nexora_version_connue__";
 const DELAI_CONTROLE_MS = 5 * 60 * 1000;
@@ -13,8 +12,17 @@ const PUBLIC_ASSETS = [
   "/assets/icons/nexora-512.png"
 ];
 
+const TOUJOURS_FRAIS = new Set([
+  "/assets/js/nx-v157-primary-school-script.js",
+  "/assets/js/nexora-reglages.js"
+]);
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PUBLIC_ASSETS)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.addAll(PUBLIC_ASSETS);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("message", (event) => {
@@ -31,9 +39,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-/* V542 : index.html pese 1,85 Mo et ne peut plus etre televerse depuis un
-   telephone. On ajoute au vol une seule ligne qui charge un fichier leger.
-   PROTECTION : a la moindre anomalie, on rend le document d'origine intact. */
+/* index.html reste enrichi à la volée avec le module léger de réglages. */
 const LIGNE_AJOUTEE = '<script src="/assets/js/nexora-reglages.js" defer></' + 'script>';
 
 async function enrichir(reponse) {
@@ -104,7 +110,7 @@ async function verifierVersion(cache) {
   }
 
   try {
-    const documentFrais = await fetch("/index.html", { cache: "no-store" });
+    const documentFrais = await fetch("/index.html?t=" + maintenant, { cache: "no-store" });
     if (documentFrais && documentFrais.ok) {
       await cache.put("/index.html", documentFrais.clone());
 
@@ -119,9 +125,6 @@ async function verifierVersion(cache) {
 
       await ecrireMeta(cache, { version: version, verifieA: maintenant });
 
-      /* V548 : le rechargement automatique a ete retire — il pouvait relancer
-         l'application en boucle. La nouvelle version s'affiche a l'ouverture
-         suivante, ce qui est sans risque. */
       try {
         const pages = await self.clients.matchAll({ type: "window" });
         for (const page of pages) {
@@ -132,11 +135,35 @@ async function verifierVersion(cache) {
   } catch (_erreur) {}
 }
 
+async function reseauPuisCache(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const url = new URL(request.url);
+    url.searchParams.set("_nxv", Date.now().toString());
+    const frais = await fetch(new Request(url.toString(), request), { cache: "no-store" });
+    if (frais && frais.ok) {
+      try { await cache.put(request, frais.clone()); } catch (_cache) {}
+      return frais;
+    }
+  } catch (_reseau) {}
+
+  const ancien = await cache.match(request);
+  if (ancien) return ancien;
+  return fetch(request, { cache: "reload" });
+}
+
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
   if (url.pathname === "/version.json") return;
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/protected/") || url.pathname.startsWith("/modules/jeu-adams/")) return;
+
+  /* Ces fichiers portent un nom stable mais leur contenu change. On vérifie donc
+     le réseau à chaque demande. Le cache ne sert que de secours hors connexion. */
+  if (TOUJOURS_FRAIS.has(url.pathname)) {
+    event.respondWith(reseauPuisCache(event.request));
+    return;
+  }
 
   if (event.request.mode === "navigate") {
     event.respondWith((async () => {
@@ -168,7 +195,7 @@ self.addEventListener("fetch", (event) => {
       const cache = await caches.open(CACHE_NAME);
       const cached = await cache.match(event.request);
       if (cached) return cached;
-      const reponse = await fetch(event.request);
+      const reponse = await fetch(event.request, { cache: "reload" });
       if (reponse && reponse.ok) {
         try { await cache.put(event.request, reponse.clone()); } catch (_erreur) {}
       }
