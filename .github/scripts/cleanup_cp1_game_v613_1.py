@@ -1,52 +1,94 @@
 from pathlib import Path
-import re, json
+import json
 
 path = Path('assets/js/nx-v157-primary-school-script.js')
 s = path.read_text(encoding='utf-8')
-if "var VERSION = 'v613.1';" in s:
-    raise SystemExit('V613.1 already integrated')
-if "var VERSION = 'v613';" not in s:
-    raise SystemExit('Expected V613 source')
 
-s = s.replace('École primaire interactive V613', 'École primaire interactive V613.1', 1)
-s = s.replace('if (window.__nxPrimaryExercisesV613) return;', 'if (window.__nxPrimaryExercisesV613_1) return;', 1)
-s = s.replace('window.__nxPrimaryExercisesV613 = true;', 'window.__nxPrimaryExercisesV613_1 = true;', 1)
-s = s.replace("var VERSION = 'v613';", "var VERSION = 'v613.1';", 1)
+if "var VERSION = 'v613.2';" in s:
+    raise SystemExit('V613.2 already integrated')
+if "var VERSION = 'v613.1';" not in s:
+    raise SystemExit('Expected V613.1 source')
 
-# Remove old explanation + diagnostic functions entirely: CP1 is now question-first only.
-pat = r"\n  function renderCp1Explanation\(\) \{.*?(?=\n  function startCp1Exercises\(\) \{)"
-m = re.search(pat, s, flags=re.S)
-if not m:
-    raise SystemExit('Old explanation/diagnostic block not found')
-s = s[:m.start()] + '\n' + s[m.end():]
+s = s.replace('École primaire interactive V613.1', 'École primaire interactive V613.2', 1)
+s = s.replace('if (window.__nxPrimaryExercisesV613_1) return;', 'if (window.__nxPrimaryExercisesV613_2) return;', 1)
+s = s.replace('window.__nxPrimaryExercisesV613_1 = true;', 'window.__nxPrimaryExercisesV613_2 = true;', 1)
+s = s.replace("var VERSION = 'v613.1';", "var VERSION = 'v613.2';", 1)
 
-# Subject copy now reflects the game model.
-s = s.replace("'<p>' + lessons.length + ' leçons · audio · images · exercices</p>'",
-              "'<p>' + lessons.length + ' défis · images · questions · jeu</p>'", 1)
-s = s.replace("'Leçon ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title)",
-              "'Défi ' + (startIndex + 1) + ' · ' + esc(lessons[startIndex].title)", 1)
-s = s.replace("aria-label=\"Leçon ' + (i+1) + '. '", "aria-label=\"Défi ' + (i+1) + '. '", 1)
+# Remove diagnostic-only state left from the former explanation flow.
+s = s.replace(
+"var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, diagnostic: null, diagnosticAttempt: 0, diagnosticLocked: false, diagnosticPassed: false };",
+"var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false };",
+1)
 
-# Don't speak visual-only choices (emoji/symbol collections). They are meant to be seen, not verbalized repeatedly.
-old_choices = "choices.forEach(function(c){ var k = normalize(c); if (!seen[k]) { seen[k] = true; unique.push(String(c)); } });"
-new_choices = "choices.forEach(function(c){ var raw = String(c); if (!/[A-Za-zÀ-ÿ0-9]/.test(raw)) return; var k = normalize(raw); if (!seen[k]) { seen[k] = true; unique.push(raw); } });"
-if old_choices not in s:
-    raise SystemExit('spokenChoices body missing')
-s = s.replace(old_choices, new_choices, 1)
+# Give non-numeric CP1 input exercises large clickable options instead of a keyboard.
+marker = "  function spokenChoices(ex, choices) {"
+helper = r'''  function cp1ClickChoices(ex) {
+    var numeric = cp1NumericChoices(ex);
+    if (numeric && numeric.length) return numeric;
+    if (!ex || (ex.type !== 'input' && ex.type !== 'text')) return null;
+    var answer = String(ex.a == null ? '' : ex.a).trim();
+    if (!answer) return null;
+    var vals = [answer];
+    function add(v) { v = String(v || '').trim(); if (v && vals.indexOf(v) < 0) vals.push(v); }
+    add(answer.replace(/[.!?]+$/,''));
+    if (answer.length) add(answer.charAt(0).toLocaleLowerCase('fr-FR') + answer.slice(1));
+    var words = answer.split(/\s+/);
+    if (words.length > 1) add(words.slice().reverse().join(' '));
+    if (vals.length < 3 && answer.length > 2) add(answer.slice(0,-1));
+    if (vals.length < 3) add('Je ne sais pas encore');
+    return shuffle(vals).slice(0,3);
+  }
 
-# CP1 question screen: challenge text is displayed, not the raw question; simplify progression to game-only.
-s = s.replace("setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? ('Exercice ' + (state.index+1) + ' sur ' + state.list.length) : l.label, true);",
-              "setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? ('Défi ' + (state.index+1) + ' sur ' + state.list.length) : l.label, true);", 1)
-old_html = "var html = '<div class=\"nx-kid-flow\"><span class=\"on\">✓</span><i class=\"on\"></i><span class=\"on\">✓</span><i class=\"on\"></i><span class=\"on\">' + (state.index+1) + '</span><i></i><span>★</span></div><section class=\"nx-kid-question\">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style=\"height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px\"><div style=\"height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px\"></div></div><h2>' + esc(ex.q) + '</h2>';"
-new_html = "var html = '<div class=\"nx-kid-flow\"><span class=\"on\">🎯</span><i class=\"on\"></i><span class=\"on\">' + (state.index+1) + '</span><i></i><span>★</span></div><section class=\"nx-kid-question\">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style=\"height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px\"><div style=\"height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px\"></div></div><div class=\"nx-kid-mission\">🎯 DÉFI</div><h2>' + esc(challengeText) + '</h2>';"
-if old_html not in s:
-    raise SystemExit('CP1 question HTML block missing')
-s = s.replace(old_html, new_html, 1)
+'''
+if marker not in s:
+    raise SystemExit('spokenChoices marker missing')
+s = s.replace(marker, helper + marker, 1)
+
+# Remove stale event branches that called deleted explanation/diagnostic functions.
+for old in [
+"      var startDiag = ev.target.closest('[data-start-diagnostic]'); if (startDiag) { renderCp1Diagnostic(); return; }\n",
+"      var diagAns = ev.target.closest('[data-diagnostic-answer]'); if (diagAns) { answerCp1Diagnostic(diagAns.getAttribute('data-diagnostic-answer'), diagAns); return; }\n",
+"      var showSecond = ev.target.closest('[data-show-second]'); if (showSecond) { state.phase = 2; renderCp1Explanation(); return; }\n",
+"      var retryDiag = ev.target.closest('[data-retry-diagnostic]'); if (retryDiag) { renderCp1Diagnostic(); return; }\n",
+"      var startEx = ev.target.closest('[data-start-exercises]'); if (startEx) { startCp1Exercises(); return; }\n",
+]:
+    s = s.replace(old, '', 1)
+
+old_submit = """      if (ev.target.matches('[data-diagnostic-form]')) {
+        ev.preventDefault();
+        var dinput = ev.target.querySelector('input');
+        answerCp1Diagnostic(dinput ? dinput.value : '', dinput);
+        return;
+      }
+"""
+s = s.replace(old_submit, '', 1)
+
+# Clean start/close state references to the removed diagnostic flow.
+s = s.replace("    state.diagnostic = null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;\n", '', 1)
+s = s.replace("; state.diagnostic = null; state.diagnosticAttempt = 0; state.diagnosticLocked = false; state.diagnosticPassed = false;", ';', 1)
+
+# All CP1 non-choice questions should prefer large click choices.
+s = s.replace(
+"var autoChoices = state.level === '1' && ex.type !== 'choice' ? cp1NumericChoices(ex) : null;",
+"var autoChoices = state.level === '1' && ex.type !== 'choice' ? cp1ClickChoices(ex) : null;",
+1)
+
+# Game language everywhere in CP1.
+s = s.replace("lessons.length + ' leçons · audio · images · exercices'", "lessons.length + ' défis · images · questions · jeu'", 1)
+s = s.replace("'<small>Leçon ' + (startIndex + 1) + ' · '", "'<small>Défi ' + (startIndex + 1) + ' · '", 1)
+s = s.replace("▶ Continuer ma leçon", "▶ Continuer mon défi", 1)
+s = s.replace("La leçon suivante va commencer.", "Le défi suivant va commencer.")
+s = s.replace("La prochaine leçon commence automatiquement", "Le prochain défi commence automatiquement")
+s = s.replace("Refaire la leçon", "Refaire le défi")
+
+# Header fallback is game language for CP1, while older levels keep their existing wording through explicit headers.
+s = s.replace("v.querySelector('[data-subtitle]').textContent = subtitle || 'Exercices corrigés';",
+              "v.querySelector('[data-subtitle]').textContent = subtitle || (state.level === '1' ? 'Défis pratiques' : 'Exercices corrigés');", 1)
 
 path.write_text(s, encoding='utf-8')
 Path('version.json').write_text(json.dumps({
-  'version':'V613.1',
-  'message':'Nexora V613.1 : CP1 100% pratique par defis. Anciennes explications retirees du moteur actif, questions contextualisees, audio anti-repetition et progression de jeu simplifiee.',
+  'version':'V613.2',
+  'message':'Nexora V613.2 : CP1 en jeu pratique pur. Questions contextualisees, reponses tactiles y compris les anciennes saisies, ancien flux d explication retire et audio anti-repetition.',
   'critical':False
 }, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-print('V613.1 cleaned')
+print('V613.2 finalized')
