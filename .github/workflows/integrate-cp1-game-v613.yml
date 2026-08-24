@@ -1,0 +1,33 @@
+name: Integrer jeu pratique CP1 V613
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/integrate_cp1_game_v613.py'
+      - '.github/workflows/integrate-cp1-game-v613.yml'
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            assets/js/nx-v157-primary-school-script.js
+            version.json
+            .github/scripts/integrate_cp1_game_v613.py
+          sparse-checkout-cone-mode: false
+      - run: python .github/scripts/integrate_cp1_game_v613.py
+      - run: node --check assets/js/nx-v157-primary-school-script.js
+      - run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nx-v157-primary-school-script.js version.json
+          if git diff --cached --quiet; then
+            echo 'Aucun changement'
+          else
+            git commit -m 'Integrate question-first CP1 game V613'
+            git push
+          fi
