@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V611
+/* NEXORA — École primaire interactive V612
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV611) return;
-  window.__nxPrimaryExercisesV611 = true;
+  if (window.__nxPrimaryExercisesV612) return;
+  window.__nxPrimaryExercisesV612 = true;
 
-  var VERSION = 'v611';
+  var VERSION = 'v612';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -102,6 +102,54 @@
     return '<span class="nx-kid-stars">' + [0,1,2].map(function(i){ return '<b class="' + (i < n ? 'on' : '') + '">★</b>'; }).join('') + '</span>';
   }
 
+  function cp1RuleText(lesson, subject) {
+    var title = lesson && lesson.title ? lesson.title : '';
+    var rules = {
+      'Saluer et se présenter': 'Pour saluer : « Bonjour ». Pour donner ton nom : « Je m’appelle… ».',
+      'Comprendre une consigne simple': 'J’écoute toute la consigne. Je cherche ce qu’on me demande. Ensuite seulement, j’agis.',
+      'Reconnaître et lire un prénom': 'Un prénom commence par une majuscule. Je regarde tout le prénom, pas seulement sa première lettre.',
+      'Un, une, le et la': 'On apprend le nom avec son petit mot : un ou le ; une ou la.',
+      'Un seul ou plusieurs': 'Un seul = singulier. Plusieurs = pluriel. Souvent, le nom prend un s au pluriel.',
+      'Masculin et féminin : premiers repères': 'J’apprends le nom avec son article : un/le ou une/la. Je ne devine pas seulement en regardant l’objet.',
+      'Mettre les mots dans le bon ordre': 'Pour une phrase simple : QUI ? + FAIT QUOI ? Exemple : « Awa lit. »',
+      'La majuscule et le point': 'Une phrase commence par une majuscule et se termine par un point.',
+      'Poser une question simple': 'Une question demande une information et se termine par un point d’interrogation : ?.',
+      'Écrire une phrase simple': 'Majuscule au début. Mots dans le bon ordre. Point à la fin. Puis je relis.',
+      'Plus, moins et autant': 'Plus = quantité plus grande. Moins = quantité plus petite. Autant = même quantité.',
+      'Trier et classer': 'Je choisis un seul critère de tri, puis je classe tous les objets avec ce même critère.',
+      'Sur, sous, en haut et en bas': 'Je donne toujours la position par rapport à un repère : sur quoi ? sous quoi ? en haut de quoi ?',
+      'Devant, derrière, entre, à côté, dedans et dehors': 'Pour situer un objet, je choisis un repère puis j’utilise le mot de position exact.',
+      'Additionner jusqu’à 5': 'Additionner, c’est réunir ou ajouter. Le signe + signifie « plus ».',
+      'Comparer et ranger les nombres de 0 à 9': 'Sur la bande numérique, un nombre placé plus à droite est plus grand.',
+      'Long, court et comparaison des longueurs': 'Pour comparer deux longueurs, j’aligne les objets au même point de départ.',
+      'Le nombre 10 et la dizaine': '10 unités = 1 dizaine.',
+      'Les nombres 11 et 12': '11 = 1 dizaine + 1 unité. 12 = 1 dizaine + 2 unités.',
+      'Les nombres de 13 à 15': '13, 14 et 15 ont chacun 1 dizaine. Les unités sont 3, 4 et 5.',
+      'Le nombre 16': '16 = 1 dizaine + 6 unités.',
+      'Construire des additions jusqu’à 20': 'Pour additionner, je peux d’abord compléter 10, puis ajouter ce qui reste.',
+      'Comprendre la soustraction': 'Soustraire, c’est enlever ou chercher ce qui reste. Le signe − signifie « moins ».',
+      'Avancer ou reculer de 2 et de 3': 'Ajouter = avancer sur la bande numérique. Soustraire = reculer.',
+      'Les nombres de 17 à 19': '17, 18 et 19 ont chacun 1 dizaine. Les unités sont 7, 8 et 9.',
+      'Le nombre 20 : deux dizaines': '20 unités = 2 dizaines.',
+      'Partager une petite collection': 'Partager équitablement = donner la même quantité à chacun.',
+      'Le double': 'Le double d’un nombre = ce nombre + le même nombre. Exemple : double de 3 = 3 + 3 = 6.',
+      'La moitié': 'La moitié = partager en 2 parts égales.',
+      'Les nombres ordinaux : premier, deuxième…': 'Premier, deuxième, troisième… indiquent une position, pas une quantité.',
+      'Gauche, droite, quadrillage et tableau': 'Je suis les déplacements un par un et je respecte le sens gauche/droite du point de vue indiqué.',
+      'Lignes, carré, rectangle et symétrie': 'Carré : 4 côtés égaux. Rectangle : 4 côtés, avec les côtés opposés de même longueur.',
+      'Résoudre un petit problème': 'Je lis. Je cherche ce que je connais. Je cherche ce qu’on demande. Je choisis l’opération. Je vérifie.',
+      'Les règles de la classe': 'J’écoute. J’attends mon tour. Je respecte les personnes et le matériel. Je suis les règles de sécurité.',
+      'Bien se comporter sur la route': 'Je m’arrête. Je regarde des deux côtés. J’écoute. Je traverse seulement quand c’est sûr avec l’adulte.',
+      'Écouter un signal et s’arrêter': 'Au signal « stop », je m’arrête immédiatement et j’écoute la prochaine consigne.',
+      'Jouer avec fair-play': 'Je respecte les règles, les autres joueurs et le résultat. Je ne frappe pas et je n’insulte pas.'
+    };
+    if (rules[title]) return rules[title];
+    if (/^Le son /.test(title)) return 'Règle de lecture : je regarde le signe, je prononce le son, puis je cherche ce son dans le mot.';
+    if (/^Lire /.test(title)) return 'Règle de lecture : je garde les lettres dans l’ordre, je lis les syllabes, puis je réunis le mot.';
+    if (/^Le nombre [0-9]+/.test(title)) return 'Règle de comptage : je compte chaque objet une seule fois. Le dernier nombre dit donne la quantité.';
+    return '';
+  }
+
   function progressWrite(level, subject, good, total) {
     try {
       var x = progressRead();
@@ -121,7 +169,7 @@
       if (!window.speechSynthesis) return;
       speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(String(s || ''));
-      u.lang = 'fr-FR'; u.rate = .88; speechSynthesis.speak(u);
+      u.lang = 'fr-FR'; u.rate = .72; u.pitch = .96; u.volume = 1; speechSynthesis.speak(u);
     } catch (_e) {}
   }
 
@@ -1848,17 +1896,19 @@
     var lessons = CP1_LESSONS[state.subject] || [], lesson = lessons[state.lesson];
     if (!lesson) { renderCp1Lessons(state.subject); return; }
     var second = state.phase === 2;
-    var title = second ? 'Je comprends autrement' : 'Je découvre';
+    var title = second ? 'Comment faire ?' : 'Je découvre';
     var body = second ? lesson.two : lesson.one; var extra = lesson.example || '';
-    state.readText = title + '. ' + lesson.title + '. ' + body + (extra ? ' ' + extra : '');
+    var rule = cp1RuleText(lesson, state.subject);
+    state.readText = title + '. ' + lesson.title + '. ' + body + (rule ? ' Règle à retenir. ' + rule : '') + (extra ? ' Exemple. ' + extra : '');
     setHeader(SUBJECTS[state.subject].name, 'Leçon ' + (state.lesson + 1), true);
     var action = second ? (state.diagnosticPassed ? 'data-start-exercises' : 'data-retry-diagnostic') : 'data-start-diagnostic';
     var label = second ? (state.diagnosticPassed ? 'Continuer les exercices' : 'Réessayer') : 'J’essaie maintenant';
     main().innerHTML = '<div class="nx-kid-flow"><span class="on">1</span><i class="' + (second?'on':'') + '"></i><span class="' + (second?'on':'') + '">2</span><i></i><span>3</span><i></i><span>★</span></div>' +
       cp1Scene(lesson,state.subject,false) + '<section class="nx-kid-card"><div class="nx-kid-step listen"><span class="ico">👂🏾</span><div><b>1. J’écoute</b><small style="display:block;color:#6b7380">La leçon est lue à voix haute.</small></div></div>' +
       '<h2 style="margin:9px 2px 4px;color:#5338a5;font-size:25px">' + esc(lesson.title) + '</h2><button type="button" class="nx-kid-listen" data-speak>🔊 Écouter / Réécouter</button>' +
-      '<div class="nx-kid-step look"><span class="ico">👀</span><div><b>2. Je regarde</b><small style="display:block;color:#6b7380">Regarde la grande image.</small></div></div><p class="nx-kid-easy">' + esc(body) + '</p>' +
-      (extra ? '<div class="nx-kid-example"><b>💡 Exemple</b><br>' + esc(extra) + '</div>' : '') + '<div class="nx-kid-step try"><span class="ico">☝🏾</span><div><b>3. J’essaie</b><small style="display:block;color:#6b7380">Une grande réponse suffit.</small></div></div></section>' +
+      '<div class="nx-kid-step look"><span class="ico">👀</span><div><b>2. Je regarde</b><small style="display:block;color:#6b7380">Regarde la grande image.</small></div></div>' + (second ? '<div class="nx-kid-method-title">🛠️ COMMENT FAIRE ?</div>' : '') + '<p class="nx-kid-easy">' + esc(body) + '</p>' +
+      (rule ? '<div class="nx-kid-rule"><b>📌 RÈGLE À RETENIR</b><span>' + esc(rule) + '</span></div>' : '') +
+      (extra ? '<div class="nx-kid-example"><b>💡 EXEMPLE CONCRET</b><br>' + esc(extra) + '</div>' : '') + '<div class="nx-kid-step try"><span class="ico">☝🏾</span><div><b>3. J’essaie</b><small style="display:block;color:#6b7380">Une grande réponse suffit.</small></div></div></section>' +
       '<div class="nx-kid-action-wrap"><button type="button" class="nx-kid-main-action nx-kid-pulse" ' + action + '>▶ ' + label + '</button></div>';
     speak(state.readText);
   }
@@ -1964,7 +2014,10 @@
       .nx-kid-question{background:#fff;border-radius:28px;padding:14px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-question h2{font-size:24px;line-height:1.25;text-align:center;color:#1f3a2b;margin:10px 5px 14px}.nx-kid-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.nx-kid-choice-grid.long{grid-template-columns:1fr}.nx-kid-answer{min-height:88px;border:4px solid #fff;border-radius:24px;font:inherit;font-weight:1000;font-size:25px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.16),0 8px 17px rgba(0,0,0,.11);touch-action:manipulation;text-align:center;padding:12px}.nx-kid-answer:nth-child(4n+1){background:linear-gradient(180deg,#a65bf4,#7740dc)}.nx-kid-answer:nth-child(4n+2){background:linear-gradient(180deg,#ff9c2d,#f06d18)}.nx-kid-answer:nth-child(4n+3){background:linear-gradient(180deg,#68d731,#39a90e)}.nx-kid-answer:nth-child(4n){background:linear-gradient(180deg,#35a7ff,#1475dc)}.nx-kid-answer.good{background:linear-gradient(180deg,#50d94b,#22a933)!important;outline:5px solid #d4ffb9}.nx-kid-answer.bad{background:linear-gradient(180deg,#ff6c6c,#d93c3c)!important;opacity:.82}.nx-kid-answer:disabled{color:#fff}
       .nx-kid-feedback{margin-top:14px;border-radius:24px;padding:16px;text-align:center}.nx-kid-feedback.ok{background:#efffe4;color:#196b2d}.nx-kid-feedback.no{background:#fff0e5;color:#8d4219}.nx-kid-feedback .face{font-size:48px;display:block}.nx-kid-feedback b{display:block;font-size:22px;margin:4px}.nx-kid-feedback span{font-size:15px;line-height:1.45}.nx-kid-auto{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;color:#557181;font-weight:850;font-size:13px}.nx-kid-auto:before{content:'🚀';font-size:22px}.nx-kid-pulse{animation:nxKidPulse 1.15s ease-in-out infinite}@keyframes nxKidPulse{50%{transform:scale(1.025);filter:brightness(1.06)}}
       .nx-kid-result{text-align:center;background:linear-gradient(180deg,#fff,#f6fff0);border-radius:30px;padding:22px 16px;box-shadow:0 9px 25px rgba(42,87,57,.14)}.nx-kid-result .trophy{font-size:68px}.nx-kid-result h2{font-size:27px;color:#20743b;margin:4px}.nx-kid-result .score{font-size:56px;font-weight:1000;color:#206ec6}.nx-kid-result p{color:#627484}.nx-kid-result .nx-px-actions{margin-top:15px}
+      .nx-kid-rule{margin:13px 0;background:#fff7c7;border:3px solid #ffd539;border-radius:20px;padding:14px 15px;color:#473400;box-shadow:0 4px 10px rgba(141,104,0,.08)}.nx-kid-rule b{display:block;font-size:16px;letter-spacing:.3px;margin-bottom:6px;color:#7c5600}.nx-kid-rule span{display:block;font-size:19px;line-height:1.48;font-weight:850}.nx-kid-method-title{margin:12px 0 6px;background:#e7f5ff;color:#075cae;border-radius:16px;padding:10px 12px;font-size:16px;font-weight:950;letter-spacing:.3px}
+      .nx-kid-subject-art,.nx-kid-scene,.nx-kid-question,.nx-kid-card,.nx-kid-lesson,.nx-kid-subject-hero{max-width:100%;box-sizing:border-box;overflow:hidden}.nx-kid-subject-art svg{display:block;width:100%;max-width:100%;height:100%;object-fit:contain}.nx-kid-lesson>div,.nx-kid-subject-info,.nx-kid-subject-hero>div{min-width:0;max-width:100%}.nx-kid-scene-visual{max-width:calc(100% - 16px);box-sizing:border-box;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;font-size:clamp(28px,11vw,56px);letter-spacing:clamp(0px,1vw,4px);padding:0 6px}.nx-kid-scene.compact .nx-kid-scene-visual{font-size:clamp(25px,8vw,34px)}
       @media(max-width:520px){.nx-kid-welcome h2{font-size:27px}.nx-kid-subject{min-height:176px}.nx-kid-subject-art{height:105px}.nx-kid-subject-info strong{font-size:17px}.nx-kid-subject-hero{grid-template-columns:112px 1fr}.nx-kid-subject-hero .nx-kid-subject-art{height:88px}.nx-kid-scene{height:205px}.nx-kid-scene-visual{font-size:48px}.nx-kid-choice-grid{gap:10px}.nx-kid-answer{min-height:84px;font-size:23px}.nx-kid-voice{padding-right:10px}.nx-kid-mascot{font-size:47px}}
+      @media(max-width:390px){.nx-kid-scene{height:185px}.nx-kid-scene-visual{font-size:clamp(25px,10vw,40px);letter-spacing:0}.nx-kid-question h2{font-size:21px}.nx-kid-rule span{font-size:17px}.nx-kid-subject-hero{grid-template-columns:96px 1fr}.nx-kid-subject-hero h2{font-size:20px}}
       @media(max-width:370px){.nx-kid-subject-grid{grid-template-columns:1fr}.nx-kid-subject{display:grid;grid-template-columns:140px 1fr;min-height:128px}.nx-kid-subject-art{height:100%;min-height:128px}.nx-kid-subject-info{display:flex;flex-direction:column;justify-content:center}.nx-kid-mascot{display:none}}
     `;
     document.head.appendChild(st);
