@@ -21,3 +21,4 @@ jobs:
           git config user.email 'actions@github.com'
           git add assets/js/nx-v157-primary-school-script.js version.json
           if git diff --cached --quiet; then echo 'Aucun changement'; else git commit -m 'Integrate child-first CP1 UX V610' && git push; fi
+# trigger: child-ux-v610
