@@ -1,0 +1,33 @@
+name: Nettoyer jeu pratique CP1 V613.1
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/cleanup_cp1_game_v613_1.py'
+      - '.github/workflows/cleanup-cp1-game-v613-1.yml'
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            assets/js/nx-v157-primary-school-script.js
+            version.json
+            .github/scripts/cleanup_cp1_game_v613_1.py
+          sparse-checkout-cone-mode: false
+      - run: python .github/scripts/cleanup_cp1_game_v613_1.py
+      - run: node --check assets/js/nx-v157-primary-school-script.js
+      - run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nx-v157-primary-school-script.js version.json
+          if git diff --cached --quiet; then
+            echo 'Aucun changement'
+          else
+            git commit -m 'Finalize question-first CP1 game V613.1'
+            git push
+          fi
