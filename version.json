@@ -1,5 +1,5 @@
 {
-  "version": "V614",
-  "message": "Nexora V614 : CP1 avec mode vocal de seance. Le parent active le micro une seule fois ; Nexora ecoute automatiquement apres chaque question, tandis que toutes les reponses tactiles restent disponibles.",
+  "version": "V615",
+  "message": "Nexora V615 : avant chaque question CP1, une explication tres simple de maitre est lue et affichee, puis la question est posee. Le micro attend la fin de la consigne et les reponses tactiles restent toujours disponibles.",
   "critical": false
 }

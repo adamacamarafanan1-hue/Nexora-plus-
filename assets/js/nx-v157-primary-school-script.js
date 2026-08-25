@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V614
+/* NEXORA — École primaire interactive V615
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV614) return;
-  window.__nxPrimaryExercisesV614 = true;
+  if (window.__nxPrimaryExercisesV615) return;
+  window.__nxPrimaryExercisesV615 = true;
 
-  var VERSION = 'v614';
+  var VERSION = 'v615';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -319,15 +319,28 @@
     var m = value.match(/^(.{1,150}?[.!?])(?:\s|$)/);
     return (m ? m[1] : value.slice(0,150)).trim();
   }
-  function cp1ChallengeText(lesson, ex, index) {
-    var question = String((ex && ex.q) || '').trim();
-    if (!lesson) return question;
-    if (index === 0) {
-      var rule = cp1RuleText(lesson, state.subject);
-      var cue = rule || firstUsefulSentence(lesson.one);
-      if (cue && normalize(question).indexOf(normalize(cue)) < 0) return cue + ' ' + question;
+  function cp1TeacherExplanation(lesson) {
+    if (!lesson) return '';
+    var rule = cp1RuleText(lesson, state.subject);
+    if (rule) {
+      return String(rule)
+        .replace(/^Règle de lecture\s*:\s*/i, 'Pour lire, ')
+        .replace(/^Règle de comptage\s*:\s*/i, 'Pour compter, ')
+        .trim();
     }
-    return question;
+    var simple = {
+      francais: 'Écoute bien les sons et regarde les mots. Cherche doucement ce qui correspond à la consigne.',
+      maths: 'Regarde bien les nombres ou les objets. Compte, compare ou réfléchis doucement avant de choisir.',
+      sciences: 'Observe bien ce que tu vois. Pense à ce que tu connais dans la vie de tous les jours.',
+      ecm: 'Pense à ce qui est respectueux, prudent et bon pour vivre avec les autres.',
+      arts: 'Observe les formes, les couleurs, les sons ou les gestes avant de choisir.',
+      eps: 'Pense au mouvement le plus sûr et à la consigne avant de répondre.',
+      entretien: 'Écoute la petite situation et pense à ce que tu fais chaque jour.'
+    };
+    return simple[state.subject] || 'Regarde bien. Écoute bien. Puis réfléchis avant de choisir.';
+  }
+  function cp1ChallengeText(lesson, ex) {
+    return String((ex && ex.q) || '').trim();
   }
 
   function progressWrite(level, subject, good, total) {
@@ -370,7 +383,7 @@
   }
 
   var LEVELS = {
-    '1': { label: '1ère année', subtitle: 'J’écoute, je regarde, je réponds', subjects: ['francais','maths','sciences','ecm','arts','eps','entretien'] },
+    '1': { label: '1ère année', subtitle: 'J’écoute, je comprends, je réponds', subjects: ['francais','maths','sciences','ecm','arts','eps','entretien'] },
     '2': { label: '2ème année', subtitle: 'Je lis mieux et je calcule', subjects: ['francais','maths','sciences','ecm'] },
     '3': { label: '3ème année', subtitle: 'Je comprends et je résous', subjects: ['francais','maths','sciences','histoiregeo','ecm'] },
     '4': { label: '4ème année', subtitle: 'J’explique et j’applique', subjects: ['francais','maths','sciences','histoiregeo','ecm'] },
@@ -2148,7 +2161,7 @@
       .nx-kid-card{background:#fff;border-radius:27px;padding:16px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-step{display:flex;align-items:center;gap:11px;border-radius:21px;padding:13px 14px;margin:10px 0}.nx-kid-step.listen{background:#fff3c9}.nx-kid-step.look{background:#e7f8d9}.nx-kid-step.try{background:#e2f3ff}.nx-kid-step .ico{font-size:33px}.nx-kid-step b{font-size:17px;color:#26384c}.nx-kid-easy{font-size:19px;line-height:1.65;color:#26384c;margin:13px 3px}.nx-kid-example{background:#f2f8ff;border-radius:18px;padding:12px 13px;color:#28506f;font-size:15px;line-height:1.5}.nx-kid-listen{width:100%;min-height:72px;border:0;border-radius:22px;background:linear-gradient(180deg,#179dff,#0970dc);color:#fff;font:inherit;font-size:21px;font-weight:950;box-shadow:0 6px 0 #075cae;margin:6px 0 11px}.nx-kid-listen:active{transform:translateY(3px);box-shadow:0 3px 0 #075cae}
       .nx-kid-action-wrap{position:sticky;bottom:10px;z-index:5;padding:10px 0 2px;background:linear-gradient(180deg,transparent,rgba(245,251,255,.95) 28%)}.nx-kid-action-wrap .nx-kid-main-action{background:linear-gradient(180deg,#24c85d,#13a545);box-shadow:0 7px 0 #0b7d33,0 10px 20px rgba(16,153,64,.22)}
       .nx-kid-voice-toggle{width:100%;border:3px solid #cfe7ff;border-radius:24px;background:#fff;color:#174f83;padding:15px 16px;margin:0 0 14px;text-align:left;box-shadow:0 6px 18px rgba(40,90,140,.12);touch-action:manipulation}.nx-kid-voice-toggle b{display:block;font-size:19px}.nx-kid-voice-toggle small{display:block;margin-top:4px;color:#63788c;font-size:13px;line-height:1.35}.nx-kid-voice-toggle.on{background:linear-gradient(135deg,#e9fff0,#d9f6ff);border-color:#4fc76b;color:#176c35}.nx-px-voice-header.on{background:#dfffe7!important;color:#137036!important}.nx-kid-voice-live{display:inline-flex;align-items:center;justify-content:center;margin:2px auto 8px;padding:8px 13px;border-radius:999px;background:#e5fff0;color:#15713b;font-size:14px;font-weight:950;box-shadow:0 3px 9px rgba(27,134,67,.12)}
-      .nx-kid-mission{display:inline-block;margin:2px auto 7px;padding:7px 13px;border-radius:999px;background:#ffe45d;color:#704d00;font-size:14px;font-weight:1000;letter-spacing:.5px}.nx-kid-question{background:#fff;border-radius:28px;padding:14px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-question h2{font-size:24px;line-height:1.25;text-align:center;color:#1f3a2b;margin:10px 5px 14px}.nx-kid-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.nx-kid-choice-grid.long{grid-template-columns:1fr}.nx-kid-answer{min-height:88px;border:4px solid #fff;border-radius:24px;font:inherit;font-weight:1000;font-size:25px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.16),0 8px 17px rgba(0,0,0,.11);touch-action:manipulation;text-align:center;padding:12px}.nx-kid-answer:nth-child(4n+1){background:linear-gradient(180deg,#a65bf4,#7740dc)}.nx-kid-answer:nth-child(4n+2){background:linear-gradient(180deg,#ff9c2d,#f06d18)}.nx-kid-answer:nth-child(4n+3){background:linear-gradient(180deg,#68d731,#39a90e)}.nx-kid-answer:nth-child(4n){background:linear-gradient(180deg,#35a7ff,#1475dc)}.nx-kid-answer.good{background:linear-gradient(180deg,#50d94b,#22a933)!important;outline:5px solid #d4ffb9}.nx-kid-answer.bad{background:linear-gradient(180deg,#ff6c6c,#d93c3c)!important;opacity:.82}.nx-kid-answer:disabled{color:#fff}
+      .nx-kid-teacher{margin:8px 0 13px;padding:14px 15px;border-radius:22px;background:linear-gradient(135deg,#fff7cb,#fffdf0);border:3px solid #ffd84a;color:#4f3b00;box-shadow:0 5px 14px rgba(130,95,0,.09)}.nx-kid-teacher b{display:block;font-size:17px;margin-bottom:6px;color:#704f00}.nx-kid-teacher p{margin:0;font-size:19px;line-height:1.48;font-weight:800}.nx-kid-mission{display:inline-block;margin:2px auto 7px;padding:7px 13px;border-radius:999px;background:#ffe45d;color:#704d00;font-size:14px;font-weight:1000;letter-spacing:.5px}.nx-kid-question{background:#fff;border-radius:28px;padding:14px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-question h2{font-size:24px;line-height:1.25;text-align:center;color:#1f3a2b;margin:10px 5px 14px}.nx-kid-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.nx-kid-choice-grid.long{grid-template-columns:1fr}.nx-kid-answer{min-height:88px;border:4px solid #fff;border-radius:24px;font:inherit;font-weight:1000;font-size:25px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.16),0 8px 17px rgba(0,0,0,.11);touch-action:manipulation;text-align:center;padding:12px}.nx-kid-answer:nth-child(4n+1){background:linear-gradient(180deg,#a65bf4,#7740dc)}.nx-kid-answer:nth-child(4n+2){background:linear-gradient(180deg,#ff9c2d,#f06d18)}.nx-kid-answer:nth-child(4n+3){background:linear-gradient(180deg,#68d731,#39a90e)}.nx-kid-answer:nth-child(4n){background:linear-gradient(180deg,#35a7ff,#1475dc)}.nx-kid-answer.good{background:linear-gradient(180deg,#50d94b,#22a933)!important;outline:5px solid #d4ffb9}.nx-kid-answer.bad{background:linear-gradient(180deg,#ff6c6c,#d93c3c)!important;opacity:.82}.nx-kid-answer:disabled{color:#fff}
       .nx-kid-feedback{margin-top:14px;border-radius:24px;padding:16px;text-align:center}.nx-kid-feedback.ok{background:#efffe4;color:#196b2d}.nx-kid-feedback.no{background:#fff0e5;color:#8d4219}.nx-kid-feedback .face{font-size:48px;display:block}.nx-kid-feedback b{display:block;font-size:22px;margin:4px}.nx-kid-feedback span{font-size:15px;line-height:1.45}.nx-kid-auto{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;color:#557181;font-weight:850;font-size:13px}.nx-kid-auto:before{content:'🚀';font-size:22px}.nx-kid-pulse{animation:nxKidPulse 1.15s ease-in-out infinite}@keyframes nxKidPulse{50%{transform:scale(1.025);filter:brightness(1.06)}}
       .nx-kid-result{text-align:center;background:linear-gradient(180deg,#fff,#f6fff0);border-radius:30px;padding:22px 16px;box-shadow:0 9px 25px rgba(42,87,57,.14)}.nx-kid-result .trophy{font-size:68px}.nx-kid-result h2{font-size:27px;color:#20743b;margin:4px}.nx-kid-result .score{font-size:56px;font-weight:1000;color:#206ec6}.nx-kid-result p{color:#627484}.nx-kid-result .nx-px-actions{margin-top:15px}
       .nx-kid-rule{margin:13px 0;background:#fff7c7;border:3px solid #ffd539;border-radius:20px;padding:14px 15px;color:#473400;box-shadow:0 4px 10px rgba(141,104,0,.08)}.nx-kid-rule b{display:block;font-size:16px;letter-spacing:.3px;margin-bottom:6px;color:#7c5600}.nx-kid-rule span{display:block;font-size:19px;line-height:1.48;font-weight:850}.nx-kid-method-title{margin:12px 0 6px;background:#e7f5ff;color:#075cae;border-radius:16px;padding:10px 12px;font-size:16px;font-weight:950;letter-spacing:.3px}
@@ -2284,14 +2297,17 @@
     var currentLesson = state.level === '1' && state.lesson >= 0 && CP1_LESSONS[state.subject] ? CP1_LESSONS[state.subject][state.lesson] : null;
     var autoChoices = state.level === '1' && ex.type !== 'choice' ? cp1ClickChoices(ex) : null;
     var questionChoices = ex.type === 'choice' ? ex.choices : autoChoices;
-    var challengeText = state.level === '1' ? cp1ChallengeText(currentLesson, ex, state.index) : ex.q;
-    state.readText = challengeText + (state.level === '1' ? spokenChoices(ex, questionChoices) : '');
+    var teacherText = state.level === '1' ? cp1TeacherExplanation(currentLesson) : '';
+    var challengeText = state.level === '1' ? cp1ChallengeText(currentLesson, ex) : ex.q;
+    state.readText = state.level === '1'
+      ? ((teacherText ? 'Écoute bien. ' + teacherText + ' Maintenant, la question. ' : '') + challengeText + spokenChoices(ex, questionChoices))
+      : challengeText;
     setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? ('Défi ' + (state.index+1) + ' sur ' + state.list.length) : l.label, true);
     if (state.level === '1') {
       shell().classList.add('nx-cp1-mode');
       var longChoices = !!(questionChoices && questionChoices.some(function(c){ return String(c).length > 18; }));
       var pct = Math.round((state.index / Math.max(1,state.list.length))*100);
-      var html = '<div class="nx-kid-flow"><span class="on">🎯</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><div class="nx-kid-mission">🎯 DÉFI</div>' + cp1VoiceBadge() + '<h2>' + esc(challengeText) + '</h2>';
+      var html = '<div class="nx-kid-flow"><span class="on">🎯</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><div class="nx-kid-teacher"><b>👩🏾‍🏫 Le maître explique</b><p>' + esc(teacherText) + '</p></div><div class="nx-kid-mission">🎯 QUESTION</div>' + cp1VoiceBadge() + '<h2>' + esc(challengeText) + '</h2>';
       if (ex.visual) html += '<div class="nx-px-visual" style="text-align:center;font-size:40px">' + esc(ex.visual) + '</div>';
       if (questionChoices && questionChoices.length) html += '<div class="nx-kid-choice-grid' + (longChoices?' long':'') + '">' + questionChoices.map(function(c){ return '<button type="button" class="nx-kid-answer" data-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
       else { var mode = ex.type === 'input' ? 'inputmode="decimal"' : ''; html += '<form class="nx-px-input" data-answer-form style="margin-top:12px"><input ' + mode + ' autocomplete="off" aria-label="Ta réponse" placeholder="Écris ta réponse"><button type="submit">Corriger</button></form>'; }
