@@ -1,5 +1,5 @@
 {
-  "version": "V615",
-  "message": "Nexora V615 : avant chaque question CP1, une explication tres simple de maitre est lue et affichee, puis la question est posee. Le micro attend la fin de la consigne et les reponses tactiles restent toujours disponibles.",
+  "version": "V616",
+  "message": "Nexora V616 : acces aux autres cycles retabli. Le moteur securise, l API de cle et le manifeste des cours utilisent maintenant exactement la meme version de contenu protegee.",
   "critical": false
 }

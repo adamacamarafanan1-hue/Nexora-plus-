@@ -253,7 +253,7 @@
 
   /* ============ fin de la boite a outils retrouvee ============ */
 
-  var VERSION='v523-20260813-1';
+  var VERSION='v600-20260824-primary-exercises';
   var DB_NAME='nexora-secure-content-v211';
   var DB_VERSION=1;
   var ENTITLEMENT_ID='current';

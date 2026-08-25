@@ -1,6 +1,6 @@
 import { createHash, webcrypto } from "node:crypto";
 
-const CONTENT_VERSION = "v523-20260813-1";
+const CONTENT_VERSION = "v600-20260824-primary-exercises";
 const MAX_BODY_BYTES = 16 * 1024;
 const FETCH_TIMEOUT_MS = 8_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
