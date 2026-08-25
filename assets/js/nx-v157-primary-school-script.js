@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V615
+/* NEXORA — École primaire interactive V617
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV615) return;
-  window.__nxPrimaryExercisesV615 = true;
+  if (window.__nxPrimaryExercisesV617) return;
+  window.__nxPrimaryExercisesV617 = true;
 
-  var VERSION = 'v615';
+  var VERSION = 'v617';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -18,7 +18,10 @@
   var voiceListening = false;
   var voiceAwaitingAnswer = false;
   var voiceRestartTimer = null;
-  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false };
+  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, dsubject: '', dlesson: -1 };
+  var PRIMARY_DATA = null;
+  var PRIMARY_TRIED = false;
+  var CLASS_ID = { '1': 'cp1', '2': 'cp2', '3': 'ce1', '4': 'ce2', '5': 'cm1', '6': 'cm2' };
 
   function esc(v) {
     return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
@@ -38,6 +41,13 @@
   }
   function n(question, answer, explanation, visual) {
     return { type: 'input', q: question, a: String(answer), why: explanation || '', visual: visual || '' };
+  }
+  function qs(question, choices, answer, explanation) {
+    var o = q(question, choices, answer, explanation); o.strict = true; return o;
+  }
+  function sameAnswer(ex, value) {
+    if (ex && ex.strict) return String(value == null ? '' : value).trim() === String(ex.a).trim();
+    return normalize(value) === normalize(ex.a);
   }
   function text(question, answer, explanation) {
     return { type: 'text', q: question, a: String(answer), why: explanation || '' };
@@ -268,6 +278,94 @@
   function cp1RuleText(lesson, subject) {
     var title = lesson && lesson.title ? lesson.title : '';
     var rules = {
+      'Saluer et répondre à l’appel': 'Quand on dit mon nom, je réponds « Présent » ou « Présente », à voix claire, une seule fois.',
+      'Connaître les jours de la semaine': 'Les jours reviennent toujours dans le même ordre : lundi, mardi, mercredi, jeudi, vendredi, samedi, dimanche.',
+      'Aujourd’hui, hier et demain': 'Hier est déjà passé. Aujourd’hui, c’est maintenant. Demain n’est pas encore arrivé.',
+      'Observer le temps qu’il fait': 'Je regarde le ciel avant de dire le temps : soleil, nuages ou pluie. Je dis ce que je vois, pas ce que j’imagine.',
+      'Matin, midi, soir et nuit': 'La journée se suit dans l’ordre : matin, midi, soir, puis nuit.',
+      'Préparer son matériel': 'Avant de commencer, je sors ce dont j’ai besoin : cahier, ardoise, craie ou crayon. Le reste reste rangé.',
+      'Dire ce dont j’ai besoin': 'Je demande avec une phrase complète et polie : « S’il te plaît, j’ai besoin de… ».',
+      'Dire comment je me sens': 'Je peux nommer ce que je ressens : content, fatigué, triste, en colère. Nommer aide l’adulte à m’aider.',
+      'Vérifier sa propreté avant le travail': 'Avant d’écrire, je vérifie mes mains. Des mains propres gardent le cahier propre et protègent ma santé.',
+      'Écouter et redire une consigne': 'J’écoute toute la consigne sans parler, puis je la redis avec mes mots pour vérifier que j’ai compris.',
+      'Raconter un petit fait': 'Pour raconter, je dis d’abord QUI, puis ce qui s’est passé, puis OÙ ou QUAND.',
+      'Préparer la journée et se rappeler ce qu’on a appris': 'En fin de journée, je redis une chose apprise. Ce que je redis, je le retiens mieux.',
+      'Les objets de la classe': 'Chaque objet de la classe a un nom précis : cahier, craie, ardoise, table, banc. J’utilise le nom exact.',
+      'Les mots de la famille': 'Chaque personne de la famille a un nom précis : papa, maman, frère, sœur, grand-mère, grand-père.',
+      'Les mots de la maison': 'Je nomme chaque pièce et chaque objet de la maison avec son mot exact : cuisine, chambre, cour, marmite, natte.',
+      'Les mots de l’école': 'L’école a ses mots : classe, cour, maître, maîtresse, élève, récréation, tableau.',
+      'Les mots du marché et du quartier': 'Au marché et dans le quartier, je nomme ce que je vois : vendeuse, panier, riz, mangue, monnaie, route.',
+      'Comprendre un petit texte': 'J’écoute tout le texte jusqu’au bout. Ensuite je cherche QUI, FAIT QUOI, OÙ. Je ne réponds pas avant la fin.',
+      'Beaucoup, peu et rien': 'Beaucoup = grande quantité. Peu = petite quantité. Rien = aucun objet, c’est zéro.',
+      'Lourd et léger': 'Pour comparer deux objets, je les soupèse un dans chaque main. Le plus lourd pousse la main vers le bas.',
+      'Beaucoup ou peu de liquide : la capacité': 'Pour comparer deux liquides, j’utilise le même récipient. Sinon la comparaison est fausse.',
+      'Se repérer dans le temps': 'Je range les moments dans l’ordre où ils arrivent : avant, pendant, après.',
+      'Vivant ou non vivant ?': 'Un être vivant naît, grandit, se nourrit et meurt. Une pierre ou une chaise ne fait rien de tout cela.',
+      'La diversité autour de nous': 'Autour de moi, il y a des plantes, des animaux et des objets. Je les observe et je les range par famille.',
+      'Les grandes parties du corps': 'Le corps a une tête, un tronc, deux bras et deux jambes. Chaque partie a son rôle.',
+      'Les yeux et la vue': 'Les yeux servent à voir. Je protège mes yeux : je ne les frotte pas avec des mains sales et je ne fixe pas le soleil.',
+      'Les oreilles et les sons': 'Les oreilles servent à entendre. Je n’y mets aucun objet et j’évite les bruits très forts.',
+      'Le nez et les odeurs': 'Le nez sert à sentir et à respirer. Une mauvaise odeur peut avertir d’un danger.',
+      'La langue et les goûts': 'La langue reconnaît les goûts : sucré, salé, acide, amer. Je ne goûte jamais un produit inconnu.',
+      'La peau et le toucher': 'La peau sent le chaud, le froid, le doux et le piquant. Elle protège tout le corps.',
+      'Les animaux de notre milieu': 'Chaque animal a un lieu de vie et une nourriture. J’observe sans déranger et sans toucher un animal inconnu.',
+      'Prendre soin d’un animal': 'Un animal a besoin d’eau propre, de nourriture, d’un abri et de douceur.',
+      'Les parties d’une plante': 'Une plante a des racines, une tige, des feuilles, parfois des fleurs et des fruits. Chaque partie a un rôle.',
+      'Les plantes fruitières de chez nous': 'Chez nous poussent le manguier, l’oranger, le bananier, le papayer. Le fruit vient toujours d’une plante.',
+      'Les aliments et leur origine': 'Un aliment vient d’une plante ou d’un animal. Je peux dire d’où vient ce que je mange.',
+      'Propreté du corps et des vêtements': 'Je me lave chaque jour et je porte des vêtements propres. La propreté éloigne les maladies.',
+      'Prendre soin de ses dents': 'Je brosse mes dents le matin et le soir, de haut en bas, sur toutes les faces.',
+      'Hygiène des aliments et de l’eau': 'Je lave les fruits, je couvre les plats et je bois de l’eau propre. Une eau sale rend malade.',
+      'Garder la maison et l’école propres': 'Je jette les déchets dans la poubelle, jamais par terre. Un lieu propre est un lieu sain.',
+      'Sécurité à la maison et sur la route': 'Je m’éloigne du feu, des couteaux et des produits inconnus. Sur la route, je traverse avec un adulte.',
+      'Objets naturels et objets fabriqués': 'Un objet naturel vient de la nature. Un objet fabriqué a été fait par l’homme à partir d’une matière.',
+      'L’eau et le bois : ressources utiles': 'L’eau et le bois servent chaque jour. Ils ne sont pas sans fin : je ne les gaspille pas.',
+      'Petit projet : observer, préparer, réaliser': 'Pour réussir un projet : j’observe, je prépare mon matériel, je réalise, puis je vérifie.',
+      'Dire bonjour et parler poliment': 'Je salue en regardant la personne et je parle sans crier. La politesse ouvre les portes.',
+      'Dire merci et demander pardon': 'Je dis « merci » quand on m’aide, et « pardon » quand j’ai fait du tort. Demander pardon répare.',
+      'Écouter et attendre son tour': 'Quand une personne parle, je me tais. Je lève la main et j’attends mon tour.',
+      'Partager et aider': 'Partager, c’est donner une part à l’autre. Aider, c’est faire avec lui ce qu’il ne peut pas faire seul.',
+      'Respecter les différences': 'Chacun est différent par sa taille, sa langue ou sa famille. On ne se moque de personne.',
+      'Respecter sa famille': 'J’écoute mes parents et les aînés, je réponds poliment et j’aide à la maison.',
+      'Être honnête': 'Je dis la vérité, même quand c’est difficile. Je ne prends pas ce qui n’est pas à moi.',
+      'Tenir une petite promesse': 'Je ne promets que ce que je peux faire. Une promesse tenue donne confiance.',
+      'Régler un désaccord sans violence': 'Je m’arrête, je parle calmement, j’écoute l’autre. Si c’est trop difficile, j’appelle un adulte. Jamais les coups.',
+      'Protéger les biens communs': 'La table, le livre, le robinet appartiennent à tous. J’en prends soin comme si c’était à moi.',
+      'Propreté et environnement': 'Je ne jette rien par terre et je ne casse pas les plantes. L’environnement propre est bon pour tous.',
+      'Être solidaire': 'Quand quelqu’un est en difficulté, je propose mon aide ou j’avertis un adulte.',
+      'Les droits de l’enfant': 'Chaque enfant a droit à un nom, à la santé, à l’école, à la protection et au jeu.',
+      'Mes responsabilités d’élève': 'Venir à l’heure, écouter, faire mon travail et respecter les autres : c’est mon travail d’élève.',
+      'Bien vivre dans le quartier': 'Dans le quartier, je salue, je respecte les voisins, je ne fais pas de bruit inutile et je garde les lieux propres.',
+      'Le drapeau et les symboles de la Guinée': 'Le drapeau de la Guinée a trois bandes verticales : rouge, jaune, verte. On le respecte.',
+      'Reconnaître les couleurs': 'Je nomme la couleur que je vois vraiment : rouge, jaune, vert, bleu, noir, blanc.',
+      'Clair, foncé et choix de couleur': 'Une couleur claire éclaire, une couleur foncée assombrit. Une couleur claire se voit mieux sur un fond foncé.',
+      'Tracer des lignes': 'Je tiens bien mon crayon et je trace d’un seul geste, sans repasser plusieurs fois.',
+      'Reconnaître les formes': 'Je reconnais une forme en comptant ses côtés : le carré et le rectangle en ont 4, le triangle en a 3, le cercle n’en a pas.',
+      'Observer avant de dessiner': 'Je regarde longuement l’objet avant de tracer. On dessine ce qu’on voit, pas ce qu’on croit.',
+      'Dessiner un objet familier': 'Je commence par la grande forme, puis j’ajoute les détails à la fin.',
+      'Dessiner une personne': 'Je place d’abord la tête, le tronc, les bras et les jambes. Ensuite seulement le visage.',
+      'Dessiner une plante ou un animal': 'Je dessine d’abord la partie la plus grande, puis les petites parties à leur bonne place.',
+      'Créer un motif qui se répète': 'Un motif se répète toujours dans le même ordre. Je respecte l’ordre jusqu’au bout.',
+      'Découvrir la symétrie': 'Dans une figure symétrique, les deux côtés du pli sont pareils.',
+      'Décorer avec ordre': 'Je décore sans tout remplir : je laisse de la place et je garde le même espace entre les motifs.',
+      'Écouter et reproduire un rythme': 'J’écoute le rythme en entier, puis je le frappe pareil, ni plus vite ni plus fort.',
+      'Fort, doux, rapide et lent': 'Fort et doux parlent du son. Rapide et lent parlent de la vitesse. Ce n’est pas la même chose.',
+      'Chanter en écoutant le groupe': 'Je chante en écoutant les autres, à leur vitesse. Chanter ensemble, ce n’est pas crier le plus fort.',
+      'Réciter clairement et mémoriser': 'Je récite lentement, en articulant, et je m’arrête aux points.',
+      'Créer une petite œuvre personnelle': 'Je choisis mon idée, je prépare mon matériel, je réalise, puis je dis ce que j’ai voulu montrer.',
+      'Marcher avec contrôle': 'Je marche le dos droit, en regardant devant moi, sans bousculer personne.',
+      'Courir en sécurité': 'Je regarde devant, je garde de la distance et je ralentis avant de m’arrêter.',
+      'Changer de direction': 'Pour tourner sans tomber, je ralentis d’abord, puis je pose bien le pied.',
+      'Garder son équilibre': 'Pour rester en équilibre, je fixe un point devant moi et j’écarte un peu les bras.',
+      'Sauter à pieds joints': 'Je plie les genoux, je pousse avec les deux pieds, et je retombe genoux pliés.',
+      'Lancer vers une cible': 'Je regarde la cible, j’arme mon bras, puis je lance. Le regard part avant le bras.',
+      'Attraper une balle souple': 'Je suis la balle des yeux et j’avance les deux mains ensemble pour l’accueillir.',
+      'Faire rouler une balle': 'Je me baisse et je pousse la balle au ras du sol, vers la personne que je vise.',
+      'Coordonner les mains et les pieds': 'Je fais un geste après l’autre, lentement, avant d’essayer plus vite.',
+      'Suivre un petit parcours': 'Je regarde tout le parcours avant de partir, puis je respecte l’ordre des étapes.',
+      'Bouger sur un rythme': 'J’écoute d’abord le rythme, puis je bouge au même moment que lui.',
+      'Faire un relais simple': 'J’attends mon camarade, je prends l’objet à la main, et je pars seulement après.',
+      'Préparer son corps et rester en sécurité': 'Je m’échauffe avant l’effort, je bois de l’eau, et je m’arrête si j’ai mal.',
       'Saluer et se présenter': 'Pour saluer : « Bonjour ». Pour donner ton nom : « Je m’appelle… ».',
       'Comprendre une consigne simple': 'J’écoute toute la consigne. Je cherche ce qu’on me demande. Ensuite seulement, j’agis.',
       'Reconnaître et lire un prénom': 'Un prénom commence par une majuscule. Je regarde tout le prénom, pas seulement sa première lettre.',
@@ -313,12 +411,6 @@
     return '';
   }
 
-  function firstUsefulSentence(text) {
-    var value = String(text || '').replace(/\s+/g,' ').trim();
-    if (!value) return '';
-    var m = value.match(/^(.{1,150}?[.!?])(?:\s|$)/);
-    return (m ? m[1] : value.slice(0,150)).trim();
-  }
   function cp1TeacherExplanation(lesson) {
     if (!lesson) return '';
     var rule = cp1RuleText(lesson, state.subject);
@@ -339,6 +431,28 @@
     };
     return simple[state.subject] || 'Regarde bien. Écoute bien. Puis réfléchis avant de choisir.';
   }
+  function cp1LessonHelp(lesson) {
+    if (!lesson) return '';
+    var parts = [];
+    if (lesson.one) parts.push(String(lesson.one));
+    if (lesson.two) parts.push(String(lesson.two));
+    if (lesson.example) parts.push(String(lesson.example));
+    if (!parts.length) return '';
+    return '<button type="button" class="nx-kid-help-btn" data-lesson-help>💡 Je veux réécouter la leçon</button>' +
+      '<div class="nx-kid-help-box" data-lesson-help-box hidden>' +
+      parts.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>';
+  }
+  function toggleLessonHelp() {
+    var box = main().querySelector('[data-lesson-help-box]');
+    if (!box) return;
+    var show = box.hidden;
+    box.hidden = !show;
+    if (show) {
+      var txt = box.textContent || '';
+      if (txt.trim()) speak(txt.trim());
+    } else { try { window.speechSynthesis && speechSynthesis.cancel(); } catch (_e) {} }
+  }
+
   function cp1ChallengeText(lesson, ex) {
     return String((ex && ex.q) || '').trim();
   }
@@ -399,6 +513,173 @@
     arts: { name: 'Arts & culture', icon: '🎨' }, eps: { name: 'Éducation physique', icon: '🏃' }
   };
 
+  var WORD_POOL = ['lune', 'sac', 'riz', 'moto', 'banane', 'papa', 'table', 'pain', 'chaise', 'dos', 'gâteau', 'nuit'];
+  var LETTER_POOL = ['x', 'z', 'k', 'w', 'j', 'q', 'y', 'h'];
+  function otherWord(letter, avoid) {
+    var bad = (avoid || []).map(normalize);
+    var lt = normalize(letter);
+    for (var i = 0; i < WORD_POOL.length; i++) {
+      var w = WORD_POOL[i];
+      if (bad.indexOf(normalize(w)) >= 0) continue;
+      if (lt && normalize(w).indexOf(lt) >= 0) continue;
+      return w;
+    }
+    return 'nuit';
+  }
+  function otherLetter(letter, offset) {
+    var lt = normalize(letter), out = [];
+    for (var i = 0; i < LETTER_POOL.length; i++) if (normalize(LETTER_POOL[i]) !== lt) out.push(LETTER_POOL[i]);
+    return out[(offset || 0) % out.length];
+  }
+  function numChoices(answer, candidates) {
+    var vals = [Number(answer)];
+    (candidates || []).forEach(function (c) {
+      c = Number(c);
+      if (isFinite(c) && c >= 0 && vals.indexOf(c) < 0 && vals.length < 3) vals.push(c);
+    });
+    var extra = 1;
+    while (vals.length < 3) { if (vals.indexOf(Number(answer) + extra) < 0) vals.push(Number(answer) + extra); extra++; }
+    return vals.map(String);
+  }
+
+  /* ---- Lecture des leçons rédigées (modules/classes/primaire.json) ----
+     Le fichier est chiffré : on passe par la chaîne sécurisée, avec repli public.
+     La lecture est volontairement tolérante : on accepte plusieurs noms de champs. */
+  function asList(value) {
+    if (!value) return [];
+    if (Object.prototype.toString.call(value) === '[object Array]') return value.slice();
+    if (typeof value === 'object') {
+      return Object.keys(value).map(function (k) {
+        var item = value[k];
+        if (item && typeof item === 'object' && Object.prototype.toString.call(item) !== '[object Array]') {
+          if (!item.__key) { try { item.__key = k; } catch (_e) {} }
+          return item;
+        }
+        return { __key: k, value: item };
+      });
+    }
+    return [];
+  }
+  function firstOf(obj, names) {
+    if (!obj) return '';
+    for (var i = 0; i < names.length; i++) {
+      var v = obj[names[i]];
+      if (typeof v === 'string' && v.trim()) return v.trim();
+    }
+    return '';
+  }
+  function idOf(obj) {
+    return String(firstOf(obj, ['id', 'key', 'code', 'slug']) || (obj && obj.__key) || '').toLowerCase();
+  }
+  function loadPrimaryData() {
+    if (PRIMARY_DATA) return Promise.resolve(true);
+    if (PRIMARY_TRIED) return Promise.resolve(false);
+    var path = 'modules/classes/primaire.json';
+    function viaSecure() {
+      var s = window.NexoraSecureContent;
+      if (s && typeof s.json === 'function') return s.json(path);
+      return Promise.reject(new Error('secure indisponible'));
+    }
+    function viaPublic() {
+      var r = window.NexoraAcademyContentV271;
+      if (r && typeof r.json === 'function') return r.json(path);
+      return Promise.reject(new Error('public indisponible'));
+    }
+    return viaSecure().catch(viaPublic).then(function (data) {
+      PRIMARY_TRIED = true;
+      PRIMARY_DATA = (data && typeof data === 'object') ? data : null;
+      return !!PRIMARY_DATA;
+    }).catch(function () { PRIMARY_TRIED = true; return false; });
+  }
+  function primaryClassFor(level) {
+    if (!PRIMARY_DATA) return null;
+    var wanted = CLASS_ID[level];
+    if (!wanted) return null;
+    var root = PRIMARY_DATA.classes || PRIMARY_DATA.classe || PRIMARY_DATA.niveaux || PRIMARY_DATA;
+    if (root && typeof root === 'object' && root[wanted]) return root[wanted];
+    var list = asList(root);
+    for (var i = 0; i < list.length; i++) if (idOf(list[i]) === wanted) return list[i];
+    return null;
+  }
+  var SUBJECT_ALIAS = {
+    calcul: 'maths', mathematique: 'maths', mathematiques: 'maths', math: 'maths', maths: 'maths',
+    francais: 'francais', lecture: 'francais', langage: 'francais', expression: 'francais',
+    sciences: 'sciences', science: 'sciences', observation: 'sciences', eveil: 'sciences',
+    ecm: 'ecm', civique: 'ecm', morale: 'ecm',
+    histoire: 'histoire', geographie: 'geographie', histoiregeo: 'histoiregeo', 'histoire-geographie': 'histoiregeo',
+    arts: 'arts', 'arts-eps': 'arts', dessin: 'arts', musique: 'arts',
+    eps: 'eps', sport: 'eps', entretien: 'entretien'
+  };
+  function canonSubject(id) {
+    var k = normalize(id).replace(/\s+/g, '-');
+    return SUBJECT_ALIAS[k] || k;
+  }
+  function dataSubjects(cls) {
+    var raw = cls && (cls.subjects || cls.matieres || cls.matiere || cls.disciplines);
+    var list = asList(raw || cls);
+    var out = [];
+    list.forEach(function (s) {
+      if (!s || typeof s !== 'object') return;
+      var lessons = dataLessons(s);
+      if (!lessons.length) return;
+      var id = idOf(s), canon = canonSubject(id);
+      out.push({ id: id, canon: canon, raw: s, lessons: lessons, name: firstOf(s, ['name', 'title', 'label', 'nom']) || (SUBJECTS[canon] ? SUBJECTS[canon].name : id) });
+    });
+    return out;
+  }
+  function dataLessons(subject) {
+    var raw = subject && (subject.lessons || subject.lecons || subject.items || subject.contenu);
+    var list = asList(raw);
+    return list.filter(function (l) { return l && typeof l === 'object'; });
+  }
+  var FIELD_LABELS = [
+    ['duration', 'duree'], 'Durée',
+    ['material', 'materiel'], 'Matériel',
+    ['objective', 'objectif'], 'Objectif',
+    ['prerequisite', 'prerequis', 'prereq'], 'Ce qu’il faut déjà savoir',
+    ['discovery', 'decouverte'], 'Découverte',
+    ['example', 'exemple'], 'Exemple',
+    ['guided', 'guide', 'guidee'], 'Avec le maître',
+    ['trace', 'retenir', 'resume'], 'À retenir',
+    ['exercise', 'exercice', 'exercices'], 'Exercice',
+    ['hint', 'indice', 'aide'], 'Indice',
+    ['correction', 'corrige'], 'Correction',
+    ['adultTip', 'conseil', 'adulte'], 'Conseil à l’adulte'
+  ];
+  function dataLessonHtml(lesson) {
+    var html = '';
+    var used = {};
+    var steps = lesson.steps || lesson.etapes;
+    for (var i = 0; i < FIELD_LABELS.length; i += 2) {
+      var names = FIELD_LABELS[i], label = FIELD_LABELS[i + 1];
+      var value = firstOf(lesson, names);
+      if (!value) continue;
+      names.forEach(function (nm) { used[nm] = true; });
+      html += '<section class="nx-px-block"><h3>' + esc(label) + '</h3><p>' + esc(value) + '</p></section>';
+      if (names[0] === 'discovery' && steps) {
+        var st = asList(steps), sh = '';
+        st.forEach(function (s, k) {
+          var t = typeof s === 'string' ? s : (firstOf(s, ['text', 'texte', 'content', 'title']) || '');
+          if (t) sh += '<li><b>Étape ' + (k + 1) + '</b> — ' + esc(t) + '</li>';
+        });
+        if (sh) html += '<section class="nx-px-block"><h3>Les étapes</h3><ol class="nx-px-steps">' + sh + '</ol></section>';
+      }
+    }
+    if (!html) {
+      Object.keys(lesson).forEach(function (k) {
+        if (k === '__key' || used[k]) return;
+        var v = lesson[k];
+        if (typeof v === 'string' && v.trim().length > 12 && k.toLowerCase().indexOf('title') < 0) {
+          html += '<section class="nx-px-block"><h3>' + esc(k) + '</h3><p>' + esc(v.trim()) + '</p></section>';
+        }
+      });
+    }
+    return html || '<section class="nx-px-block"><p>Cette leçon n’a pas encore de texte.</p></section>';
+  }
+  function lessonTitle(lesson, index) {
+    return firstOf(lesson, ['title', 'titre', 'name', 'nom']) || ('Leçon ' + (index + 1));
+  }
+
   function cp1Lesson(title, one, two, example, visual, visualLabel, ex) {
     return { title: title, one: one, two: two, example: example || '', visual: visual || '📘', visualLabel: visualLabel || title, ex: ex || [] };
   }
@@ -412,10 +693,10 @@
       visual,
       'Illustration du son ' + sound,
       [
-        q('Dans quel mot entends-tu ' + sound + ' ?', [word1, wrong, 'riz'], word1, 'Prononce le mot lentement et écoute le son demandé.'),
-        q('Touche le signe que nous apprenons.', [letter, 'x', 'z'], letter, 'Le signe étudié est « ' + letter + ' ».'),
-        q('Quel mot contient aussi ' + sound + ' ?', [word2, wrong, 'sac'], word2, 'On entend ' + sound + ' dans « ' + word2 + ' ».'),
-        q('Pour reconnaître un son, que faut-il faire d’abord ?', ['Écouter le mot', 'Choisir au hasard', 'Fermer les oreilles'], 'Écouter le mot', 'L’oreille aide à repérer le son avant de choisir la lettre.')
+        q('Dans quel mot entends-tu ' + sound + ' ?', [word1, wrong, otherWord(letter, [word1, word2, wrong])], word1, 'Prononce le mot lentement et écoute le son demandé.'),
+        q('Touche le signe que nous apprenons.', [letter, otherLetter(letter, 0), otherLetter(letter, 1)], letter, 'Le signe étudié est « ' + letter + ' ».'),
+        q('Quel mot contient aussi ' + sound + ' ?', [word2, wrong, otherWord(letter, [word1, word2, wrong])], word2, 'On entend ' + sound + ' dans « ' + word2 + ' ».'),
+        q('Quelle lettre écrit le son ' + sound + ' ?', [letter, otherLetter(letter, 2), otherLetter(letter, 3)], letter, 'Le son ' + sound + ' s’écrit avec la lettre « ' + letter + ' ».')
       ]
     );
   }
@@ -429,10 +710,10 @@
       visual,
       'Collection représentant le nombre ' + num,
       [
-        q('Quel nombre est représenté ?', [String(num), String(Math.max(0,num-1)), String(num+1)], String(num), 'On compte chaque objet une fois.'),
-        q('Quel chiffre correspond à « ' + word + ' » ?', [String(num), String(num+1), String(Math.max(0,num-2))], String(num), 'Le mot « ' + word + ' » correspond au chiffre ' + num + '.'),
-        q('Quelle décomposition peut donner ' + num + ' ?', [decompA, String(num)+' + 2', '0 + 0'], decompA, 'On vérifie en réunissant les deux petites quantités.'),
-        q('Pour compter sans se tromper, que faut-il faire ?', ['Compter chaque objet une fois', 'Compter le même objet plusieurs fois', 'Répondre au hasard'], 'Compter chaque objet une fois', 'Une correspondance entre un objet et un nombre évite les doubles comptages.')
+        q('Quel nombre est représenté ?', numChoices(num, [num - 1, num + 1, num + 2]), String(num), 'On compte chaque objet une fois.'),
+        q('Quel chiffre correspond à « ' + word + ' » ?', numChoices(num, [num + 1, num - 2, num + 3]), String(num), 'Le mot « ' + word + ' » correspond au chiffre ' + num + '.'),
+        q('Quelle décomposition peut donner ' + num + ' ?', [decompA, String(num) + ' + 2', (num === 0 ? '1 + 1' : '0 + 0')], decompA, 'On vérifie en réunissant les deux petites quantités.'),
+        q('Quel nombre vient juste après ' + num + ' ?', numChoices(num + 1, [num, num + 2, num + 3]), String(num + 1), 'Après ' + num + ', on dit ' + (num + 1) + '.')
       ]
     );
   }
@@ -449,8 +730,8 @@
       [
         q('Lis : ' + s1, [s1, s2, s3], s1, 'On garde l’ordre des lettres pour lire la syllabe.'),
         q('Lis : ' + s2, [s3, s2, s4], s2, 'La bonne syllabe est celle qui respecte les lettres vues.'),
-        q('Quelle syllabe est différente ?', [s3, s3, s4], s4, 'Deux syllabes sont identiques ; la troisième change.'),
-        q('Quand deux sons sont rapprochés pour former un petit morceau de mot, on obtient :', ['une syllabe', 'un dessin', 'un nombre'], 'une syllabe', 'Une syllabe est un petit groupe de sons prononcé ensemble.')
+        q('Lis : ' + s3, [s3, s4, s1], s3, 'Je prononce les deux lettres l’une après l’autre, puis je les réunis.'),
+        q('Lis : ' + s4, [s4, s1, s2], s4, 'Je regarde les lettres dans leur ordre avant de dire la syllabe.')
       ]
     );
   }
@@ -748,10 +1029,10 @@
         '🔠 Awa lit. 🔵',
         'Phrase avec majuscule et point',
         [
-          q('Quelle phrase commence correctement ?', ['Awa lit.', 'awa lit.', 'awa Lit.'], 'Awa lit.', 'La phrase commence par une majuscule.'),
+          qs('Quelle phrase commence correctement ?', ['Awa lit.', 'awa lit.', 'awa Lit.'], 'Awa lit.', 'La phrase commence par une majuscule.'),
           q('Quel signe termine la phrase « Sory joue » ?', ['.', '?', ','], '.', 'Une phrase déclarative simple se termine par un point.'),
           q('À quoi sert la majuscule au début ?', ['À montrer le début de la phrase', 'À compter les mots', 'À remplacer tous les sons'], 'À montrer le début de la phrase', 'Elle aide à repérer le commencement.'),
-          q('Quelle phrase est bien écrite ?', ['Fanta chante.', 'fanta chante', 'Fanta chante'], 'Fanta chante.', 'Il faut une majuscule au début et un point à la fin.')
+          qs('Quelle phrase est bien écrite ?', ['Fanta chante.', 'fanta chante', 'Fanta chante'], 'Fanta chante.', 'Il faut une majuscule au début et un point à la fin.')
         ]
       ),
       cp1Lesson(
@@ -850,7 +1131,7 @@
           q('Après avoir écrit, que dois-tu faire ?', ['Relire', 'Fermer les yeux et rendre tout de suite', 'Effacer toute la page'], 'Relire', 'Relire aide à repérer et corriger certaines erreurs.'),
           q('Quel ordre est correct ?', ['Sory joue.', 'Joue Sory.', 'sory joue'], 'Sory joue.', 'Le nom vient avant l’action dans cette phrase simple.'),
           q('Quels trois éléments dois-tu vérifier ?', ['Majuscule, ordre des mots, point', 'Couleur du ciel, prix du riz, taille de la table', 'Seulement le nombre de lettres'], 'Majuscule, ordre des mots, point', 'Cette petite méthode développe l’autocorrection.'),
-          text('Écris exactement : Awa lit.', 'Awa lit.', 'Très bien. La phrase commence par une majuscule et se termine par un point.')
+          qs('Quelle phrase est écrite correctement ?', ['Awa lit.', 'awa lit.', 'Awa lit'], 'Awa lit.', 'Majuscule au début, point à la fin.')
         ]
       )
     ],
@@ -1853,7 +2134,7 @@
       e.push(q('Complète : Je ___ à l’école.', ['vais','va','vont'], 'vais', 'Avec « je », on dit « je vais ».'));
       e.push(q('Quel mot est féminin ?', ['une maison','un cahier','un garçon'], 'une maison', 'L’article « une » indique ici le féminin.'));
       e.push(q('Quel mot est le contraire de « grand » ?', ['petit','haut','large'], 'petit', '« Petit » est l’antonyme de « grand ».'));
-      e.push(q('Quelle phrase commence correctement ?', ['Mamadou lit.','mamadou lit.'], 'Mamadou lit.', 'Une phrase et un nom propre commencent par une majuscule.'));
+      e.push(qs('Quelle phrase commence correctement ?', ['Mamadou lit.','mamadou lit.'], 'Mamadou lit.', 'Une phrase et un nom propre commencent par une majuscule.'));
       e.push(q('Dans « la jolie fleur », quel mot décrit la fleur ?', ['jolie','fleur','la'], 'jolie', '« Jolie » donne une information sur le nom « fleur ».'));
       e.push(q('Choisis le bon article : ___ école.', ['une','un','des'], 'une', 'On dit « une école ».'));
       e.push(q('Quel mot contient le son [ou] ?', ['poule','papa','riz'], 'poule', 'Dans « poule », les lettres ou donnent le son [ou].'));
@@ -2141,6 +2422,21 @@
     var st = document.createElement('style');
     st.id = 'nxCp1PremiumV611';
     st.textContent = `
+      .nx-px-note{text-align:center;color:#68798c;font-size:14px;margin:14px 0}
+      .nx-px-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+      .nx-px-lesson-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:#fff;border:1px solid #dbe5ee;border-radius:14px;padding:13px 14px;font-size:15px;color:#17324d;cursor:pointer}
+      .nx-px-lesson-row .num{flex:0 0 30px;height:30px;border-radius:10px;background:#eaf3fb;color:#1268b8;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+      .nx-px-lesson{background:#fff;border:1px solid #dbe5ee;border-radius:16px;padding:16px}
+      .nx-px-lesson h2{margin:0 0 10px;font-size:20px;color:#12314f}
+      .nx-px-block{margin:0 0 14px}
+      .nx-px-block h3{margin:0 0 5px;font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:#1268b8}
+      .nx-px-block p{margin:0;font-size:16px;line-height:1.6;color:#22364a}
+      .nx-px-steps{margin:0;padding-left:20px;font-size:16px;line-height:1.6;color:#22364a}
+      .nx-px-steps li{margin-bottom:6px}
+      .nx-kid-help-btn{display:block;width:100%;margin:8px 0 4px;padding:11px;border:0;border-radius:14px;background:#fff3cd;color:#8a5b00;font-size:15px;font-weight:700;cursor:pointer}
+      .nx-kid-help-box{background:#fffaf0;border:1px dashed #f0c674;border-radius:14px;padding:11px 13px;margin-bottom:8px}
+      .nx-kid-help-box p{margin:0 0 7px;font-size:16px;line-height:1.55;color:#4a3a12}
+      .nx-kid-help-box p:last-child{margin-bottom:0}
       .nx-px-v600.nx-cp1-mode{background:linear-gradient(180deg,#dff5ff 0,#fff9df 42%,#eefbe9 100%);background-attachment:fixed}
       .nx-cp1-mode .nx-px-top{background:linear-gradient(135deg,#078df0,#4f53e9);padding:11px 12px;border-bottom-left-radius:22px;border-bottom-right-radius:22px;box-shadow:0 7px 24px rgba(39,94,190,.24)}
       .nx-cp1-mode .nx-px-top b{font-size:20px;letter-spacing:.2px}.nx-cp1-mode .nx-px-top span{font-size:13px;opacity:.95}
@@ -2189,6 +2485,10 @@
       var voiceToggle = ev.target.closest('[data-voice-toggle]'); if (voiceToggle) { toggleVoiceMode(); return; }
       var lv = ev.target.closest('[data-level]'); if (lv) { state.level = lv.getAttribute('data-level'); state.subject = ''; renderSubjects(); return; }
       var resume = ev.target.closest('[data-resume]'); if (resume) { state.subject = resume.getAttribute('data-resume-subject'); startCp1Lesson(resume.getAttribute('data-resume-lesson')); return; }
+      var help = ev.target.closest('[data-lesson-help]'); if (help) { toggleLessonHelp(); return; }
+      var dl = ev.target.closest('[data-dlesson]'); if (dl) { renderDataLesson(Number(dl.getAttribute('data-dlesson'))); return; }
+      var ds = ev.target.closest('[data-dsubject]'); if (ds) { openDataSubject(ds.getAttribute('data-dsubject')); return; }
+      var bank = ev.target.closest('[data-bank]'); if (bank) { startBank(bank.getAttribute('data-bank')); return; }
       var lesson = ev.target.closest('[data-lesson]'); if (lesson) { startCp1Lesson(lesson.getAttribute('data-lesson')); return; }
       var sj = ev.target.closest('[data-subject]'); if (sj) { startSubject(sj.getAttribute('data-subject')); return; }
       var ans = ev.target.closest('[data-answer]'); if (ans) { answer(ans.getAttribute('data-answer'), ans); return; }
@@ -2271,13 +2571,84 @@
       return;
     }
     state.readText = '';
+    state.dsubject = ''; state.dlesson = -1;
     setHeader(l.label, 'Choisis une matière', true);
-    var old = '<section class="nx-px-hero"><h2>' + esc(l.label) + '</h2><p>Choisis une matière pour commencer les exercices.</p></section><div class="nx-px-grid">';
+    var cls = primaryClassFor(state.level);
+    var written = cls ? dataSubjects(cls) : [];
+    var seen = {};
+    var old = '<section class="nx-px-hero"><h2>' + esc(l.label) + '</h2><p>' + (written.length ? 'Choisis une matière : leçons et exercices.' : 'Choisis une matière pour commencer les exercices.') + '</p></section><div class="nx-px-grid">';
+    written.forEach(function (s) {
+      seen[s.id] = true;
+      seen[s.canon] = true;
+      var meta = SUBJECTS[s.canon];
+      old += '<button type="button" class="nx-px-card" data-dsubject="' + esc(s.id) + '"><em>' + ((meta && meta.icon) || '📘') + '</em><strong>' + esc(s.name) + '</strong><small>' + s.lessons.length + ' leçons</small></button>';
+    });
     l.subjects.forEach(function (sub) {
+      if (seen[sub]) return;
       var meta = SUBJECTS[sub], bank = build(state.level, sub), pr = p[state.level + ':' + sub];
+      if (!bank.length) return;
       old += '<button type="button" class="nx-px-card" data-subject="' + sub + '"><em>' + meta.icon + '</em><strong>' + esc(meta.name) + '</strong><small>' + bank.length + ' exercices par série</small>' + (pr ? '<div class="nx-px-progress">Meilleur score : ' + (pr.best || 0) + '%</div>' : '') + '</button>';
     });
-    old += '</div>'; main().innerHTML = old;
+    old += '</div>';
+    if (!written.length && !PRIMARY_TRIED) old += '<p class="nx-px-note">Chargement des leçons…</p>';
+    main().innerHTML = old;
+    if (!written.length) {
+      loadPrimaryData().then(function (ok) {
+        if (!ok) { var note = main().querySelector('.nx-px-note'); if (note) note.parentNode.removeChild(note); return; }
+        if (state.level && !state.subject && !state.dsubject && !state.list.length) renderSubjects();
+      });
+    }
+  }
+
+  function openDataSubject(subjectId) {
+    state.dsubject = String(subjectId || ''); state.dlesson = -1; state.subject = ''; state.list = [];
+    renderDataLessons(state.dsubject);
+  }
+  function currentDataSubject() {
+    var cls = primaryClassFor(state.level);
+    if (!cls || !state.dsubject) return null;
+    var list = dataSubjects(cls);
+    for (var i = 0; i < list.length; i++) if (list[i].id === state.dsubject) return list[i];
+    return null;
+  }
+  function renderDataLessons(subjectId) {
+    clearAuto();
+    var s = currentDataSubject();
+    if (!s) { renderSubjects(); return; }
+    state.readText = '';
+    var l = LEVELS[state.level];
+    setHeader(s.name, l ? l.label : 'École primaire', true);
+    var html = '<section class="nx-px-hero"><h2>' + esc(s.name) + '</h2><p>' + s.lessons.length + ' leçons · touche une leçon pour la lire.</p></section><div class="nx-px-list">';
+    s.lessons.forEach(function (lesson, i) {
+      html += '<button type="button" class="nx-px-lesson-row" data-dlesson="' + i + '"><span class="num">' + (i + 1) + '</span><strong>' + esc(lessonTitle(lesson, i)) + '</strong></button>';
+    });
+    html += '</div>';
+    var bank = build(state.level, s.canon);
+    if (bank.length) html += '<button type="button" class="nx-px-next" data-bank="' + esc(s.canon) + '" style="margin-top:14px">🎯 Faire les ' + bank.length + ' exercices corrigés</button>';
+    main().innerHTML = html;
+  }
+  function renderDataLesson(index) {
+    clearAuto();
+    var s = currentDataSubject();
+    if (!s || !s.lessons[index]) { renderDataLessons(state.dsubject); return; }
+    state.dlesson = index;
+    var lesson = s.lessons[index];
+    var title = lessonTitle(lesson, index);
+    state.readText = title + '. ' + (firstOf(lesson, ['objective', 'objectif']) || '');
+    setHeader(title, s.name + ' · leçon ' + (index + 1) + ' sur ' + s.lessons.length, true);
+    var html = '<article class="nx-px-lesson"><h2>' + esc(title) + '</h2>' + dataLessonHtml(lesson) + '</article>';
+    if (index + 1 < s.lessons.length) html += '<button type="button" class="nx-px-next" data-dlesson="' + (index + 1) + '" style="margin-top:14px">Leçon suivante →</button>';
+    var bank = build(state.level, s.canon);
+    if (bank.length) html += '<button type="button" class="nx-px-next" data-bank="' + esc(s.canon) + '" style="margin-top:10px">🎯 Faire les exercices corrigés</button>';
+    main().innerHTML = html;
+    shell().scrollTop = 0;
+  }
+  function startBank(subject) {
+    state.subject = subject; state.lesson = -1; state.phase = 3; state.readText = '';
+    state.list = shuffle(build(state.level, subject));
+    state.index = 0; state.good = 0; state.wrong = []; state.locked = false;
+    if (!state.list.length) { renderSubjects(); return; }
+    renderQuestion();
   }
 
   function startSubject(subject) {
@@ -2299,15 +2670,16 @@
     var questionChoices = ex.type === 'choice' ? ex.choices : autoChoices;
     var teacherText = state.level === '1' ? cp1TeacherExplanation(currentLesson) : '';
     var challengeText = state.level === '1' ? cp1ChallengeText(currentLesson, ex) : ex.q;
+    var firstOfLesson = state.index === 0;
     state.readText = state.level === '1'
-      ? ((teacherText ? 'Écoute bien. ' + teacherText + ' Maintenant, la question. ' : '') + challengeText + spokenChoices(ex, questionChoices))
+      ? ((teacherText && firstOfLesson ? 'Écoute bien. ' + teacherText + ' Maintenant, la question. ' : '') + challengeText + spokenChoices(ex, questionChoices))
       : challengeText;
     setHeader(meta.name, state.level === '1' && state.lesson >= 0 ? ('Défi ' + (state.index+1) + ' sur ' + state.list.length) : l.label, true);
     if (state.level === '1') {
       shell().classList.add('nx-cp1-mode');
       var longChoices = !!(questionChoices && questionChoices.some(function(c){ return String(c).length > 18; }));
       var pct = Math.round((state.index / Math.max(1,state.list.length))*100);
-      var html = '<div class="nx-kid-flow"><span class="on">🎯</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><div class="nx-kid-teacher"><b>👩🏾‍🏫 Le maître explique</b><p>' + esc(teacherText) + '</p></div><div class="nx-kid-mission">🎯 QUESTION</div>' + cp1VoiceBadge() + '<h2>' + esc(challengeText) + '</h2>';
+      var html = '<div class="nx-kid-flow"><span class="on">🎯</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><div class="nx-kid-teacher"><b>👩🏾‍🏫 Le maître explique</b><p>' + esc(teacherText) + '</p></div>' + cp1LessonHelp(currentLesson) + '<div class="nx-kid-mission">🎯 QUESTION</div>' + cp1VoiceBadge() + '<h2>' + esc(challengeText) + '</h2>';
       if (ex.visual) html += '<div class="nx-px-visual" style="text-align:center;font-size:40px">' + esc(ex.visual) + '</div>';
       if (questionChoices && questionChoices.length) html += '<div class="nx-kid-choice-grid' + (longChoices?' long':'') + '">' + questionChoices.map(function(c){ return '<button type="button" class="nx-kid-answer" data-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
       else { var mode = ex.type === 'input' ? 'inputmode="decimal"' : ''; html += '<form class="nx-px-input" data-answer-form style="margin-top:12px"><input ' + mode + ' autocomplete="off" aria-label="Ta réponse" placeholder="Écris ta réponse"><button type="submit">Corriger</button></form>'; }
@@ -2323,11 +2695,11 @@
   function answer(value, control) {
     clearAuto();
     if (state.locked || state.index >= state.list.length) return;
-    var ex = state.list[state.index], ok = normalize(value) === normalize(ex.a);
+    var ex = state.list[state.index], ok = sameAnswer(ex, value);
     if (!String(value || '').trim()) return;
     state.locked = true; voiceAwaitingAnswer = false; stopVoiceListening(); if (ok) state.good++; else state.wrong.push(ex);
     var all = main().querySelectorAll('[data-answer]');
-    Array.prototype.forEach.call(all,function(b){ b.disabled=true; if(normalize(b.getAttribute('data-answer'))===normalize(ex.a)) b.classList.add('good'); });
+    Array.prototype.forEach.call(all,function(b){ b.disabled=true; if(sameAnswer(ex, b.getAttribute('data-answer'))) b.classList.add('good'); });
     if (!ok && control && control.classList) control.classList.add('bad');
     var box = main().querySelector('[data-feedback]');
     if (state.level === '1') {
@@ -2365,6 +2737,9 @@
   }
   function goBack() {
     clearAuto(); voiceAwaitingAnswer = false; stopVoiceListening();
+    if (state.dsubject && state.list.length) { state.list = []; state.index = 0; state.subject = ''; renderDataLessons(state.dsubject); return; }
+    if (state.dsubject && state.dlesson >= 0) { state.dlesson = -1; renderDataLessons(state.dsubject); return; }
+    if (state.dsubject) { state.dsubject = ''; renderSubjects(); return; }
     if (state.list.length) {
       state.list = []; state.index = 0; state.readText = '';
       if (state.level === '1' && state.subject && CP1_LESSONS[state.subject]) { renderCp1Lessons(state.subject); return; }
@@ -2389,7 +2764,7 @@
     if (!viewer) return;
     try { window.speechSynthesis && speechSynthesis.cancel(); } catch (_e) {}
     viewer.hidden = true; document.body.style.overflow = '';
-    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = '';
+    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.dsubject = ''; state.dlesson = -1;
   }
 
   window.NexoraPrimarySchoolV157 = {
