@@ -1,0 +1,47 @@
+name: Corriger acces cycles securises V616
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/fix_secure_cycles_v616.py'
+      - '.github/workflows/fix-secure-cycles-v616.yml'
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            assets/js/nexora-secure-v522.js
+            api/content-key.js
+            protected/manifest.json
+            version.json
+            .github/scripts/fix_secure_cycles_v616.py
+          sparse-checkout-cone-mode: false
+      - run: python .github/scripts/fix_secure_cycles_v616.py
+      - run: node --check assets/js/nexora-secure-v522.js
+      - run: node --check api/content-key.js
+      - run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          manifest=json.loads(Path('protected/manifest.json').read_text())['version']
+          secure=Path('assets/js/nexora-secure-v522.js').read_text()
+          api=Path('api/content-key.js').read_text()
+          assert f"var VERSION='{manifest}';" in secure
+          assert f'const CONTENT_VERSION = "{manifest}";' in api
+          print('Versions alignees:', manifest)
+          PY
+      - run: |
+          git config user.name 'Nexora Curriculum Bot'
+          git config user.email 'actions@github.com'
+          git add assets/js/nexora-secure-v522.js api/content-key.js version.json
+          if git diff --cached --quiet; then
+            echo 'Aucun changement'
+          else
+            git commit -m 'Restore secure access to all academy cycles V616'
+            git push
+          fi
