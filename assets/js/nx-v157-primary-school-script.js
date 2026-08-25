@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V617
+/* NEXORA — École primaire interactive V618
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV617) return;
-  window.__nxPrimaryExercisesV617 = true;
+  if (window.__nxPrimaryExercisesV618) return;
+  window.__nxPrimaryExercisesV618 = true;
 
-  var VERSION = 'v617';
+  var VERSION = 'v618';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -18,7 +18,7 @@
   var voiceListening = false;
   var voiceAwaitingAnswer = false;
   var voiceRestartTimer = null;
-  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, dsubject: '', dlesson: -1 };
+  var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false, dsubject: '', dlesson: -1, psubject: '', ppart: -1, pex: -1 };
   var PRIMARY_DATA = null;
   var PRIMARY_TRIED = false;
   var CLASS_ID = { '1': 'cp1', '2': 'cp2', '3': 'ce1', '4': 'ce2', '5': 'cm1', '6': 'cm2' };
@@ -495,6 +495,8 @@
       setTimeout(function(){ try { speechSynthesis.speak(u); } catch (_e) { if (voiceMode && voiceAwaitingAnswer) scheduleVoiceListen(520); } }, 60);
     } catch (_e) {}
   }
+
+  var PRACTICE = {"3":{"francais":[{"t":"Le nom : reconnaître les personnes, les choses et les lieux","explique":["Le nom sert à nommer. Il nomme une personne (Fanta, le maître), un animal (la chèvre), une chose (le cahier) ou un lieu (le marché).","Devant un nom, on peut presque toujours placer un petit mot : le, la, les, un, une, des. C’est le meilleur test. Si « le » ou « une » se place devant le mot, ce mot est un nom.","Il y a deux sortes de noms. Le nom commun nomme n’importe quel objet de la même famille : une école, un fleuve. Le nom propre nomme une seule personne ou un seul lieu, et il prend toujours une majuscule : Fanta, Conakry, la Guinée."],"exemple":"Dans « Le maître écrit au tableau », il y a deux noms : « maître » (on peut dire le maître) et « tableau » (on peut dire un tableau). « Écrit » n’est pas un nom : on ne dit pas « le écrit ».","ex":[{"consigne":"Recopie cette phrase et souligne les trois noms : « La vendeuse pose les mangues sur la table. »","aide":"Essaie de placer « le », « la » ou « une » devant chaque mot.","reponse":"vendeuse, mangues, table","corrige":"Les trois noms sont : vendeuse, mangues, table. On peut dire une vendeuse, des mangues, une table. « Pose » est un verbe : on ne dit pas « la pose » dans cette phrase. « Sur » est un petit mot de position."},{"consigne":"Écris deux noms communs et deux noms propres que tu connais.","aide":"Le nom propre prend une majuscule.","reponse":"","corrige":"Exemple de bonne réponse. Noms communs : une école, un fleuve. Noms propres : Fanta, Conakry. Vérifie deux choses : tes noms communs sont écrits en minuscule, et tes noms propres commencent par une majuscule."},{"consigne":"Dans « Mamadou traverse la route », quel mot est un nom propre ?","aide":"Cherche le mot qui nomme une seule personne.","reponse":"Mamadou","corrige":"C’est « Mamadou ». Il nomme une seule personne et il porte une majuscule. « Route » est un nom, mais un nom commun : il y a beaucoup de routes."}]},{"t":"Le verbe : trouver l’action de la phrase","explique":["Le verbe dit ce que l’on fait ou ce qui se passe : marcher, écrire, dormir, être.","Pour trouver le verbe, pose la question « qu’est-ce qu’il fait ? » ou « qu’est-ce qui se passe ? ». La réponse est le verbe.","Un autre test très sûr : change le moment de la phrase. Dis « hier », puis « demain ». Le seul mot qui change de forme est le verbe."],"exemple":"« Awa balaie la cour. » Hier, Awa balayait la cour. Demain, Awa balaiera la cour. Seul « balaie » a changé : c’est le verbe.","ex":[{"consigne":"Trouve le verbe : « Les élèves rangent leurs cahiers. »","aide":"Dis la phrase avec « hier ».","reponse":"rangent","corrige":"Le verbe est « rangent ». Hier, les élèves rangeaient leurs cahiers : c’est bien le mot qui a changé. « Élèves » et « cahiers » sont des noms."},{"consigne":"Trouve le verbe : « Le forgeron travaille le fer depuis le matin. »","aide":"Qu’est-ce que le forgeron fait ?","reponse":"travaille","corrige":"Le verbe est « travaille ». Le forgeron fait l’action de travailler. « Forgeron », « fer » et « matin » sont des noms."},{"consigne":"Écris une phrase de ton choix, puis entoure son verbe.","aide":"Une phrase : majuscule au début, point à la fin.","reponse":"","corrige":"Exemple : « Mon petit frère mange du riz. » Le verbe est « mange ». Pour vérifier : hier, mon petit frère mangeait du riz. Le mot a changé, c’est bien le verbe."}]},{"t":"Le singulier et le pluriel","explique":["Un nom est au singulier quand il désigne une seule chose : un cahier. Il est au pluriel quand il en désigne plusieurs : des cahiers.","Au pluriel, le nom prend le plus souvent un « s » à la fin. Le petit mot devant lui change aussi : le devient les, un devient des, la devient les.","Attention : ce « s » ne s’entend presque jamais quand on parle. C’est l’oreille qui trompe, il faut regarder le petit mot placé devant."],"exemple":"une chèvre → des chèvres. Le mot « des » prévient qu’il y en a plusieurs, donc « chèvre » prend un s.","ex":[{"consigne":"Mets au pluriel : « le marché ».","aide":"Change d’abord le petit mot.","reponse":"les marchés","corrige":"On écrit « les marchés ». Le mot « le » devient « les », et « marché » prend un s."},{"consigne":"Mets au singulier : « des maisons ».","aide":"Une seule maison.","reponse":"une maison","corrige":"On écrit « une maison ». Le mot « des » devient « une », et le s de « maisons » disparaît."},{"consigne":"Corrige la faute : « Les enfant jouent dans la cour. »","aide":"Regarde le petit mot placé devant « enfant ».","reponse":"Les enfants jouent dans la cour.","corrige":"Il fallait écrire « Les enfants ». Le mot « les » annonce plusieurs enfants, donc « enfant » doit prendre un s."}]},{"t":"La phrase : majuscule, ordre et point","explique":["Une phrase commence par une majuscule et se termine par un point. Entre les deux, les mots sont rangés dans un ordre qui a du sens.","L’ordre simple à retenir : QUI fait l’action, puis CE QU’IL FAIT, puis le reste (où, quand, comment).","Trois points différents terminent une phrase. Le point simple pour raconter. Le point d’interrogation pour demander. Le point d’exclamation pour la surprise ou l’ordre."],"exemple":"QUI : Le maître. FAIT QUOI : écrit. LE RESTE : au tableau. Ce qui donne : « Le maître écrit au tableau. »","ex":[{"consigne":"Remets ces mots dans l’ordre : cour / balaient / la / les élèves","aide":"Commence par QUI.","reponse":"Les élèves balaient la cour.","corrige":"« Les élèves balaient la cour. » QUI : les élèves. FAIT QUOI : balaient. LE RESTE : la cour. Majuscule au début, point à la fin."},{"consigne":"Quel signe faut-il à la fin de : « Où vas-tu »","aide":"Cette phrase demande une information.","reponse":"?","corrige":"Il faut un point d’interrogation : « Où vas-tu ? ». La phrase pose une question."},{"consigne":"Écris une phrase qui raconte ce que tu as fait ce matin.","aide":"Majuscule, ordre, point.","reponse":"","corrige":"Exemple : « Ce matin, j’ai balayé la cour avant l’école. » Vérifie ta phrase : une majuscule au début, un verbe qui dit l’action, un point à la fin."}]}],"maths":[{"t":"Les nombres jusqu’à 1000 : centaines, dizaines, unités","explique":["Dans un nombre, chaque chiffre a une place, et cette place lui donne sa valeur. De droite à gauche : les unités, les dizaines, les centaines.","10 unités font 1 dizaine. 10 dizaines font 1 centaine. Une centaine vaut donc 100 unités.","Dans 348, le 3 est à la place des centaines et vaut 300 ; le 4 est à la place des dizaines et vaut 40 ; le 8 est aux unités et vaut 8. On lit : trois cent quarante-huit."],"exemple":"506 : 5 centaines, 0 dizaine, 6 unités. Le zéro est indispensable — sans lui on écrirait 56, un nombre bien plus petit.","ex":[{"consigne":"Combien de dizaines y a-t-il dans le nombre 472 ?","aide":"Regarde le chiffre du milieu.","reponse":"7","corrige":"Il y a 7 dizaines. 472 = 4 centaines + 7 dizaines + 2 unités, c’est-à-dire 400 + 70 + 2."},{"consigne":"Écris en chiffres : six cent trente.","aide":"Combien d’unités ?","reponse":"630","corrige":"On écrit 630. Six centaines (600), trois dizaines (30) et aucune unité, donc un zéro à la place des unités."},{"consigne":"Range du plus petit au plus grand : 209, 92, 290.","aide":"Compare d’abord le nombre de chiffres.","reponse":"92, 209, 290","corrige":"92 < 209 < 290. Le 92 est le plus petit : il n’a que deux chiffres. Ensuite 209 et 290 ont la même centaine, on compare les dizaines : 0 dizaine contre 9 dizaines."}]},{"t":"L’addition avec retenue","explique":["On pose les nombres l’un sous l’autre en alignant bien les unités sous les unités, les dizaines sous les dizaines.","On calcule toujours en commençant par la colonne des unités, à droite.","Si le résultat d’une colonne dépasse 9, on écrit le chiffre des unités et on reporte 1 sur la colonne suivante : c’est la retenue."],"exemple":"47 + 25. Unités : 7 + 5 = 12. J’écris 2, je retiens 1. Dizaines : 4 + 2 + 1 = 7. Résultat : 72.","ex":[{"consigne":"Calcule : 156 + 68","aide":"Commence par les unités, n’oublie pas la retenue.","reponse":"224","corrige":"156 + 68 = 224. Unités : 6 + 8 = 14, j’écris 4 et je retiens 1. Dizaines : 5 + 6 + 1 = 12, j’écris 2 et je retiens 1. Centaines : 1 + 1 = 2."},{"consigne":"Calcule : 285 + 137","aide":"Deux retenues t’attendent.","reponse":"422","corrige":"285 + 137 = 422. Unités : 5 + 7 = 12, j’écris 2 et je retiens 1. Dizaines : 8 + 3 + 1 = 12, j’écris 2 et je retiens 1. Centaines : 2 + 1 + 1 = 4."},{"consigne":"Une famille récolte 128 mangues le matin et 95 l’après-midi. Combien en tout ?","aide":"« En tout » demande une addition.","reponse":"223","corrige":"128 + 95 = 223 mangues. Unités : 8 + 5 = 13, j’écris 3 et je retiens 1. Dizaines : 2 + 9 + 1 = 12, j’écris 2 et je retiens 1. Centaines : 1 + 1 = 2. N’oublie pas d’écrire le mot « mangues » dans ta réponse."}]},{"t":"La soustraction avec retenue","explique":["Soustraire, c’est enlever ou chercher ce qui reste. On pose les nombres l’un sous l’autre, le plus grand au-dessus.","On commence encore par les unités. Quand le chiffre du haut est plus petit que celui du bas, on ne peut pas enlever directement.","On emprunte alors une dizaine à la colonne voisine : le chiffre du haut gagne 10, et la colonne d’à côté perd 1."],"exemple":"52 − 7. Aux unités, 2 est plus petit que 7. J’emprunte une dizaine : 12 − 7 = 5. Il ne reste que 4 dizaines : 4. Résultat : 45.","ex":[{"consigne":"Calcule : 84 − 39","aide":"4 est plus petit que 9 : emprunte.","reponse":"45","corrige":"84 − 39 = 45. Unités : 4 est plus petit que 9, j’emprunte une dizaine, 14 − 9 = 5. Dizaines : il ne reste que 7, et 7 − 3 = 4."},{"consigne":"Calcule : 300 − 148","aide":"Deux emprunts de suite.","reponse":"152","corrige":"300 − 148 = 152. Unités : 0 − 8 impossible, j’emprunte, mais la dizaine est à 0, donc j’emprunte d’abord à la centaine. On obtient 10 − 8 = 2 aux unités, 9 − 4 = 5 aux dizaines, 2 − 1 = 1 aux centaines."},{"consigne":"Un vendeur avait 215 sachets. Il en a vendu 87. Combien lui en reste-t-il ?","aide":"« Reste » demande une soustraction.","reponse":"128","corrige":"215 − 87 = 128 sachets. Unités : 5 − 7 impossible, j’emprunte : 15 − 7 = 8. Dizaines : il reste 0, 0 − 8 impossible, j’emprunte à la centaine : 10 − 8 = 2. Centaines : 1."}]},{"t":"La multiplication : des additions répétées","explique":["Multiplier, c’est ajouter plusieurs fois la même quantité. 4 × 3 signifie quatre paquets de trois.","On peut donc toujours vérifier une multiplication par une addition : 4 × 3 = 3 + 3 + 3 + 3 = 12.","L’ordre ne change pas le résultat : 4 × 3 donne la même chose que 3 × 4. Cela permet de choisir le calcul le plus facile."],"exemple":"Trois rangées de 5 bancs : 3 × 5 = 5 + 5 + 5 = 15 bancs.","ex":[{"consigne":"Calcule 6 × 4 en écrivant d’abord l’addition qui lui correspond.","aide":"Six paquets de quatre.","reponse":"24","corrige":"6 × 4 = 4 + 4 + 4 + 4 + 4 + 4 = 24. Tu pouvais aussi calculer 4 × 6, c’est le même résultat."},{"consigne":"Une boîte contient 8 craies. Combien de craies dans 5 boîtes ?","aide":"Cinq paquets de huit.","reponse":"40","corrige":"5 × 8 = 40 craies. On ajoute cinq fois 8 : 8, 16, 24, 32, 40."},{"consigne":"Calcule : 7 × 9","aide":"Pense à 7 × 10 puis enlève 7.","reponse":"63","corrige":"7 × 9 = 63. Astuce : 7 × 10 = 70, et 9 c’est un paquet de moins que 10, donc 70 − 7 = 63."}]}],"sciences":[{"t":"Les cinq sens et les organes qui les portent","explique":["Nous connaissons le monde par cinq sens. Chaque sens a un organe : la vue par les yeux, l’ouïe par les oreilles, l’odorat par le nez, le goût par la langue, le toucher par la peau.","Chaque organe est fragile et se protège. On ne frotte pas ses yeux avec des mains sales, on ne met aucun objet dans son oreille, on ne goûte jamais un produit inconnu.","Les sens nous avertissent aussi du danger : une odeur de brûlé, un goût amer, une surface trop chaude."],"exemple":"Un fruit gâté se reconnaît avant de le manger : l’œil voit une tache, le nez sent une odeur aigre. Deux sens ont averti.","ex":[{"consigne":"Quel organe permet de sentir les odeurs ?","aide":"Il est au milieu du visage.","reponse":"le nez","corrige":"C’est le nez. Il sert à sentir les odeurs et aussi à respirer."},{"consigne":"Cite deux façons de protéger ses yeux.","aide":"Pense aux mains et au soleil.","reponse":"","corrige":"Exemples de bonnes réponses : ne pas frotter ses yeux avec des mains sales, ne pas fixer le soleil, ne pas jouer avec des objets pointus près du visage, lire à la lumière suffisante."},{"consigne":"Un plat sent mauvais. Quel sens t’a averti, et que dois-tu faire ?","aide":"Quel organe a travaillé ?","reponse":"","corrige":"C’est l’odorat, par le nez. Une mauvaise odeur est un avertissement : il ne faut pas manger ce plat et il faut prévenir un adulte."}]},{"t":"L’hygiène du corps et des aliments","explique":["Beaucoup de maladies passent par les mains sales et par l’eau sale. Elles sont causées par des microbes, trop petits pour être vus.","Le lavage des mains à l’eau et au savon est le geste le plus utile : avant de manger, après les toilettes, en rentrant de la rue.","Pour les aliments : on lave les fruits, on couvre les plats, on boit une eau propre et on ne mange pas un aliment tombé par terre."],"exemple":"Le choléra et la diarrhée se transmettent surtout par une eau ou des mains sales. Se laver les mains coupe le chemin du microbe.","ex":[{"consigne":"Cite trois moments où il faut absolument se laver les mains.","aide":"Pense au repas et aux toilettes.","reponse":"","corrige":"Réponses attendues : avant de manger, après être allé aux toilettes, en rentrant de la rue ou du champ. On accepte aussi : avant de préparer le repas, après avoir touché un animal."},{"consigne":"Pourquoi faut-il couvrir les plats ?","aide":"Qu’est-ce qui se pose sur la nourriture découverte ?","reponse":"","corrige":"Pour empêcher les mouches, la poussière et les microbes de se poser sur la nourriture. Un plat couvert protège de la contamination."},{"consigne":"Vrai ou faux : « Une eau claire est toujours une eau propre. »","aide":"Les microbes se voient-ils ?","reponse":"faux","corrige":"C’est faux. Une eau peut paraître claire et contenir des microbes, car les microbes sont invisibles à l’œil. Il faut une eau traitée, bouillie ou provenant d’une source sûre."}]},{"t":"La plante : ses parties et ses besoins","explique":["Une plante a des racines, une tige, des feuilles, et souvent des fleurs puis des fruits.","Chaque partie a un rôle : les racines fixent la plante et prennent l’eau du sol, la tige porte la plante et conduit l’eau, les feuilles captent la lumière, la fleur donne le fruit, et le fruit contient les graines.","Pour vivre, une plante a besoin d’eau, de lumière, d’air et d’un sol qui la nourrit. Privée d’un seul de ces besoins, elle se fane."],"exemple":"Un plant de maïs arrosé mais gardé dans le noir jaunit : l’eau ne suffit pas, il lui manque la lumière.","ex":[{"consigne":"Quelle partie de la plante prend l’eau dans le sol ?","aide":"Elle est sous la terre.","reponse":"les racines","corrige":"Ce sont les racines. Elles fixent aussi la plante dans le sol pour qu’elle ne tombe pas."},{"consigne":"Cite les quatre besoins d’une plante.","aide":"Un vient du ciel, un du sol.","reponse":"","corrige":"L’eau, la lumière, l’air et un sol nourrissant. Si l’un manque, la plante se fane et peut mourir."},{"consigne":"Où se trouvent les graines d’un manguier ?","aide":"Pense au noyau.","reponse":"dans le fruit","corrige":"Dans le fruit : le noyau de la mangue contient la graine. C’est elle qui peut donner un nouveau manguier."}]},{"t":"L’eau : ses états et son cycle","explique":["L’eau se présente sous trois états. Liquide dans le fleuve et le seau. Solide quand elle gèle et devient glace. Gazeuse quand elle s’évapore et devient vapeur invisible.","La chaleur fait passer l’eau du liquide au gaz : c’est l’évaporation. Le froid fait l’inverse : la vapeur redevient gouttes, c’est la condensation.","Ce va-et-vient forme le cycle de l’eau : le soleil évapore l’eau des fleuves et de la mer, la vapeur monte et forme les nuages, les nuages donnent la pluie, la pluie retourne aux fleuves."],"exemple":"Le linge étendu au soleil sèche : l’eau ne disparaît pas, elle s’évapore dans l’air.","ex":[{"consigne":"Comment s’appelle le passage de l’eau liquide à la vapeur ?","aide":"Cela se produit sous la chaleur.","reponse":"l’évaporation","corrige":"C’est l’évaporation. Le soleil chauffe l’eau, qui monte dans l’air sous forme de vapeur invisible."},{"consigne":"Explique en deux phrases pourquoi il pleut.","aide":"Suis le chemin de l’eau depuis le fleuve.","reponse":"","corrige":"Le soleil évapore l’eau des fleuves et de la mer ; la vapeur monte et forme les nuages. En haut il fait froid, la vapeur redevient gouttes, et quand les gouttes sont assez lourdes elles tombent : c’est la pluie."},{"consigne":"Cite les trois états de l’eau avec un exemple pour chacun.","aide":"Un dans le seau, un dans le congélateur, un dans l’air.","reponse":"","corrige":"Liquide : l’eau du seau ou du fleuve. Solide : la glace. Gazeuse : la vapeur au-dessus d’une marmite chaude."}]}],"histoiregeo":[{"t":"Se situer : quartier, ville, préfecture, pays","explique":["On habite toujours dans plusieurs lieux emboîtés, du plus petit au plus grand : la concession, le quartier, la ville ou le village, la préfecture, la région, puis le pays.","La Guinée est notre pays. Sa capitale est Conakry, où siège le gouvernement.","Savoir se situer, c’est pouvoir dire son adresse dans l’ordre, du plus petit au plus grand."],"exemple":"Un élève de Kankan dira : mon quartier, puis la ville de Kankan, puis la préfecture de Kankan, puis la région de Kankan, puis la Guinée.","ex":[{"consigne":"Quelle est la capitale de la Guinée ?","aide":"C’est une ville au bord de la mer.","reponse":"Conakry","corrige":"C’est Conakry. C’est la capitale et la plus grande ville du pays."},{"consigne":"Écris ton adresse en allant du plus petit au plus grand lieu.","aide":"Commence par ton quartier.","reponse":"","corrige":"L’ordre attendu : quartier, puis ville ou village, puis préfecture, puis région, puis Guinée. Vérifie que tu n’as sauté aucun échelon."},{"consigne":"Range dans l’ordre du plus petit au plus grand : la Guinée, mon quartier, ma préfecture, ma ville.","aide":"Le pays est le plus grand.","reponse":"mon quartier, ma ville, ma préfecture, la Guinée","corrige":"Mon quartier, ma ville, ma préfecture, la Guinée. Chaque lieu est contenu dans le suivant."}]},{"t":"Les quatre régions naturelles de la Guinée","explique":["La Guinée compte quatre régions naturelles, chacune avec son relief et ses activités.","La Basse-Guinée, au bord de la mer, avec Conakry : pêche, sel, riz de mangrove. La Moyenne-Guinée, avec le Fouta-Djalon, en montagne : élevage et sources des grands fleuves.","La Haute-Guinée, plus sèche, plaines et savane, traversée par le Niger : culture du coton et orpaillage. La Guinée forestière, au sud-est, très pluvieuse : forêts, café, cacao, palmier."],"exemple":"On appelle le Fouta-Djalon le château d’eau de l’Afrique de l’Ouest, car le Niger, le Sénégal et la Gambie y prennent leur source.","ex":[{"consigne":"Dans quelle région naturelle se trouve Conakry ?","aide":"C’est la région du bord de mer.","reponse":"la Basse-Guinée","corrige":"En Basse-Guinée, la région côtière, en bordure de l’océan Atlantique."},{"consigne":"Pourquoi appelle-t-on le Fouta-Djalon le château d’eau de l’Afrique de l’Ouest ?","aide":"Pense aux fleuves.","reponse":"","corrige":"Parce que plusieurs grands fleuves y prennent leur source, notamment le Niger, le Sénégal et la Gambie. Ses montagnes reçoivent beaucoup de pluie qui alimente ces fleuves."},{"consigne":"Cite les quatre régions naturelles de la Guinée.","aide":"Une par point cardinal.","reponse":"","corrige":"La Basse-Guinée, la Moyenne-Guinée, la Haute-Guinée et la Guinée forestière."}]},{"t":"Hier et aujourd’hui : lire le temps qui passe","explique":["L’histoire range les faits dans l’ordre où ils sont arrivés : le passé d’abord, le présent ensuite, puis l’avenir.","On mesure le temps long par le siècle. Un siècle vaut cent ans. On situe un fait par son année : la Guinée est devenue indépendante en 1958.","Pour comparer hier et aujourd’hui, on observe ce qui a changé : les outils, les maisons, les vêtements, les moyens de transport."],"exemple":"Autrefois on portait l’eau du puits sur la tête ; aujourd’hui beaucoup de familles ont un robinet ou une pompe. Le besoin est le même, le moyen a changé.","ex":[{"consigne":"En quelle année la Guinée est-elle devenue indépendante ?","aide":"C’était un 2 octobre.","reponse":"1958","corrige":"En 1958, le 2 octobre. C’est la fête nationale du pays."},{"consigne":"Combien d’années y a-t-il dans un siècle ?","aide":"Cent.","reponse":"100","corrige":"Un siècle vaut 100 ans. On compte les siècles pour situer les faits anciens : de 1901 à 2000, c’était le vingtième siècle."},{"consigne":"Cite deux choses qui ont changé entre le temps de tes grands-parents et aujourd’hui.","aide":"Pense au transport et à la lumière.","reponse":"","corrige":"Exemples acceptés : on se déplaçait à pied ou à cheval, on utilise aujourd’hui la moto et la voiture ; on s’éclairait à la lampe à pétrole, on utilise l’électricité ou le solaire ; on portait les messages à pied, on téléphone aujourd’hui."}]}],"ecm":[{"t":"Le respect : des personnes et des biens","explique":["Respecter une personne, c’est lui parler sans crier, l’écouter jusqu’au bout, et ne jamais se moquer d’elle.","Le respect vaut pour tous : les parents, les aînés, le maître, les camarades, et aussi les plus petits.","Respecter les biens, c’est prendre soin de ce qui ne nous appartient pas ou de ce qui appartient à tous : la table, le livre, le robinet, le mur de l’école."],"exemple":"Un camarade se trompe au tableau. Le respect, c’est se taire ou l’aider — pas rire de lui.","ex":[{"consigne":"Un camarade se moque d’un autre élève. Que fais-tu ?","aide":"Ni rire, ni frapper.","reponse":"","corrige":"Bonne conduite : ne pas rire avec lui, dire calmement que ce n’est pas bien, consoler celui qui est moqué, et prévenir le maître si cela continue. Répondre par des coups serait une faute de plus."},{"consigne":"Cite trois biens communs de ton école et dis comment en prendre soin.","aide":"Regarde autour de toi en classe.","reponse":"","corrige":"Exemples : les tables et les bancs (ne pas les rayer), les livres (ne pas les déchirer), le robinet (bien le fermer), les murs (ne pas écrire dessus), les latrines (les laisser propres)."},{"consigne":"Vrai ou faux : « Je peux écrire sur le mur de l’école, ce n’est à personne. »","aide":"À qui appartient l’école ?","reponse":"faux","corrige":"C’est faux. L’école appartient à tous : à toi, à tes camarades et à ceux qui viendront après. Un bien commun se protège encore plus qu’un bien personnel."}]},{"t":"Mes droits et mes devoirs d’enfant","explique":["Chaque enfant a des droits : un nom, une famille, la santé, l’école, la protection contre la violence, et le droit de jouer.","À chaque droit répond un devoir. J’ai droit à l’école, j’ai le devoir d’y venir et d’y travailler. J’ai droit au respect, j’ai le devoir de respecter les autres.","Un enfant en danger doit en parler à un adulte de confiance : un parent, le maître, une autorité du quartier."],"exemple":"Le droit à la santé donne le devoir de se laver, de bien manger et de ne pas jeter les ordures n’importe où.","ex":[{"consigne":"Cite trois droits de l’enfant.","aide":"Pense à l’école et à la santé.","reponse":"","corrige":"Exemples : le droit à un nom, à une famille, à la santé, à l’école, à la protection, au jeu et au repos."},{"consigne":"À quel devoir correspond le droit d’aller à l’école ?","aide":"Que dois-tu faire une fois inscrit ?","reponse":"","corrige":"Le devoir de venir régulièrement, à l’heure, de travailler, d’écouter le maître et de respecter les camarades et le matériel."},{"consigne":"Un enfant est frappé chez lui. Que doit-il faire ?","aide":"Il ne doit pas rester seul avec cela.","reponse":"","corrige":"Il doit en parler à un adulte de confiance : le maître, un parent proche, ou une autorité du quartier. Aucun enfant ne doit garder cela pour lui : la protection contre la violence est un droit."}]},{"t":"Le drapeau et les symboles de la Guinée","explique":["Le drapeau de la Guinée porte trois bandes verticales : rouge, jaune, vert, en partant du côté du mât.","Chaque couleur a un sens : le rouge rappelle le sang versé pour la liberté, le jaune l’or et le soleil, le vert la végétation et l’espérance.","L’hymne national s’appelle Liberté. La devise du pays est : Travail, Justice, Solidarité. On se tient debout et immobile devant le drapeau."],"exemple":"Au lever des couleurs, on cesse de parler, on se met debout et on regarde le drapeau : c’est une marque de respect envers le pays.","ex":[{"consigne":"Dans quel ordre sont les couleurs du drapeau guinéen ?","aide":"On part du côté du mât.","reponse":"rouge, jaune, vert","corrige":"Rouge, jaune, vert, en trois bandes verticales, en partant du mât."},{"consigne":"Quelle est la devise de la Guinée ?","aide":"Trois mots.","reponse":"Travail, Justice, Solidarité","corrige":"Travail, Justice, Solidarité. Ces trois mots disent ce que le pays attend de chaque citoyen : travailler, être juste, et s’entraider."},{"consigne":"Comment doit-on se comporter pendant le lever du drapeau ?","aide":"Pense à ta position et au silence.","reponse":"","corrige":"On se tient debout, immobile, en silence, tourné vers le drapeau. On ne joue pas, on ne parle pas, on ne mange pas."}]}]}};
 
   var LEVELS = {
     '1': { label: '1ère année', subtitle: 'J’écoute, je comprends, je réponds', subjects: ['francais','maths','sciences','ecm','arts','eps','entretien'] },
@@ -2422,6 +2424,28 @@
     var st = document.createElement('style');
     st.id = 'nxCp1PremiumV611';
     st.textContent = `
+      .nx-px-step{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#1268b8;background:#e7f1fb;border-radius:999px;padding:5px 12px;margin-bottom:10px}
+      .nx-px-step.work{color:#8a5b00;background:#fff3cd}
+      .nx-px-step.done{color:#1c7a3e;background:#e3f6e9}
+      .nx-px-para{margin:0 0 11px;font-size:16px;line-height:1.65;color:#22364a}
+      .nx-px-exemple{margin-top:6px;background:#f4f8fc;border-left:4px solid #1268b8;border-radius:0 12px 12px 0;padding:11px 13px}
+      .nx-px-exemple b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:#1268b8;margin-bottom:4px}
+      .nx-px-exemple p{margin:0;font-size:16px;line-height:1.6;color:#22364a}
+      .nx-px-consigne{margin:0 0 12px;font-size:18px;line-height:1.55;font-weight:600;color:#12314f}
+      .nx-px-hint-btn{border:0;background:#fff3cd;color:#8a5b00;border-radius:12px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px}
+      .nx-px-hint{margin:0 0 12px;font-size:15px;color:#6b5a20;background:#fffaf0;border:1px dashed #f0c674;border-radius:12px;padding:10px 12px}
+      .nx-px-label{display:block;font-size:13px;font-weight:700;color:#1268b8;margin-bottom:6px}
+      .nx-px-v600 textarea[data-ptext]{width:100%;min-height:150px;border:1px solid #cddced;border-radius:14px;padding:12px;font-size:16px;line-height:1.55;font-family:inherit;color:#17324d;background:#fcfdff;resize:vertical}
+      .nx-px-go{display:block;width:100%;margin-top:12px;padding:15px;border:0;border-radius:16px;background:linear-gradient(135deg,#078df0,#4f53e9);color:#fff;font-size:17px;font-weight:800;cursor:pointer}
+      .nx-px-verdict{margin-top:14px;border-radius:16px;padding:14px;border:1px solid #dbe5ee;background:#fff}
+      .nx-px-verdict.ok{background:#eefaf1;border-color:#b7e4c5}
+      .nx-px-verdict.no{background:#fff6ec;border-color:#f3cfa4}
+      .nx-px-verdict.neutre{background:#f4f8fc;border-color:#cddced}
+      .nx-px-verdict b{display:block;font-size:17px;margin-bottom:6px;color:#12314f}
+      .nx-px-verdict .att{display:block;font-size:15px;margin-bottom:8px;color:#22364a}
+      .nx-px-verdict p{margin:0;font-size:16px;line-height:1.6;color:#22364a}
+      .nx-px-lesson-row .tag{margin-left:auto;font-size:12px;font-weight:800;color:#68798c;background:#eef3f8;border-radius:999px;padding:4px 10px}
+      .nx-px-lesson-row .tag.ok{color:#1c7a3e;background:#e3f6e9}
       .nx-px-note{text-align:center;color:#68798c;font-size:14px;margin:14px 0}
       .nx-px-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
       .nx-px-lesson-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:#fff;border:1px solid #dbe5ee;border-radius:14px;padding:13px 14px;font-size:15px;color:#17324d;cursor:pointer}
@@ -2486,6 +2510,11 @@
       var lv = ev.target.closest('[data-level]'); if (lv) { state.level = lv.getAttribute('data-level'); state.subject = ''; renderSubjects(); return; }
       var resume = ev.target.closest('[data-resume]'); if (resume) { state.subject = resume.getAttribute('data-resume-subject'); startCp1Lesson(resume.getAttribute('data-resume-lesson')); return; }
       var help = ev.target.closest('[data-lesson-help]'); if (help) { toggleLessonHelp(); return; }
+      var ps = ev.target.closest('[data-psubject]'); if (ps) { openPracticeSubject(ps.getAttribute('data-psubject')); return; }
+      var pc = ev.target.closest('[data-pcorrect]'); if (pc) { correctPractice(Number(pc.getAttribute('data-pcorrect'))); return; }
+      var ph = ev.target.closest('[data-phint]'); if (ph) { var hb = main().querySelector('[data-phint-box]'); if (hb) hb.hidden = !hb.hidden; return; }
+      var pe = ev.target.closest('[data-pex]'); if (pe) { renderPracticeExercise(Number(pe.getAttribute('data-pex'))); return; }
+      var pp = ev.target.closest('[data-ppart]'); if (pp) { renderPracticePart(Number(pp.getAttribute('data-ppart'))); return; }
       var dl = ev.target.closest('[data-dlesson]'); if (dl) { renderDataLesson(Number(dl.getAttribute('data-dlesson'))); return; }
       var ds = ev.target.closest('[data-dsubject]'); if (ds) { openDataSubject(ds.getAttribute('data-dsubject')); return; }
       var bank = ev.target.closest('[data-bank]'); if (bank) { startBank(bank.getAttribute('data-bank')); return; }
@@ -2496,6 +2525,11 @@
       var retry = ev.target.closest('[data-retry-wrong]'); if (retry) { retryWrong(); return; }
       var again = ev.target.closest('[data-again]'); if (again) { if (state.level === '1' && state.lesson >= 0) startCp1Exercises(); else startSubject(state.subject); return; }
       var home = ev.target.closest('[data-subjects]'); if (home) { renderSubjects(); return; }
+    });
+    viewer.addEventListener('input', function (ev) {
+      if (ev.target && ev.target.hasAttribute && ev.target.hasAttribute('data-ptext') && state.pex >= 0) {
+        practiceSaveDraft(state.ppart, state.pex, ev.target.value);
+      }
     });
     viewer.addEventListener('submit', function (ev) {
       if (!ev.target.matches('[data-answer-form]')) return;
@@ -2572,6 +2606,7 @@
     }
     state.readText = '';
     state.dsubject = ''; state.dlesson = -1;
+    if (practiceLevel()) { renderPracticeSubjects(); return; }
     setHeader(l.label, 'Choisis une matière', true);
     var cls = primaryClassFor(state.level);
     var written = cls ? dataSubjects(cls) : [];
@@ -2598,6 +2633,158 @@
         if (state.level && !state.subject && !state.dsubject && !state.list.length) renderSubjects();
       });
     }
+  }
+
+
+  /* ===== J'explique, l'élève traite, l'élève corrige (classes 3 à 6) ===== */
+  var PRACTICE_DRAFTS = 'nexora.primary.practice.drafts.v618';
+  var PRACTICE_DONE = 'nexora.primary.practice.done.v618';
+  function jsonRead(key) {
+    try { var x = JSON.parse(localStorage.getItem(key) || '{}'); return x && typeof x === 'object' ? x : {}; }
+    catch (_e) { return {}; }
+  }
+  function jsonWrite(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (_e) {} }
+  function practiceLevel() { return PRACTICE[state.level] || null; }
+  function practiceParts(subject) { var lv = practiceLevel(); return (lv && lv[subject]) || []; }
+  function practiceKey(pi, ei) { return state.level + ':' + state.psubject + ':' + pi + ':' + ei; }
+  function practiceSaveDraft(pi, ei, value) {
+    var d = jsonRead(PRACTICE_DRAFTS); d[practiceKey(pi, ei)] = String(value || '').slice(0, 4000); jsonWrite(PRACTICE_DRAFTS, d);
+  }
+  function practiceDraft(pi, ei) { return jsonRead(PRACTICE_DRAFTS)[practiceKey(pi, ei)] || ''; }
+  function practiceMarkDone(pi, ei) { var d = jsonRead(PRACTICE_DONE); d[practiceKey(pi, ei)] = 1; jsonWrite(PRACTICE_DONE, d); }
+  function practiceDoneCount(subject) {
+    var d = jsonRead(PRACTICE_DONE), pre = state.level + ':' + subject + ':', n = 0;
+    Object.keys(d).forEach(function (k) { if (k.indexOf(pre) === 0) n++; });
+    return n;
+  }
+  function practiceTotal(subject) {
+    var n = 0; practiceParts(subject).forEach(function (p) { n += (p.ex || []).length; }); return n;
+  }
+  function practiceMatch(attendu, ecrit) {
+    var a = normalize(attendu).replace(/[.,;:!?]/g, '').trim();
+    var b = normalize(ecrit).replace(/[.,;:!?]/g, '').trim();
+    if (!a || !b) return false;
+    if (a === b) return true;
+    var na = a.replace(/\s/g, ''), nb = b.replace(/\s/g, '');
+    if (na === nb) return true;
+    if (/^[0-9]+$/.test(na)) { var m = nb.match(/[0-9]+/g); return !!m && m.indexOf(na) >= 0; }
+    if (b.indexOf(a) >= 0) return true;
+    var mots = a.split(' ').filter(function (w) { return w.length > 2; });
+    if (mots.length > 1) {
+      var ok = mots.filter(function (w) { return b.indexOf(w) >= 0; }).length;
+      return ok === mots.length;
+    }
+    return false;
+  }
+
+  function renderPracticeSubjects() {
+    clearAuto();
+    var lv = practiceLevel(), l = LEVELS[state.level];
+    state.psubject = ''; state.ppart = -1; state.pex = -1;
+    state.readText = '';
+    setHeader(l.label, 'Choisis une matière', true);
+    var html = '<section class="nx-px-hero"><h2>' + esc(l.label) + '</h2><p>J’explique la partie, tu traites l’exercice, puis tu corriges.</p></section><div class="nx-px-grid">';
+    Object.keys(lv).forEach(function (sub) {
+      var meta = SUBJECTS[canonSubject(sub)] || { name: sub, icon: '📘' };
+      var parts = lv[sub].length, total = practiceTotal(sub), done = practiceDoneCount(sub);
+      html += '<button type="button" class="nx-px-card" data-psubject="' + esc(sub) + '"><em>' + meta.icon + '</em><strong>' + esc(meta.name) + '</strong><small>' + parts + ' parties · ' + total + ' exercices</small>' +
+        (done ? '<div class="nx-px-progress">' + done + ' exercice' + (done > 1 ? 's' : '') + ' traité' + (done > 1 ? 's' : '') + '</div>' : '') + '</button>';
+    });
+    html += '</div>';
+    main().innerHTML = html;
+  }
+
+  function openPracticeSubject(subject) {
+    state.psubject = String(subject || ''); state.ppart = -1; state.pex = -1;
+    renderPracticeParts();
+  }
+
+  function renderPracticeParts() {
+    clearAuto();
+    var parts = practiceParts(state.psubject);
+    if (!parts.length) { renderSubjects(); return; }
+    var meta = SUBJECTS[canonSubject(state.psubject)] || { name: state.psubject };
+    var done = jsonRead(PRACTICE_DONE);
+    state.readText = '';
+    setHeader(meta.name, LEVELS[state.level].label + ' · ' + parts.length + ' parties', true);
+    var html = '<section class="nx-px-hero"><h2>' + esc(meta.name) + '</h2><p>Choisis une partie. Je t’explique d’abord, tu traites ensuite.</p></section><div class="nx-px-list">';
+    parts.forEach(function (p, i) {
+      var total = (p.ex || []).length, n = 0;
+      for (var e = 0; e < total; e++) if (done[state.level + ':' + state.psubject + ':' + i + ':' + e]) n++;
+      html += '<button type="button" class="nx-px-lesson-row" data-ppart="' + i + '"><span class="num">' + (i + 1) + '</span><strong>' + esc(p.t) + '</strong>' +
+        '<span class="tag' + (n === total ? ' ok' : '') + '">' + n + '/' + total + '</span></button>';
+    });
+    html += '</div>';
+    main().innerHTML = html;
+    shell().scrollTop = 0;
+  }
+
+  function renderPracticePart(index) {
+    clearAuto();
+    var parts = practiceParts(state.psubject), p = parts[index];
+    if (!p) { renderPracticeParts(); return; }
+    state.ppart = index; state.pex = -1;
+    var meta = SUBJECTS[canonSubject(state.psubject)] || { name: state.psubject };
+    state.readText = p.t + '. ' + (p.explique || []).join(' ');
+    setHeader(p.t, meta.name + ' · partie ' + (index + 1) + ' sur ' + parts.length, true);
+    var html = '<article class="nx-px-lesson"><div class="nx-px-step">1 · J’explique</div><h2>' + esc(p.t) + '</h2>';
+    (p.explique || []).forEach(function (t) { html += '<p class="nx-px-para">' + esc(t) + '</p>'; });
+    if (p.exemple) html += '<section class="nx-px-exemple"><b>Exemple</b><p>' + esc(p.exemple) + '</p></section>';
+    html += '</article>';
+    html += '<button type="button" class="nx-px-go" data-pex="0">Je traite l’exercice 1 →</button>';
+    main().innerHTML = html;
+    shell().scrollTop = 0;
+    setTimeout(function () { speak(state.readText); }, 200);
+  }
+
+  function renderPracticeExercise(index) {
+    clearAuto();
+    var parts = practiceParts(state.psubject), p = parts[state.ppart];
+    if (!p) { renderPracticeParts(); return; }
+    var list = p.ex || [], ex = list[index];
+    if (!ex) { renderPracticeParts(); return; }
+    state.pex = index;
+    state.readText = ex.consigne;
+    setHeader(p.t, 'Exercice ' + (index + 1) + ' sur ' + list.length, true);
+    var draft = practiceDraft(state.ppart, index);
+    var html = '<article class="nx-px-lesson"><div class="nx-px-step work">2 · Je traite</div>' +
+      '<p class="nx-px-consigne">' + esc(ex.consigne) + '</p>' +
+      (ex.aide ? '<button type="button" class="nx-px-hint-btn" data-phint>🔎 Un indice</button><p class="nx-px-hint" data-phint-box hidden>' + esc(ex.aide) + '</p>' : '') +
+      '<label class="nx-px-label" for="nxPracticeText">Écris ton traitement</label>' +
+      '<textarea id="nxPracticeText" data-ptext maxlength="4000" placeholder="Écris ici ta réponse, ou traite dans ton cahier puis recopie l’essentiel.">' + esc(draft) + '</textarea>' +
+      '<button type="button" class="nx-px-go" data-pcorrect="' + index + '">✔ Corriger mon traité</button>' +
+      '<div data-pverdict></div></article>';
+    if (index + 1 < list.length) html += '<button type="button" class="nx-px-next" data-pex="' + (index + 1) + '" style="margin-top:10px">Exercice suivant →</button>';
+    html += '<button type="button" class="nx-px-next" data-ppart="' + state.ppart + '" style="margin-top:10px">↺ Revoir l’explication</button>';
+    main().innerHTML = html;
+    shell().scrollTop = 0;
+  }
+
+  function correctPractice(index) {
+    var parts = practiceParts(state.psubject), p = parts[state.ppart];
+    if (!p) return;
+    var ex = (p.ex || [])[index];
+    if (!ex) return;
+    var zone = main().querySelector('[data-ptext]');
+    var ecrit = zone ? String(zone.value || '').trim() : '';
+    var box = main().querySelector('[data-pverdict]');
+    if (!box) return;
+    if (!ecrit) {
+      box.className = 'nx-px-verdict no';
+      box.innerHTML = '<b>Traite d’abord l’exercice.</b><span>Écris ta réponse dans la zone au-dessus, puis touche « Corriger mon traité ».</span>';
+      return;
+    }
+    practiceSaveDraft(state.ppart, index, ecrit);
+    practiceMarkDone(state.ppart, index);
+    var verdict, classe;
+    if (!ex.reponse) { verdict = '📖 Compare ton travail au corrigé'; classe = 'neutre'; }
+    else if (practiceMatch(ex.reponse, ecrit)) { verdict = '✅ C’est juste'; classe = 'ok'; }
+    else { verdict = '💡 À revoir — lis le corrigé, puis recommence'; classe = 'no'; }
+    box.className = 'nx-px-verdict ' + classe;
+    box.innerHTML = '<div class="nx-px-step done">3 · Le corrigé</div><b>' + esc(verdict) + '</b>' +
+      (ex.reponse ? '<span class="att">Réponse attendue : <strong>' + esc(ex.reponse) + '</strong></span>' : '') +
+      '<p>' + esc(ex.corrige) + '</p>';
+    speak(verdict.replace(/[^\wÀ-ÿ ’'-]/g, '') + '. ' + ex.corrige);
   }
 
   function openDataSubject(subjectId) {
@@ -2737,6 +2924,9 @@
   }
   function goBack() {
     clearAuto(); voiceAwaitingAnswer = false; stopVoiceListening();
+    if (state.psubject && state.pex >= 0) { renderPracticePart(state.ppart); return; }
+    if (state.psubject && state.ppart >= 0) { state.ppart = -1; renderPracticeParts(); return; }
+    if (state.psubject) { state.psubject = ''; renderSubjects(); return; }
     if (state.dsubject && state.list.length) { state.list = []; state.index = 0; state.subject = ''; renderDataLessons(state.dsubject); return; }
     if (state.dsubject && state.dlesson >= 0) { state.dlesson = -1; renderDataLessons(state.dsubject); return; }
     if (state.dsubject) { state.dsubject = ''; renderSubjects(); return; }
@@ -2764,7 +2954,7 @@
     if (!viewer) return;
     try { window.speechSynthesis && speechSynthesis.cancel(); } catch (_e) {}
     viewer.hidden = true; document.body.style.overflow = '';
-    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.dsubject = ''; state.dlesson = -1;
+    state.list = []; state.index = 0; state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.readText = ''; state.dsubject = ''; state.dlesson = -1; state.psubject = ''; state.ppart = -1; state.pex = -1;
   }
 
   window.NexoraPrimarySchoolV157 = {
