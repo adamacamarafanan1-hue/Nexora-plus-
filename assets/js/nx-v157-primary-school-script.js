@@ -1,18 +1,23 @@
-/* NEXORA — École primaire interactive V613.2
+/* NEXORA — École primaire interactive V614
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV613_2) return;
-  window.__nxPrimaryExercisesV613_2 = true;
+  if (window.__nxPrimaryExercisesV614) return;
+  window.__nxPrimaryExercisesV614 = true;
 
-  var VERSION = 'v613.2';
+  var VERSION = 'v614';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
   var autoTimer = null;
   var lastSpeechText = '';
   var lastSpeechAt = 0;
+  var recognition = null;
+  var voiceMode = false;
+  var voiceListening = false;
+  var voiceAwaitingAnswer = false;
+  var voiceRestartTimer = null;
   var state = { level: '', subject: '', lesson: -1, phase: 0, readText: '', list: [], index: 0, good: 0, wrong: [], locked: false };
 
   function esc(v) {
@@ -87,6 +92,143 @@
     var seen = {}, unique = [];
     choices.forEach(function(c){ var raw = String(c); if (!/[A-Za-zÀ-ÿ0-9]/.test(raw)) return; var k = normalize(raw); if (!seen[k]) { seen[k] = true; unique.push(raw); } });
     return unique.length ? '. Choisis parmi. ' + unique.join('. ') : '';
+  }
+
+  function voiceCanonical(value) {
+    var n = normalize(value);
+    var nums = {
+      'zero':'0','un':'1','une':'1','deux':'2','trois':'3','quatre':'4','cinq':'5','six':'6','sept':'7','huit':'8','neuf':'9','dix':'10',
+      'onze':'11','douze':'12','treize':'13','quatorze':'14','quinze':'15','seize':'16','dix sept':'17','dix-huit':'18','dix huit':'18',
+      'dix neuf':'19','dix-neuf':'19','vingt':'20'
+    };
+    return nums[n] || n;
+  }
+  function voiceSupported() {
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  }
+  function cp1VoiceControl() {
+    var supported = voiceSupported();
+    var label = voiceMode ? '🎤 Mode vocal activé' : '🎤 Activer le mode vocal';
+    var sub = voiceMode ? 'Nexora écoutera après chaque question. Le clic reste disponible.' : (supported ? 'Le parent active une seule fois pour toute la séance.' : 'Mode vocal non disponible sur ce navigateur. Le clic reste disponible.');
+    return '<button type="button" class="nx-kid-voice-toggle ' + (voiceMode ? 'on' : '') + '" data-voice-toggle ' + (supported ? '' : 'disabled') + '><b>' + label + '</b><small>' + sub + '</small></button>';
+  }
+  function cp1VoiceBadge() {
+    if (!voiceMode) return '';
+    return '<div class="nx-kid-voice-live" data-voice-status>🎤 ' + (voiceListening ? 'Je t’écoute…' : 'Mode vocal prêt') + '</div>';
+  }
+  function updateVoiceUI() {
+    if (!viewer) return;
+    var headerBtn = viewer.querySelector('[data-voice-header]');
+    if (headerBtn) {
+      headerBtn.style.visibility = state.level === '1' ? 'visible' : 'hidden';
+      headerBtn.textContent = voiceMode ? '🎤✓' : '🎤';
+      headerBtn.setAttribute('aria-label', voiceMode ? 'Désactiver le mode vocal' : 'Activer le mode vocal');
+      headerBtn.classList.toggle('on', voiceMode);
+    }
+    var controls = viewer.querySelectorAll('.nx-kid-voice-toggle[data-voice-toggle]');
+    Array.prototype.forEach.call(controls, function(btn){
+      btn.classList.toggle('on', voiceMode);
+      var b = btn.querySelector('b'), sm = btn.querySelector('small');
+      if (b) b.textContent = voiceMode ? '🎤 Mode vocal activé' : '🎤 Activer le mode vocal';
+      if (sm) sm.textContent = voiceMode ? 'Nexora écoutera après chaque question. Le clic reste disponible.' : 'Le parent active une seule fois pour toute la séance.';
+    });
+    var status = viewer.querySelector('[data-voice-status]');
+    if (status) status.textContent = voiceListening ? '🎤 Je t’écoute…' : '🎤 Mode vocal prêt';
+  }
+  function stopVoiceListening() {
+    if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+    if (recognition && voiceListening) {
+      try { recognition.stop(); } catch (_e) {}
+    }
+    voiceListening = false;
+    updateVoiceUI();
+  }
+  function scheduleVoiceListen(ms) {
+    if (!voiceMode || !voiceAwaitingAnswer || state.level !== '1') return;
+    if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+    voiceRestartTimer = setTimeout(function(){ voiceRestartTimer = null; startVoiceListening(); }, ms || 350);
+  }
+  function ensureRecognition() {
+    if (recognition) return recognition;
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return null;
+    recognition = new SR();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+    recognition.onstart = function(){ voiceListening = true; updateVoiceUI(); };
+    recognition.onend = function(){
+      voiceListening = false; updateVoiceUI();
+      if (voiceMode && voiceAwaitingAnswer && viewer && !viewer.hidden) scheduleVoiceListen(420);
+    };
+    recognition.onerror = function(ev){
+      voiceListening = false; updateVoiceUI();
+      if (ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed')) {
+        voiceMode = false; voiceAwaitingAnswer = false; updateVoiceUI();
+      }
+    };
+    recognition.onresult = function(ev){
+      if (!voiceMode || !voiceAwaitingAnswer || state.level !== '1' || state.locked) return;
+      var candidates = [];
+      try {
+        var result = ev.results[ev.resultIndex || 0];
+        for (var i = 0; result && i < result.length; i++) candidates.push(result[i].transcript || '');
+      } catch (_e) {}
+      handleVoiceAnswer(candidates);
+    };
+    return recognition;
+  }
+  function startVoiceListening() {
+    if (!voiceMode || !voiceAwaitingAnswer || state.level !== '1' || state.locked || !viewer || viewer.hidden) return;
+    if (window.speechSynthesis && speechSynthesis.speaking) { scheduleVoiceListen(450); return; }
+    var r = ensureRecognition();
+    if (!r || voiceListening) return;
+    try { r.start(); } catch (_e) { scheduleVoiceListen(650); }
+  }
+  function handleVoiceAnswer(candidates) {
+    if (!state.list.length || state.index >= state.list.length || state.locked) return;
+    var ex = state.list[state.index];
+    var choices = ex.type === 'choice' ? (ex.choices || []) : (cp1ClickChoices(ex) || []);
+    var selected = null;
+    for (var ci = 0; ci < candidates.length && selected == null; ci++) {
+      var heard = voiceCanonical(candidates[ci]);
+      if (!heard) continue;
+      if (heard === 'repete' || heard === 'repeter' || heard === 'encore') { speakCurrent(); return; }
+      for (var i = 0; i < choices.length; i++) {
+        if (voiceCanonical(choices[i]) === heard) { selected = String(choices[i]); break; }
+      }
+      if (selected == null && voiceCanonical(ex.a) === heard) selected = String(ex.a);
+    }
+    if (selected != null) {
+      voiceAwaitingAnswer = false; stopVoiceListening(); answer(selected, null); return;
+    }
+    voiceAwaitingAnswer = false; stopVoiceListening();
+    speak('Je n’ai pas compris. Réponds encore, ou touche une réponse.');
+  }
+  function enableVoiceMode() {
+    if (!voiceSupported()) { voiceMode = false; updateVoiceUI(); return; }
+    var activate = function(){
+      voiceMode = true; updateVoiceUI();
+      if (state.level === '1' && state.list.length && state.index < state.list.length && !state.locked) {
+        voiceAwaitingAnswer = true;
+        speak('Mode vocal activé. Je vais écouter ta réponse après la question.');
+      } else {
+        speak('Mode vocal activé. Tu peux répondre à voix haute ou toucher une réponse.');
+      }
+    };
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+        try { stream.getTracks().forEach(function(t){ t.stop(); }); } catch (_e) {}
+        activate();
+      }).catch(function(){ voiceMode = false; updateVoiceUI(); speak('Le microphone n’est pas autorisé. Tu peux toujours répondre en touchant les boutons.'); });
+    } else activate();
+  }
+  function toggleVoiceMode() {
+    if (voiceMode) {
+      voiceMode = false; voiceAwaitingAnswer = false; stopVoiceListening(); updateVoiceUI();
+      speak('Mode vocal désactivé. Tu peux continuer avec les boutons.');
+    } else enableVoiceMode();
   }
 
   function clearAuto() {
@@ -217,10 +359,13 @@
       var now = Date.now();
       if (text === lastSpeechText && (now - lastSpeechAt) < 1400) return;
       lastSpeechText = text; lastSpeechAt = now;
+      stopVoiceListening();
       speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
       u.lang = 'fr-FR'; u.rate = .72; u.pitch = .96; u.volume = 1;
-      setTimeout(function(){ try { speechSynthesis.speak(u); } catch (_e) {} }, 60);
+      u.onend = function(){ if (voiceMode && voiceAwaitingAnswer) scheduleVoiceListen(380); };
+      u.onerror = function(){ if (voiceMode && voiceAwaitingAnswer) scheduleVoiceListen(520); };
+      setTimeout(function(){ try { speechSynthesis.speak(u); } catch (_e) { if (voiceMode && voiceAwaitingAnswer) scheduleVoiceListen(520); } }, 60);
     } catch (_e) {}
   }
 
@@ -2002,6 +2147,7 @@
       .nx-kid-scene{position:relative;overflow:hidden;height:235px;border-radius:30px;margin:0 0 14px;background:linear-gradient(180deg,#5fc8ff 0 50%,#89db59 51% 100%);box-shadow:inset 0 -18px 30px rgba(20,95,35,.12),0 9px 24px rgba(36,89,122,.16)}.nx-kid-scene.compact{height:120px;border-radius:20px}.nx-kid-scene:after{content:'';position:absolute;left:-12%;right:-12%;bottom:-32px;height:90px;background:#67bd42;border-radius:50%}.nx-kid-scene-visual{position:absolute;z-index:3;inset:18px 14px 20px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:pre-line;font-size:56px;line-height:1.22;letter-spacing:4px;filter:drop-shadow(0 7px 4px rgba(0,0,0,.12))}.nx-kid-scene.compact .nx-kid-scene-visual{font-size:34px;inset:10px}.nx-kid-cloud{position:absolute;z-index:1;width:70px;height:25px;background:rgba(255,255,255,.88);border-radius:30px}.nx-kid-cloud:before,.nx-kid-cloud:after{content:'';position:absolute;background:inherit;border-radius:50%}.nx-kid-cloud:before{width:28px;height:28px;left:12px;top:-12px}.nx-kid-cloud:after{width:36px;height:36px;right:9px;top:-18px}.nx-kid-cloud.c1{left:20px;top:31px}.nx-kid-cloud.c2{right:16px;top:52px;transform:scale(.65)}.nx-kid-spark{position:absolute;z-index:2;color:#fff;font-size:25px}.nx-kid-spark.s1{right:24px;top:16px}.nx-kid-spark.s2{left:22px;bottom:18px;color:#ffe65b}
       .nx-kid-card{background:#fff;border-radius:27px;padding:16px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-step{display:flex;align-items:center;gap:11px;border-radius:21px;padding:13px 14px;margin:10px 0}.nx-kid-step.listen{background:#fff3c9}.nx-kid-step.look{background:#e7f8d9}.nx-kid-step.try{background:#e2f3ff}.nx-kid-step .ico{font-size:33px}.nx-kid-step b{font-size:17px;color:#26384c}.nx-kid-easy{font-size:19px;line-height:1.65;color:#26384c;margin:13px 3px}.nx-kid-example{background:#f2f8ff;border-radius:18px;padding:12px 13px;color:#28506f;font-size:15px;line-height:1.5}.nx-kid-listen{width:100%;min-height:72px;border:0;border-radius:22px;background:linear-gradient(180deg,#179dff,#0970dc);color:#fff;font:inherit;font-size:21px;font-weight:950;box-shadow:0 6px 0 #075cae;margin:6px 0 11px}.nx-kid-listen:active{transform:translateY(3px);box-shadow:0 3px 0 #075cae}
       .nx-kid-action-wrap{position:sticky;bottom:10px;z-index:5;padding:10px 0 2px;background:linear-gradient(180deg,transparent,rgba(245,251,255,.95) 28%)}.nx-kid-action-wrap .nx-kid-main-action{background:linear-gradient(180deg,#24c85d,#13a545);box-shadow:0 7px 0 #0b7d33,0 10px 20px rgba(16,153,64,.22)}
+      .nx-kid-voice-toggle{width:100%;border:3px solid #cfe7ff;border-radius:24px;background:#fff;color:#174f83;padding:15px 16px;margin:0 0 14px;text-align:left;box-shadow:0 6px 18px rgba(40,90,140,.12);touch-action:manipulation}.nx-kid-voice-toggle b{display:block;font-size:19px}.nx-kid-voice-toggle small{display:block;margin-top:4px;color:#63788c;font-size:13px;line-height:1.35}.nx-kid-voice-toggle.on{background:linear-gradient(135deg,#e9fff0,#d9f6ff);border-color:#4fc76b;color:#176c35}.nx-px-voice-header.on{background:#dfffe7!important;color:#137036!important}.nx-kid-voice-live{display:inline-flex;align-items:center;justify-content:center;margin:2px auto 8px;padding:8px 13px;border-radius:999px;background:#e5fff0;color:#15713b;font-size:14px;font-weight:950;box-shadow:0 3px 9px rgba(27,134,67,.12)}
       .nx-kid-mission{display:inline-block;margin:2px auto 7px;padding:7px 13px;border-radius:999px;background:#ffe45d;color:#704d00;font-size:14px;font-weight:1000;letter-spacing:.5px}.nx-kid-question{background:#fff;border-radius:28px;padding:14px;box-shadow:0 8px 23px rgba(39,65,95,.12)}.nx-kid-question h2{font-size:24px;line-height:1.25;text-align:center;color:#1f3a2b;margin:10px 5px 14px}.nx-kid-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.nx-kid-choice-grid.long{grid-template-columns:1fr}.nx-kid-answer{min-height:88px;border:4px solid #fff;border-radius:24px;font:inherit;font-weight:1000;font-size:25px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.16),0 8px 17px rgba(0,0,0,.11);touch-action:manipulation;text-align:center;padding:12px}.nx-kid-answer:nth-child(4n+1){background:linear-gradient(180deg,#a65bf4,#7740dc)}.nx-kid-answer:nth-child(4n+2){background:linear-gradient(180deg,#ff9c2d,#f06d18)}.nx-kid-answer:nth-child(4n+3){background:linear-gradient(180deg,#68d731,#39a90e)}.nx-kid-answer:nth-child(4n){background:linear-gradient(180deg,#35a7ff,#1475dc)}.nx-kid-answer.good{background:linear-gradient(180deg,#50d94b,#22a933)!important;outline:5px solid #d4ffb9}.nx-kid-answer.bad{background:linear-gradient(180deg,#ff6c6c,#d93c3c)!important;opacity:.82}.nx-kid-answer:disabled{color:#fff}
       .nx-kid-feedback{margin-top:14px;border-radius:24px;padding:16px;text-align:center}.nx-kid-feedback.ok{background:#efffe4;color:#196b2d}.nx-kid-feedback.no{background:#fff0e5;color:#8d4219}.nx-kid-feedback .face{font-size:48px;display:block}.nx-kid-feedback b{display:block;font-size:22px;margin:4px}.nx-kid-feedback span{font-size:15px;line-height:1.45}.nx-kid-auto{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;color:#557181;font-weight:850;font-size:13px}.nx-kid-auto:before{content:'🚀';font-size:22px}.nx-kid-pulse{animation:nxKidPulse 1.15s ease-in-out infinite}@keyframes nxKidPulse{50%{transform:scale(1.025);filter:brightness(1.06)}}
       .nx-kid-result{text-align:center;background:linear-gradient(180deg,#fff,#f6fff0);border-radius:30px;padding:22px 16px;box-shadow:0 9px 25px rgba(42,87,57,.14)}.nx-kid-result .trophy{font-size:68px}.nx-kid-result h2{font-size:27px;color:#20743b;margin:4px}.nx-kid-result .score{font-size:56px;font-weight:1000;color:#206ec6}.nx-kid-result p{color:#627484}.nx-kid-result .nx-px-actions{margin-top:15px}
@@ -2021,12 +2167,13 @@
     viewer.id = 'nxPrimaryExercisesV600';
     viewer.className = 'nx-px-v600';
     viewer.hidden = true;
-    viewer.innerHTML = '<header class="nx-px-top"><button type="button" class="nx-px-back" data-back aria-label="Retour">← Retour</button><div><b data-title>École primaire</b><span data-subtitle>Exercices corrigés</span></div><button type="button" class="nx-px-speak" data-speak aria-label="Lire">🔊</button><button type="button" data-close aria-label="Fermer">✕</button></header><main class="nx-px-main" data-main></main>';
+    viewer.innerHTML = '<header class="nx-px-top"><button type="button" class="nx-px-back" data-back aria-label="Retour">← Retour</button><div><b data-title>École primaire</b><span data-subtitle>Exercices corrigés</span></div><button type="button" class="nx-px-speak" data-speak aria-label="Lire">🔊</button><button type="button" class="nx-px-voice-header" data-voice-toggle data-voice-header aria-label="Activer le mode vocal">🎤</button><button type="button" data-close aria-label="Fermer">✕</button></header><main class="nx-px-main" data-main></main>';
     document.body.appendChild(viewer);
     viewer.addEventListener('click', function (ev) {
       var close = ev.target.closest('[data-close]'); if (close) { closeViewer(); return; }
       var back = ev.target.closest('[data-back]'); if (back) { goBack(); return; }
       var sp = ev.target.closest('[data-speak]'); if (sp) { speakCurrent(); return; }
+      var voiceToggle = ev.target.closest('[data-voice-toggle]'); if (voiceToggle) { toggleVoiceMode(); return; }
       var lv = ev.target.closest('[data-level]'); if (lv) { state.level = lv.getAttribute('data-level'); state.subject = ''; renderSubjects(); return; }
       var resume = ev.target.closest('[data-resume]'); if (resume) { state.subject = resume.getAttribute('data-resume-subject'); startCp1Lesson(resume.getAttribute('data-resume-lesson')); return; }
       var lesson = ev.target.closest('[data-lesson]'); if (lesson) { startCp1Lesson(lesson.getAttribute('data-lesson')); return; }
@@ -2052,6 +2199,8 @@
     v.querySelector('[data-subtitle]').textContent = subtitle || (state.level === '1' ? 'Défis pratiques' : 'Exercices corrigés');
     v.querySelector('[data-back]').style.visibility = backVisible ? 'visible' : 'hidden';
     v.querySelector('[data-speak]').style.visibility = (state.readText || (state.list.length && state.index < state.list.length)) ? 'visible' : 'hidden';
+    var vh = v.querySelector('[data-voice-header]'); if (vh) vh.style.visibility = state.level === '1' ? 'visible' : 'hidden';
+    updateVoiceUI();
   }
   function main() { return shell().querySelector('[data-main]'); }
 
@@ -2090,6 +2239,7 @@
       var validLast = !!(last && CP1_LESSONS[last.subject] && Number(last.lesson) >= 0 && Number(last.lesson) < CP1_LESSONS[last.subject].length);
       var html = '<section class="nx-kid-welcome"><span class="grade">1ère année</span><span class="nx-kid-mascot" aria-hidden="true">🦜</span><h2>Bienvenue !</h2>' +
         '<div class="nx-kid-voice"><span class="spk">🔊</span><div><b>Choisis ta matière</b><small>Je suis là pour t’aider.</small></div></div></section>';
+      html += cp1VoiceControl();
       if (validLast) {
         var lm = SUBJECTS[last.subject]; var ll = CP1_LESSONS[last.subject][Number(last.lesson)];
         html += '<button type="button" class="nx-kid-resume nx-kid-pulse" data-resume data-resume-subject="' + esc(last.subject) + '" data-resume-lesson="' + Number(last.lesson) + '">▶ Continuer mon défi<small>' + esc(lm.name + ' · ' + ll.title) + '</small></button>';
@@ -2141,11 +2291,11 @@
       shell().classList.add('nx-cp1-mode');
       var longChoices = !!(questionChoices && questionChoices.some(function(c){ return String(c).length > 18; }));
       var pct = Math.round((state.index / Math.max(1,state.list.length))*100);
-      var html = '<div class="nx-kid-flow"><span class="on">🎯</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><div class="nx-kid-mission">🎯 DÉFI</div><h2>' + esc(challengeText) + '</h2>';
+      var html = '<div class="nx-kid-flow"><span class="on">🎯</span><i class="on"></i><span class="on">' + (state.index+1) + '</span><i></i><span>★</span></div><section class="nx-kid-question">' + (currentLesson ? cp1Scene(currentLesson,state.subject,false) : '') + '<div style="height:8px;background:#e5edf4;border-radius:10px;overflow:hidden;margin:2px 3px 12px"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#53ca36,#ffd234);border-radius:10px"></div></div><div class="nx-kid-mission">🎯 DÉFI</div>' + cp1VoiceBadge() + '<h2>' + esc(challengeText) + '</h2>';
       if (ex.visual) html += '<div class="nx-px-visual" style="text-align:center;font-size:40px">' + esc(ex.visual) + '</div>';
       if (questionChoices && questionChoices.length) html += '<div class="nx-kid-choice-grid' + (longChoices?' long':'') + '">' + questionChoices.map(function(c){ return '<button type="button" class="nx-kid-answer" data-answer="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>';
       else { var mode = ex.type === 'input' ? 'inputmode="decimal"' : ''; html += '<form class="nx-px-input" data-answer-form style="margin-top:12px"><input ' + mode + ' autocomplete="off" aria-label="Ta réponse" placeholder="Écris ta réponse"><button type="submit">Corriger</button></form>'; }
-      html += '<div data-feedback></div></section>'; main().innerHTML = html; speak(state.readText); return;
+      html += '<div data-feedback></div></section>'; main().innerHTML = html; voiceAwaitingAnswer = !!voiceMode; updateVoiceUI(); speak(state.readText); return;
     }
     var old = '<section class="nx-px-question"><div class="nx-px-meta"><span>Exercice ' + (state.index + 1) + ' / ' + state.list.length + '</span><span>' + esc(meta.name) + '</span></div><h2 class="nx-px-q">' + esc(ex.q) + '</h2>';
     if (ex.visual) old += '<div class="nx-px-visual">' + esc(ex.visual) + '</div>';
@@ -2159,7 +2309,7 @@
     if (state.locked || state.index >= state.list.length) return;
     var ex = state.list[state.index], ok = normalize(value) === normalize(ex.a);
     if (!String(value || '').trim()) return;
-    state.locked = true; if (ok) state.good++; else state.wrong.push(ex);
+    state.locked = true; voiceAwaitingAnswer = false; stopVoiceListening(); if (ok) state.good++; else state.wrong.push(ex);
     var all = main().querySelectorAll('[data-answer]');
     Array.prototype.forEach.call(all,function(b){ b.disabled=true; if(normalize(b.getAttribute('data-answer'))===normalize(ex.a)) b.classList.add('good'); });
     if (!ok && control && control.classList) control.classList.add('bad');
@@ -2175,7 +2325,7 @@
   function nextQuestion() { clearAuto(); state.index++; renderQuestion(); }
 
   function renderResult() {
-    clearAuto(); progressWrite(state.level,state.subject,state.good,state.list.length);
+    clearAuto(); voiceAwaitingAnswer = false; stopVoiceListening(); progressWrite(state.level,state.subject,state.good,state.list.length);
     var score = state.list.length ? Math.round(state.good*100/state.list.length) : 0;
     var msg = score >= 80 ? 'Bravo !' : score >= 60 ? 'Très bien, on continue !' : 'Tu progresses !';
     state.readText = msg + ' Tu as ' + state.good + ' bonnes réponses sur ' + state.list.length + '.';
@@ -2198,7 +2348,7 @@
     state.list = shuffle(state.wrong); state.index = 0; state.good = 0; state.wrong = []; state.locked = false; renderQuestion();
   }
   function goBack() {
-    clearAuto();
+    clearAuto(); voiceAwaitingAnswer = false; stopVoiceListening();
     if (state.list.length) {
       state.list = []; state.index = 0; state.readText = '';
       if (state.level === '1' && state.subject && CP1_LESSONS[state.subject]) { renderCp1Lessons(state.subject); return; }
@@ -2219,7 +2369,7 @@
     renderLevels(); v.scrollTop = 0;
   }
   function closeViewer() {
-    clearAuto();
+    clearAuto(); voiceMode = false; voiceAwaitingAnswer = false; stopVoiceListening();
     if (!viewer) return;
     try { window.speechSynthesis && speechSynthesis.cancel(); } catch (_e) {}
     viewer.hidden = true; document.body.style.overflow = '';

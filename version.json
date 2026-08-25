@@ -1,5 +1,5 @@
 {
-  "version": "V613.2",
-  "message": "Nexora V613.2 : CP1 en jeu pratique pur. Questions contextualisees, reponses tactiles y compris les anciennes saisies, ancien flux d explication retire et audio anti-repetition.",
+  "version": "V614",
+  "message": "Nexora V614 : CP1 avec mode vocal de seance. Le parent active le micro une seule fois ; Nexora ecoute automatiquement apres chaque question, tandis que toutes les reponses tactiles restent disponibles.",
   "critical": false
 }
