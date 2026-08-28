@@ -1,5 +1,5 @@
 {
-  "version": "V624",
-  "message": "Nexora V624 : nouvel ecran de choix des classes. Les six annees forment un chemin, de la 1ere a la 6eme.",
+  "version": "V625",
+  "message": "Nexora V625 : l ecran de connexion se presente maintenant a chaque ouverture tant qu aucun compte n est connecte.",
   "critical": false
 }
