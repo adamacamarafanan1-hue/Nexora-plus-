@@ -659,3 +659,107 @@
   setInterval(poser, 1500);
   setTimeout(poser, 2500);
 })();
+
+/* V625 — La porte d'entrée : pas de session Supabase, pas d'accès.
+   Corrige le trou de shouldOpenWelcomeGate(), qui laissait entrer
+   toute personne ayant un ancien profil dans le téléphone. */
+(function () {
+  'use strict';
+  if (window.__nxPorteV625) return;
+  window.__nxPorteV625 = true;
+
+  var DELAI_MAX = 15000;
+  var connecte = false;
+  var surveille = false;
+  var observateur = null;
+
+  function porte() { return document.getElementById('welcomeGate'); }
+
+  function ouvrir() {
+    var g = porte();
+    if (!g || connecte) return;
+    if (g.hidden === false && document.body.classList.contains('welcome-active')) return;
+    g.hidden = false;
+    try { document.body.classList.add('welcome-active'); } catch (_e) {}
+    try { g.scrollTop = 0; } catch (_e) {}
+  }
+
+  function surveiller() {
+    if (surveille || connecte) return;
+    surveille = true;
+    ouvrir();
+    if (typeof MutationObserver !== 'function') return;
+    var g = porte();
+    if (!g) return;
+    observateur = new MutationObserver(function () {
+      if (connecte) return;
+      if (porte() && porte().hidden !== false) ouvrir();
+    });
+    try { observateur.observe(g, { attributes: true, attributeFilter: ['hidden'] }); } catch (_e) {}
+  }
+
+  function relacher() {
+    connecte = true;
+    surveille = false;
+    if (observateur) { try { observateur.disconnect(); } catch (_e) {} observateur = null; }
+  }
+
+  function clientPret() {
+    var api = window.NexoraApp;
+    if (!api) return null;
+    try {
+      if (typeof api.ensureSupabaseClientReady === 'function') return api.ensureSupabaseClientReady();
+      if (typeof api.getSupabaseClient === 'function') {
+        var c = api.getSupabaseClient();
+        if (c) return Promise.resolve(c);
+      }
+    } catch (_e) {}
+    return null;
+  }
+
+  function sessionActive(c) {
+    if (!c || !c.auth || typeof c.auth.getSession !== 'function') return Promise.resolve(null);
+    return c.auth.getSession().then(function (r) {
+      var s = r && r.data && r.data.session;
+      return (s && s.user) ? s : null;
+    }).catch(function () { return null; });
+  }
+
+  function ecouterAuth(c) {
+    if (!c || !c.auth || typeof c.auth.onAuthStateChange !== 'function') return;
+    try {
+      c.auth.onAuthStateChange(function (evenement, session) {
+        if (session && session.user) relacher();
+        else { connecte = false; surveille = false; surveiller(); }
+      });
+    } catch (_e) {}
+  }
+
+  function controler(c) {
+    return sessionActive(c).then(function (s) {
+      if (s) relacher(); else surveiller();
+    });
+  }
+
+  var debut = Date.now();
+  (function attendre() {
+    var p = clientPret();
+    if (!p) {
+      /* Supabase pas encore prêt. On patiente sans rien bloquer :
+         si le client n'arrive jamais, on ne verrouille pas l'application. */
+      if (Date.now() - debut < DELAI_MAX) { setTimeout(attendre, 400); }
+      return;
+    }
+    p.then(function (c) {
+      ecouterAuth(c);
+      return controler(c);
+    }).catch(function () {});
+  })();
+
+  /* À chaque retour dans l'application */
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) return;
+    var p = clientPret();
+    if (p) p.then(controler).catch(function () {});
+  });
+})();
