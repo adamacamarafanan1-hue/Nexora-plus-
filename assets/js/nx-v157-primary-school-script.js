@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V626
+/* NEXORA — École primaire interactive V628
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV626) return;
-  window.__nxPrimaryExercisesV626 = true;
+  if (window.__nxPrimaryExercisesV628) return;
+  window.__nxPrimaryExercisesV628 = true;
 
-  var VERSION = 'v626';
+  var VERSION = 'v628';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2728,19 +2728,64 @@
     if (PRACTICE_ABSENT[level]) return false;
     return ['3', '4', '5', '6'].indexOf(level) >= 0;
   }
+  var CACHE_CONTENU = 'nexora.primaire.contenu.v628.';
+
+  function jetonSupabase() {
+    var api = window.NexoraApp;
+    if (!api || typeof api.ensureSupabaseClientReady !== 'function') return Promise.resolve('');
+    return api.ensureSupabaseClientReady().then(function (c) {
+      if (!c || !c.auth || typeof c.auth.getSession !== 'function') return '';
+      return c.auth.getSession().then(function (r) {
+        var s = r && r.data && r.data.session;
+        return (s && s.access_token) ? s.access_token : '';
+      });
+    }).catch(function () { return ''; });
+  }
+
+  function contenuEnCache(level) {
+    try {
+      var brut = localStorage.getItem(CACHE_CONTENU + level);
+      if (!brut) return null;
+      var o = JSON.parse(brut);
+      return (o && typeof o === 'object') ? o : null;
+    } catch (_e) { return null; }
+  }
+
+  function garderContenu(level, contenu) {
+    try { localStorage.setItem(CACHE_CONTENU + level, JSON.stringify(contenu)); } catch (_e) {}
+  }
+
   function loadPracticeLevel(level) {
     level = String(level);
     var store = practiceStore();
     if (store[level]) return Promise.resolve(true);
     if (!practiceFileExists(level)) return Promise.resolve(false);
     if (PRACTICE_LOADING[level]) return PRACTICE_LOADING[level];
-    PRACTICE_LOADING[level] = new Promise(function (resolve) {
-      var s = document.createElement('script');
-      s.src = 'assets/js/nexora-primaire-' + level + '.js';
-      s.async = true;
-      s.onload = function () { var ok = !!practiceStore()[level]; if (!ok) PRACTICE_ABSENT[level] = true; resolve(ok); };
-      s.onerror = function () { PRACTICE_LOADING[level] = null; PRACTICE_ABSENT[level] = true; resolve(false); };
-      (document.head || document.documentElement).appendChild(s);
+
+    PRACTICE_LOADING[level] = jetonSupabase().then(function (jeton) {
+      if (!jeton) throw new Error('SANS_SESSION');
+      return fetch('/api/cours-primaire?classe=' + encodeURIComponent(level), {
+        method: 'GET',
+        headers: { Authorization: 'Bearer ' + jeton },
+        cache: 'no-store'
+      });
+    }).then(function (r) {
+      if (!r.ok) { var e = new Error('HTTP_' + r.status); e.statut = r.status; throw e; }
+      return r.json();
+    }).then(function (data) {
+      if (!data || data.success !== true || !data.contenu) throw new Error('REPONSE_INVALIDE');
+      store[level] = data.contenu;
+      garderContenu(level, data.contenu);
+      return true;
+    }).catch(function (err) {
+      /* Hors ligne ou serveur indisponible : on rouvre ce que l'élève a déjà reçu. */
+      var garde = contenuEnCache(level);
+      if (garde) { store[level] = garde; return true; }
+      /* Un seul essai par session : sans cela l'écran se redessine en boucle
+         et rappelle la route indéfiniment. */
+      PRACTICE_ABSENT[level] = true;
+      PRACTICE_LOADING[level] = null;
+      return false;
     });
     return PRACTICE_LOADING[level];
   }
