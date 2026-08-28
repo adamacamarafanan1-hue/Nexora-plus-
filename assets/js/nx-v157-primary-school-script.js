@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V621
+/* NEXORA — École primaire interactive V624
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV621) return;
-  window.__nxPrimaryExercisesV621 = true;
+  if (window.__nxPrimaryExercisesV624) return;
+  window.__nxPrimaryExercisesV624 = true;
 
-  var VERSION = 'v621';
+  var VERSION = 'v624';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2422,6 +2422,24 @@
     var st = document.createElement('style');
     st.id = 'nxCp1PremiumV611';
     st.textContent = `
+      .nx-lv-head{padding:6px 2px 18px}
+      .nx-lv-eyebrow{display:block;font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#2F9385;margin-bottom:7px}
+      .nx-lv-head h2{margin:0 0 5px;font-size:25px;line-height:1.15;letter-spacing:-.6px;color:#12241F}
+      .nx-lv-head p{margin:0;font-size:15px;color:#5b6f68}
+      .nx-lv-path{position:relative;display:flex;flex-direction:column;gap:10px;padding-left:6px}
+      .nx-lv-path::before{content:'';position:absolute;left:38px;top:26px;bottom:26px;width:3px;border-radius:3px;background:linear-gradient(180deg,#6FB7A0,#0E4A4A)}
+      .nx-lv{position:relative;z-index:1;display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 14px;border:1px solid #dde6e2;border-left:5px solid var(--teinte);border-radius:15px;background:#fff;cursor:pointer;box-shadow:0 2px 10px rgba(14,74,74,.06);animation:nxLvIn .32s ease-out both;animation-delay:calc(var(--pas)*45ms)}
+      .nx-lv:active{transform:scale(.985)}
+      .nx-lv:focus-visible{outline:3px solid var(--teinte);outline-offset:2px}
+      .nx-lv-num{flex:0 0 58px;height:58px;border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;color:var(--teinte);background:color-mix(in srgb,var(--teinte) 13%,#fff);border:2px solid color-mix(in srgb,var(--teinte) 28%,#fff)}
+      .nx-lv-corps{flex:1;min-width:0}
+      .nx-lv-corps strong{display:block;font-size:17px;color:#12241F;letter-spacing:-.2px}
+      .nx-lv-corps small{display:block;font-size:13.5px;color:#5b6f68;margin-top:2px;line-height:1.35}
+      .nx-lv-meta{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;font-weight:700;color:#87968f}
+      .nx-lv-reprise{font-weight:800;color:#8a5f10;background:#FBF0D8;border-radius:999px;padding:3px 9px}
+      .nx-lv-fleche{flex:0 0 auto;font-size:26px;line-height:1;color:var(--teinte);opacity:.55}
+      @keyframes nxLvIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+      @media (prefers-reduced-motion:reduce){.nx-lv{animation:none}}
       .nx-px-step{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#1268b8;background:#e7f1fb;border-radius:999px;padding:5px 12px;margin-bottom:10px}
       .nx-px-step.work{color:#8a5b00;background:#fff3cd}
       .nx-px-step.done{color:#1c7a3e;background:#e3f6e9}
@@ -2555,13 +2573,17 @@
     state.readText = 'Bonjour. Choisis ta classe. Pour la première année, touche le grand numéro 1.';
     setHeader('École primaire', 'Écoute puis touche ta classe', false);
     var p = progressRead();
-    var badges = { '1':'1️⃣', '2':'2️⃣', '3':'3️⃣', '4':'4️⃣', '5':'5️⃣', '6':'6️⃣' };
-    var html = '<section class="nx-px-hero nx-px-child-hero"><h2>🎒 Choisis ta classe</h2><p>Écoute. Puis touche le grand numéro de ta classe.</p></section><div class="nx-px-grid">';
-    Object.keys(LEVELS).forEach(function (k) {
+    var teintes = { '1': '#6FB7A0', '2': '#4FA894', '3': '#2F9385', '4': '#1F7A72', '5': '#16625E', '6': '#0E4A4A' };
+    var html = '<section class="nx-lv-head"><span class="nx-lv-eyebrow">École primaire</span><h2>De la 1ère à la 6ème année</h2><p>Touche ta classe pour commencer.</p></section><div class="nx-lv-path">';
+    Object.keys(LEVELS).forEach(function (k, i) {
       var l = LEVELS[k], vals = [], total = 0;
       l.subjects.forEach(function (sub) { var x = p[k + ':' + sub]; if (x && typeof x.best === 'number') { vals.push(x.best); total += x.best; } });
       var avg = vals.length ? Math.round(total / vals.length) : null;
-      html += '<button type="button" class="nx-px-card nx-px-level-card" data-level="' + k + '"><em>' + badges[k] + '</em><strong>' + esc(l.label) + '</strong><small>' + esc(l.subtitle) + '</small>' + (avg != null ? '<div class="nx-px-progress">Niveau : ' + avg + '%</div>' : '') + '</button>';
+      html += '<button type="button" class="nx-lv" data-level="' + k + '" style="--teinte:' + teintes[k] + ';--pas:' + i + '">' +
+        '<span class="nx-lv-num">' + k + '</span>' +
+        '<span class="nx-lv-corps"><strong>' + esc(l.label) + '</strong><small>' + esc(l.subtitle) + '</small>' +
+        '<span class="nx-lv-meta">' + l.subjects.length + ' matières' + (avg != null ? '<b class="nx-lv-reprise">reprendre · ' + avg + '%</b>' : '') + '</span></span>' +
+        '<span class="nx-lv-fleche" aria-hidden="true">›</span></button>';
     });
     html += '</div>';
     main().innerHTML = html;
