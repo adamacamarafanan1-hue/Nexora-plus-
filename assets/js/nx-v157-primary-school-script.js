@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V624
+/* NEXORA — École primaire interactive V626
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV624) return;
-  window.__nxPrimaryExercisesV624 = true;
+  if (window.__nxPrimaryExercisesV626) return;
+  window.__nxPrimaryExercisesV626 = true;
 
-  var VERSION = 'v624';
+  var VERSION = 'v626';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2440,19 +2440,19 @@
       .nx-lv-fleche{flex:0 0 auto;font-size:26px;line-height:1;color:var(--teinte);opacity:.55}
       @keyframes nxLvIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
       @media (prefers-reduced-motion:reduce){.nx-lv{animation:none}}
-      .nx-px-step{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#1268b8;background:#e7f1fb;border-radius:999px;padding:5px 12px;margin-bottom:10px}
+      .nx-px-step{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--nx-teinte,#2F9385);background:color-mix(in srgb,var(--nx-teinte,#2F9385) 11%,#fff);border:1px solid color-mix(in srgb,var(--nx-teinte,#2F9385) 22%,#fff);border-radius:999px;padding:5px 12px;margin-bottom:11px}
       .nx-px-step.work{color:#8a5b00;background:#fff3cd}
       .nx-px-step.done{color:#1c7a3e;background:#e3f6e9}
       .nx-px-para{margin:0 0 11px;font-size:16px;line-height:1.65;color:#22364a}
-      .nx-px-exemple{margin-top:6px;background:#f4f8fc;border-left:4px solid #1268b8;border-radius:0 12px 12px 0;padding:11px 13px}
-      .nx-px-exemple b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:#1268b8;margin-bottom:4px}
+      .nx-px-exemple{margin-top:6px;background:#f4f8fc;border-left:4px solid var(--nx-teinte,#2F9385);border-radius:0 12px 12px 0;padding:11px 13px}
+      .nx-px-exemple b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--nx-teinte,#2F9385);margin-bottom:4px}
       .nx-px-exemple p{margin:0;font-size:16px;line-height:1.6;color:#22364a}
       .nx-px-consigne{margin:0 0 12px;font-size:18px;line-height:1.55;font-weight:600;color:#12314f}
       .nx-px-hint-btn{border:0;background:#fff3cd;color:#8a5b00;border-radius:12px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px}
       .nx-px-hint{margin:0 0 12px;font-size:15px;color:#6b5a20;background:#fffaf0;border:1px dashed #f0c674;border-radius:12px;padding:10px 12px}
-      .nx-px-label{display:block;font-size:13px;font-weight:700;color:#1268b8;margin-bottom:6px}
+      .nx-px-label{display:block;font-size:13px;font-weight:700;color:var(--nx-teinte,#2F9385);margin-bottom:6px}
       .nx-px-v600 textarea[data-ptext]{width:100%;min-height:150px;border:1px solid #cddced;border-radius:14px;padding:12px;font-size:16px;line-height:1.55;font-family:inherit;color:#17324d;background:#fcfdff;resize:vertical}
-      .nx-px-go{display:block;width:100%;margin-top:12px;padding:15px;border:0;border-radius:16px;background:linear-gradient(135deg,#078df0,#4f53e9);color:#fff;font-size:17px;font-weight:800;cursor:pointer}
+      .nx-px-go{display:block;width:100%;margin-top:12px;padding:15px;border:0;border-radius:16px;background:var(--nx-teinte,#2F9385);color:#fff;font-size:17px;font-weight:800;cursor:pointer}
       .nx-px-verdict{margin-top:14px;border-radius:16px;padding:14px;border:1px solid #dbe5ee;background:#fff}
       .nx-px-verdict.ok{background:#eefaf1;border-color:#b7e4c5}
       .nx-px-verdict.no{background:#fff6ec;border-color:#f3cfa4}
@@ -2462,14 +2462,22 @@
       .nx-px-verdict p{margin:0;font-size:16px;line-height:1.6;color:#22364a}
       .nx-px-lesson-row .tag{margin-left:auto;font-size:12px;font-weight:800;color:#68798c;background:#eef3f8;border-radius:999px;padding:4px 10px}
       .nx-px-lesson-row .tag.ok{color:#1c7a3e;background:#e3f6e9}
+      .nx-ic{width:1.05em;height:1.05em;flex:0 0 auto;vertical-align:-.14em;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+      .nx-px-go .nx-ic,.nx-px-next .nx-ic,.nx-px-hint-btn .nx-ic{margin-right:8px}
+      .nx-px-verdict b .nx-ic{margin-right:8px;vertical-align:-.16em}
+      .nx-lv-fleche .nx-ic{width:20px;height:20px;stroke-width:2.4}
+      .nx-px-lesson h2,.nx-lv-head h2{color:#12241F}
+      .nx-px-consigne{color:#12241F}
+      .nx-px-next{border:1px solid color-mix(in srgb,var(--nx-teinte,#2F9385) 30%,#fff);background:color-mix(in srgb,var(--nx-teinte,#2F9385) 8%,#fff);color:var(--nx-teinte,#2F9385);font-weight:700}
+      .nx-px-v600 textarea[data-ptext]:focus{outline:none;border-color:var(--nx-teinte,#2F9385);box-shadow:0 0 0 3px color-mix(in srgb,var(--nx-teinte,#2F9385) 16%,transparent)}
       .nx-px-note{text-align:center;color:#68798c;font-size:14px;margin:14px 0}
       .nx-px-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
       .nx-px-lesson-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:#fff;border:1px solid #dbe5ee;border-radius:14px;padding:13px 14px;font-size:15px;color:#17324d;cursor:pointer}
-      .nx-px-lesson-row .num{flex:0 0 30px;height:30px;border-radius:10px;background:#eaf3fb;color:#1268b8;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+      .nx-px-lesson-row .num{flex:0 0 32px;height:32px;border-radius:11px;background:color-mix(in srgb,var(--nx-teinte,#2F9385) 12%,#fff);color:var(--nx-teinte,#2F9385);font-weight:800;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;font-size:14px}
       .nx-px-lesson{background:#fff;border:1px solid #dbe5ee;border-radius:16px;padding:16px}
       .nx-px-lesson h2{margin:0 0 10px;font-size:20px;color:#12314f}
       .nx-px-block{margin:0 0 14px}
-      .nx-px-block h3{margin:0 0 5px;font-size:14px;text-transform:uppercase;letter-spacing:.4px;color:#1268b8}
+      .nx-px-block h3{margin:0 0 5px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--nx-teinte,#2F9385)}
       .nx-px-block p{margin:0;font-size:16px;line-height:1.6;color:#22364a}
       .nx-px-steps{margin:0;padding-left:20px;font-size:16px;line-height:1.6;color:#22364a}
       .nx-px-steps li{margin-bottom:6px}
@@ -2478,7 +2486,7 @@
       .nx-kid-help-box p{margin:0 0 7px;font-size:16px;line-height:1.55;color:#4a3a12}
       .nx-kid-help-box p:last-child{margin-bottom:0}
       .nx-px-v600.nx-cp1-mode{background:linear-gradient(180deg,#dff5ff 0,#fff9df 42%,#eefbe9 100%);background-attachment:fixed}
-      .nx-cp1-mode .nx-px-top{background:linear-gradient(135deg,#078df0,#4f53e9);padding:11px 12px;border-bottom-left-radius:22px;border-bottom-right-radius:22px;box-shadow:0 7px 24px rgba(39,94,190,.24)}
+      .nx-cp1-mode .nx-px-top{background:var(--nx-teinte,#2F9385);padding:11px 12px;border-bottom-left-radius:22px;border-bottom-right-radius:22px;box-shadow:0 7px 24px rgba(39,94,190,.24)}
       .nx-cp1-mode .nx-px-top b{font-size:20px;letter-spacing:.2px}.nx-cp1-mode .nx-px-top span{font-size:13px;opacity:.95}
       .nx-cp1-mode .nx-px-top button{min-width:52px;height:52px;border-radius:18px;background:#fff;color:#1760bc;box-shadow:0 3px 9px rgba(0,0,0,.14);font-size:21px}
       .nx-cp1-mode .nx-px-back{min-width:92px!important;color:#1760bc!important}.nx-cp1-mode .nx-px-main{width:min(720px,100%);padding:14px 12px 110px}
@@ -2567,6 +2575,39 @@
   }
   function main() { return shell().querySelector('[data-main]'); }
 
+  var TEINTES = { '1': '#6FB7A0', '2': '#4FA894', '3': '#2F9385', '4': '#1F7A72', '5': '#16625E', '6': '#0E4A4A' };
+  function appliquerTeinte(niveau) {
+    var s = shell(); if (!s) return;
+    try { s.style.setProperty('--nx-teinte', TEINTES[niveau] || '#2F9385'); } catch (_e) {}
+  }
+  function ico(nom) {
+    var d = {
+      corriger: '<path d="M4 12.5l5 5L20 6.5"/>',
+      cible: '<circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.4"/>',
+      revoir: '<path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4 4v4h4"/>',
+      indice: '<circle cx="11" cy="11" r="6.3"/><path d="M15.6 15.6L20 20"/>',
+      livre: '<path d="M4 5.5h6.5a2 2 0 0 1 2 2V19a2 2 0 0 0-2-1.6H4z"/><path d="M20 5.5h-6.5a2 2 0 0 0-2 2V19a2 2 0 0 1 2-1.6H20z"/>',
+      ampoule: '<path d="M9.2 16.5a5.6 5.6 0 1 1 5.6 0v1.8H9.2z"/><path d="M10 21h4"/>',
+      fleche: '<path d="M9 5.5l6.5 6.5L9 18.5"/>',
+      m_francais: '<path d="M4 5.5h6a2 2 0 0 1 2 2V19a2 2 0 0 0-2-1.6H4z"/><path d="M20 5.5h-6a2 2 0 0 0-2 2V19a2 2 0 0 1 2-1.6h6z"/>',
+      m_maths: '<path d="M4.5 7.5h6M7.5 4.5v6"/><path d="M13.5 7.5h6"/><path d="M13.5 16.5h6M16.5 13.5v6"/><path d="M4.5 14.5l5 5M9.5 14.5l-5 5"/>',
+      m_sciences: '<path d="M9.5 3.5v6L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3l-4.7-8.5v-6"/><path d="M8.5 3.5h7"/><path d="M7.6 14h8.8"/>',
+      m_histoiregeo: '<circle cx="12" cy="12" r="8.3"/><path d="M3.8 12h16.4"/><path d="M12 3.7c2.4 2.4 3.6 5.3 3.6 8.3s-1.2 5.9-3.6 8.3c-2.4-2.4-3.6-5.3-3.6-8.3S9.6 6.1 12 3.7z"/>',
+      m_histoire: '<circle cx="12" cy="12" r="8.3"/><path d="M12 7v5.3l3.4 2"/>',
+      m_geographie: '<path d="M9.4 4.5L3.8 6.8v12.7l5.6-2.3 5.2 2.3 5.6-2.3V4.5l-5.6 2.3z"/><path d="M9.4 4.5v12.7M14.6 6.8v12.7"/>',
+      m_ecm: '<path d="M12 3.6l7 3v5.1c0 4.2-2.8 7.3-7 8.7-4.2-1.4-7-4.5-7-8.7V6.6z"/><path d="M9 12.2l2.1 2.1 4-4.2"/>',
+      m_arts: '<path d="M12 3.8a8.2 8.2 0 1 0 0 16.4c1.3 0 1.9-.9 1.9-1.8 0-1.6-1-1.9-1-3 0-.9.7-1.6 1.7-1.6h1.6a4.2 4.2 0 0 0 4-4.3c0-3.4-3.6-5.7-8.2-5.7z"/><circle cx="8.6" cy="10.4" r="1.1"/><circle cx="12" cy="8.2" r="1.1"/><circle cx="15.4" cy="10.4" r="1.1"/>',
+      m_eps: '<path d="M6.2 8.5v7M17.8 8.5v7M3.6 10.4v3.2M20.4 10.4v3.2M6.2 12h11.6"/>',
+      m_entretien: '<circle cx="12" cy="12" r="4"/><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4M5.8 5.8l1.7 1.7M16.5 16.5l1.7 1.7M18.2 5.8l-1.7 1.7M7.5 16.5l-1.7 1.7"/>'
+    };
+    return '<svg class="nx-ic" viewBox="0 0 24 24" aria-hidden="true">' + (d[nom] || '') + '</svg>';
+  }
+
+  function icoMat(id) {
+    var c = canonSubject(id);
+    return ico('m_' + c) || ico('m_francais');
+  }
+
   function renderLevels() {
     clearAuto(); shell().classList.remove('nx-cp1-mode');
     state.level = ''; state.subject = ''; state.lesson = -1; state.phase = 0; state.list = []; state.index = 0;
@@ -2583,7 +2624,7 @@
         '<span class="nx-lv-num">' + k + '</span>' +
         '<span class="nx-lv-corps"><strong>' + esc(l.label) + '</strong><small>' + esc(l.subtitle) + '</small>' +
         '<span class="nx-lv-meta">' + l.subjects.length + ' matières' + (avg != null ? '<b class="nx-lv-reprise">reprendre · ' + avg + '%</b>' : '') + '</span></span>' +
-        '<span class="nx-lv-fleche" aria-hidden="true">›</span></button>';
+        '<span class="nx-lv-fleche">' + ico('fleche') + '</span></button>';
     });
     html += '</div>';
     main().innerHTML = html;
@@ -2592,6 +2633,7 @@
 
   function renderSubjects() {
     var l = LEVELS[state.level]; if (!l) { renderLevels(); return; }
+    appliquerTeinte(state.level);
     clearAuto();
     state.subject = ''; state.lesson = -1; state.phase = 0; state.list = []; state.index = 0;
     shell().classList.toggle('nx-cp1-mode', state.level === '1');
@@ -2646,13 +2688,13 @@
       seen[s.id] = true;
       seen[s.canon] = true;
       var meta = SUBJECTS[s.canon];
-      old += '<button type="button" class="nx-px-card" data-dsubject="' + esc(s.id) + '"><em>' + ((meta && meta.icon) || '📘') + '</em><strong>' + esc(s.name) + '</strong><small>' + s.lessons.length + ' leçons</small></button>';
+      old += '<button type="button" class="nx-px-card" data-dsubject="' + esc(s.id) + '"><em>' + icoMat(s.canon || s.id) + '</em><strong>' + esc(s.name) + '</strong><small>' + s.lessons.length + ' leçons</small></button>';
     });
     l.subjects.forEach(function (sub) {
       if (seen[sub]) return;
       var meta = SUBJECTS[sub], bank = build(state.level, sub), pr = p[state.level + ':' + sub];
       if (!bank.length) return;
-      old += '<button type="button" class="nx-px-card" data-subject="' + sub + '"><em>' + meta.icon + '</em><strong>' + esc(meta.name) + '</strong><small>' + bank.length + ' exercices par série</small>' + (pr ? '<div class="nx-px-progress">Meilleur score : ' + (pr.best || 0) + '%</div>' : '') + '</button>';
+      old += '<button type="button" class="nx-px-card" data-subject="' + sub + '"><em>' + icoMat(sub) + '</em><strong>' + esc(meta.name) + '</strong><small>' + bank.length + ' exercices par série</small>' + (pr ? '<div class="nx-px-progress">Meilleur score : ' + (pr.best || 0) + '%</div>' : '') + '</button>';
     });
     old += '</div>';
     if (!written.length && !PRIMARY_TRIED) old += '<p class="nx-px-note">Chargement des leçons…</p>';
@@ -2747,7 +2789,7 @@
     Object.keys(lv).forEach(function (sub) {
       var meta = SUBJECTS[canonSubject(sub)] || { name: sub, icon: '📘' };
       var parts = lv[sub].length, total = practiceTotal(sub), done = practiceDoneCount(sub);
-      html += '<button type="button" class="nx-px-card" data-psubject="' + esc(sub) + '"><em>' + meta.icon + '</em><strong>' + esc(meta.name) + '</strong><small>' + parts + ' parties · ' + total + ' exercices</small>' +
+      html += '<button type="button" class="nx-px-card" data-psubject="' + esc(sub) + '"><em>' + icoMat(sub) + '</em><strong>' + esc(meta.name) + '</strong><small>' + parts + ' parties · ' + total + ' exercices</small>' +
         (done ? '<div class="nx-px-progress">' + done + ' exercice' + (done > 1 ? 's' : '') + ' traité' + (done > 1 ? 's' : '') + '</div>' : '') + '</button>';
     });
     html += '</div>';
@@ -2809,13 +2851,13 @@
     var draft = practiceDraft(state.ppart, index);
     var html = '<article class="nx-px-lesson"><div class="nx-px-step work">2 · Je traite</div>' +
       '<p class="nx-px-consigne">' + esc(ex.consigne) + '</p>' +
-      (ex.aide ? '<button type="button" class="nx-px-hint-btn" data-phint>🔎 Un indice</button><p class="nx-px-hint" data-phint-box hidden>' + esc(ex.aide) + '</p>' : '') +
+      (ex.aide ? '<button type="button" class="nx-px-hint-btn" data-phint>' + ico('indice') + ' Un indice</button><p class="nx-px-hint" data-phint-box hidden>' + esc(ex.aide) + '</p>' : '') +
       '<label class="nx-px-label" for="nxPracticeText">Écris ton traitement</label>' +
       '<textarea id="nxPracticeText" data-ptext maxlength="4000" placeholder="Écris ici ta réponse, ou traite dans ton cahier puis recopie l’essentiel.">' + esc(draft) + '</textarea>' +
-      '<button type="button" class="nx-px-go" data-pcorrect="' + index + '">✔ Corriger mon traité</button>' +
+      '<button type="button" class="nx-px-go" data-pcorrect="' + index + '">' + ico('corriger') + ' Corriger mon traité</button>' +
       '<div data-pverdict></div></article>';
     if (index + 1 < list.length) html += '<button type="button" class="nx-px-next" data-pex="' + (index + 1) + '" style="margin-top:10px">Exercice suivant →</button>';
-    html += '<button type="button" class="nx-px-next" data-ppart="' + state.ppart + '" style="margin-top:10px">↺ Revoir l’explication</button>';
+    html += '<button type="button" class="nx-px-next" data-ppart="' + state.ppart + '" style="margin-top:10px">' + ico('revoir') + ' Revoir l’explication</button>';
     main().innerHTML = html;
     shell().scrollTop = 0;
   }
@@ -2836,15 +2878,15 @@
     }
     practiceSaveDraft(state.ppart, index, ecrit);
     practiceMarkDone(state.ppart, index);
-    var verdict, classe;
-    if (!ex.reponse) { verdict = '📖 Compare ton travail au corrigé'; classe = 'neutre'; }
-    else if (practiceMatch(ex.reponse, ecrit)) { verdict = '✅ C’est juste'; classe = 'ok'; }
-    else { verdict = '💡 À revoir — lis le corrigé, puis recommence'; classe = 'no'; }
+    var verdict, classe, marque;
+    if (!ex.reponse) { verdict = 'Compare ton travail au corrigé'; marque = ico('livre'); classe = 'neutre'; }
+    else if (practiceMatch(ex.reponse, ecrit)) { verdict = 'C’est juste'; marque = ico('corriger'); classe = 'ok'; }
+    else { verdict = 'À revoir — lis le corrigé, puis recommence'; marque = ico('ampoule'); classe = 'no'; }
     box.className = 'nx-px-verdict ' + classe;
-    box.innerHTML = '<div class="nx-px-step done">3 · Le corrigé</div><b>' + esc(verdict) + '</b>' +
+    box.innerHTML = '<div class="nx-px-step done">3 · Le corrigé</div><b>' + marque + esc(verdict) + '</b>' +
       (ex.reponse ? '<span class="att">Réponse attendue : <strong>' + esc(ex.reponse) + '</strong></span>' : '') +
       '<p>' + esc(ex.corrige) + '</p>';
-    speak(verdict.replace(/[^\wÀ-ÿ ’'-]/g, '') + '. ' + ex.corrige);
+    speak(verdict + '. ' + ex.corrige);
   }
 
   function openDataSubject(subjectId) {
@@ -2871,7 +2913,7 @@
     });
     html += '</div>';
     var bank = build(state.level, s.canon);
-    if (bank.length) html += '<button type="button" class="nx-px-next" data-bank="' + esc(s.canon) + '" style="margin-top:14px">🎯 Faire les ' + bank.length + ' exercices corrigés</button>';
+    if (bank.length) html += '<button type="button" class="nx-px-next" data-bank="' + esc(s.canon) + '" style="margin-top:14px">' + ico('cible') + ' Faire les ' + bank.length + ' exercices corrigés</button>';
     main().innerHTML = html;
   }
   function renderDataLesson(index) {
@@ -2886,7 +2928,7 @@
     var html = '<article class="nx-px-lesson"><h2>' + esc(title) + '</h2>' + dataLessonHtml(lesson) + '</article>';
     if (index + 1 < s.lessons.length) html += '<button type="button" class="nx-px-next" data-dlesson="' + (index + 1) + '" style="margin-top:14px">Leçon suivante →</button>';
     var bank = build(state.level, s.canon);
-    if (bank.length) html += '<button type="button" class="nx-px-next" data-bank="' + esc(s.canon) + '" style="margin-top:10px">🎯 Faire les exercices corrigés</button>';
+    if (bank.length) html += '<button type="button" class="nx-px-next" data-bank="' + esc(s.canon) + '" style="margin-top:10px">' + ico('cible') + ' Faire les exercices corrigés</button>';
     main().innerHTML = html;
     shell().scrollTop = 0;
   }
