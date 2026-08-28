@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V628
+/* NEXORA — École primaire interactive V629
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV628) return;
-  window.__nxPrimaryExercisesV628 = true;
+  if (window.__nxPrimaryExercisesV629) return;
+  window.__nxPrimaryExercisesV629 = true;
 
-  var VERSION = 'v628';
+  var VERSION = 'v629';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2815,6 +2815,10 @@
     var na = a.replace(/\s/g, ''), nb = b.replace(/\s/g, '');
     if (na === nb) return true;
     if (/^[0-9]+$/.test(na)) { var m = nb.match(/[0-9]+/g); return !!m && m.indexOf(na) >= 0; }
+    /* Une réponse d'une ou deux lettres (a, à, on, et) ne peut pas être
+       cherchée comme un morceau de texte : « totalement » contient « a ».
+       On exige alors le mot entier. */
+    if (a.length < 3) return b.split(' ').indexOf(a) >= 0;
     if (b.indexOf(a) >= 0) return true;
     var mots = a.split(' ').filter(function (w) { return w.length > 2; });
     if (mots.length > 1) {
