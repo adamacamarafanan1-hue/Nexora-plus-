@@ -763,3 +763,137 @@
     if (p) p.then(controler).catch(function () {});
   });
 })();
+
+/* V627 — « Reprendre » en tête de l'accueil.
+   Rouvre exactement là où l'élève s'est arrêté dans le primaire.
+   N'affiche rien tant qu'il n'y a rien à reprendre. */
+(function () {
+  'use strict';
+  if (window.__nxReprendreV627) return;
+  window.__nxReprendreV627 = true;
+
+  var CLE_FAIT = 'nexora.primary.practice.done.v618';
+  var CLASSES = { '1': '1ère année', '2': '2ème année', '3': '3ème année', '4': '4ème année', '5': '5ème année', '6': '6ème année' };
+  var MATIERES = {
+    francais: 'Français', maths: 'Mathématiques', sciences: 'Sciences d’observation',
+    histoiregeo: 'Histoire-Géographie', histoire: 'Histoire', geographie: 'Géographie',
+    ecm: 'ÉCM', arts: 'Arts', eps: 'EPS', entretien: 'Entretien'
+  };
+  var TEINTES = { '1': '#6FB7A0', '2': '#4FA894', '3': '#2F9385', '4': '#1F7A72', '5': '#16625E', '6': '#0E4A4A' };
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function dernier() {
+    var brut;
+    try { brut = JSON.parse(localStorage.getItem(CLE_FAIT) || '{}'); } catch (_e) { return null; }
+    if (!brut || typeof brut !== 'object') return null;
+    var cles = Object.keys(brut);
+    if (!cles.length) return null;
+    /* La clé vaut classe:matiere:partie:exercice. On reprend la plus avancée. */
+    var meilleur = null;
+    cles.forEach(function (k) {
+      var p = k.split(':');
+      if (p.length !== 4) return;
+      var e = { classe: p[0], matiere: p[1], partie: parseInt(p[2], 10) || 0, exercice: parseInt(p[3], 10) || 0 };
+      if (!CLASSES[e.classe]) return;
+      if (!meilleur) { meilleur = e; return; }
+      if (e.classe > meilleur.classe) { meilleur = e; return; }
+      if (e.classe === meilleur.classe && e.partie >= meilleur.partie) meilleur = e;
+    });
+    return meilleur;
+  }
+
+  function styles() {
+    if (document.getElementById('nxReprendreStyleV627')) return;
+    var s = document.createElement('style');
+    s.id = 'nxReprendreStyleV627';
+    s.textContent = '.nx-reprendre-v627{display:flex;align-items:center;gap:14px;width:100%;text-align:left;' +
+      'margin:0 0 14px;padding:15px 16px;border:0;border-left:6px solid var(--nxr-teinte,#2F9385);border-radius:17px;' +
+      'background:#fff;box-shadow:0 3px 14px rgba(14,74,74,.09);cursor:pointer;font-family:inherit}' +
+      '.nx-reprendre-v627:active{transform:scale(.99)}' +
+      '.nx-reprendre-v627 .marque{flex:0 0 46px;height:46px;border-radius:15px;display:flex;align-items:center;justify-content:center;' +
+      'background:var(--nxr-teinte,#2F9385);color:#fff}' +
+      '.nx-reprendre-v627 .marque svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}' +
+      '.nx-reprendre-v627 .txt{flex:1;min-width:0}' +
+      '.nx-reprendre-v627 .eyebrow{display:block;font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--nxr-teinte,#2F9385)}' +
+      '.nx-reprendre-v627 .titre{display:block;font-size:17px;font-weight:700;color:#12241F;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.nx-reprendre-v627 .detail{display:block;font-size:13px;color:#5b6f68;margin-top:2px}' +
+      '.nx-reprendre-v627 .fleche{flex:0 0 auto;color:var(--nxr-teinte,#2F9385)}' +
+      '.nx-reprendre-v627 .fleche svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function aller(e) {
+    var api = window.NexoraPrimarySchoolV157;
+    if (!api || typeof api.open !== 'function') {
+      try { if (window.NexoraApp && window.NexoraApp.go) window.NexoraApp.go('academy'); } catch (_e) {}
+      return;
+    }
+    function naviguer() {
+      try {
+        api.open();
+        var pas = [
+          '[data-level="' + e.classe + '"]',
+          '[data-psubject="' + e.matiere + '"]',
+          '[data-ppart="' + e.partie + '"]'
+        ];
+        var i = 0, essais = 0;
+        (function suivant() {
+          if (i >= pas.length) return;
+          var el = document.querySelector(pas[i]);
+          if (el) { el.click(); i++; essais = 0; setTimeout(suivant, 60); return; }
+          if (essais++ < 80) setTimeout(suivant, 120);
+        })();
+      } catch (_err) {}
+    }
+    /* On passe par la garde d'abonnement de l'application, jamais autour. */
+    if (typeof window.nxRequireSubscriptionAccess === 'function') {
+      try { window.nxRequireSubscriptionAccess('academy', naviguer); return; } catch (_e) {}
+    }
+    naviguer();
+  }
+
+  function poser() {
+    var hote = document.querySelector('[data-nx-espaces-v510="accueil"]');
+    if (!hote || !hote.parentNode) return;
+    var e = dernier();
+    var existante = document.querySelector('.nx-reprendre-v627');
+    if (!e) { if (existante) existante.remove(); return; }
+    styles();
+    var titre = CLASSES[e.classe] + ' · ' + (MATIERES[e.matiere] || e.matiere);
+    var html = '<span class="marque"><svg viewBox="0 0 24 24"><path d="M8 5.5l10 6.5-10 6.5z"/></svg></span>' +
+      '<span class="txt"><span class="eyebrow">Reprendre</span>' +
+      '<span class="titre">' + esc(titre) + '</span>' +
+      '<span class="detail">Leçon ' + (e.partie + 1) + ' · exercice ' + (e.exercice + 1) + '</span></span>' +
+      '<span class="fleche"><svg viewBox="0 0 24 24"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg></span>';
+    var b = existante;
+    if (!b) {
+      b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'nx-reprendre-v627';
+      b.addEventListener('click', function () { aller(dernier() || e); });
+      hote.parentNode.insertBefore(b, hote);
+    }
+    b.style.setProperty('--nxr-teinte', TEINTES[e.classe] || '#2F9385');
+    b.innerHTML = html;
+  }
+
+  function surveiller() {
+    poser();
+    var ecran = document.getElementById('screen-student-work-feed');
+    if (!ecran || typeof MutationObserver !== 'function') return;
+    var minuteur = null;
+    new MutationObserver(function () {
+      clearTimeout(minuteur);
+      minuteur = setTimeout(poser, 200);
+    }).observe(ecran, { childList: true, subtree: false });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', surveiller);
+  else setTimeout(surveiller, 300);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(poser, 200); });
+})();
