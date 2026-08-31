@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V629
+/* NEXORA — École primaire interactive V645
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV629) return;
-  window.__nxPrimaryExercisesV629 = true;
+  if (window.__nxPrimaryExercisesV645) return;
+  window.__nxPrimaryExercisesV645 = true;
 
-  var VERSION = 'v629';
+  var VERSION = 'v645';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2726,7 +2726,7 @@
   function practiceFileExists(level) {
     level = String(level);
     if (PRACTICE_ABSENT[level]) return false;
-    return ['3', '4', '5', '6'].indexOf(level) >= 0;
+    return ['2', '3', '4', '5', '6'].indexOf(level) >= 0;
   }
   var CACHE_CONTENU = 'nexora.primaire.contenu.v628.';
 
