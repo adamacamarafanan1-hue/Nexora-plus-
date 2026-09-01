@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V645
+/* NEXORA — École primaire interactive V649
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV645) return;
-  window.__nxPrimaryExercisesV645 = true;
+  if (window.__nxPrimaryExercisesV649) return;
+  window.__nxPrimaryExercisesV649 = true;
 
-  var VERSION = 'v645';
+  var VERSION = 'v649';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2453,6 +2453,18 @@
       .nx-px-label{display:block;font-size:13px;font-weight:700;color:var(--nx-teinte,#2F9385);margin-bottom:6px}
       .nx-px-v600 textarea[data-ptext]{width:100%;min-height:150px;border:1px solid #cddced;border-radius:14px;padding:12px;font-size:16px;line-height:1.55;font-family:inherit;color:#17324d;background:#fcfdff;resize:vertical}
       .nx-px-go{display:block;width:100%;margin-top:12px;padding:15px;border:0;border-radius:16px;background:var(--nx-teinte,#2F9385);color:#fff;font-size:17px;font-weight:800;cursor:pointer}
+      .nx-px-go-soft{background:#eef3f8;color:#33506b}
+      .nx-px-examhero{border:1px solid var(--nx-teinte,#2F9385);background:#f6fbfa}
+      .nx-px-examhero h2{margin-top:0}
+      .nx-px-exambar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 10px;padding:10px 14px;border-radius:14px;background:#22364a;color:#fff}
+      .nx-px-examtime{font-size:20px;font-weight:800;letter-spacing:1px;font-variant-numeric:tabular-nums}
+      .nx-px-exampts{font-size:13px;font-weight:700;opacity:.85}
+      .nx-px-examnav{display:flex;gap:10px}
+      .nx-px-examnav .nx-px-go{margin-top:12px}
+      .nx-px-examitem{margin-top:12px;border-left:5px solid #cbd8e4}
+      .nx-px-juste{border-left-color:#1F7A3C;background:#f3faf5}
+      .nx-px-faux{border-left-color:#B3402A;background:#fdf5f3}
+      .nx-px-attente{border-left-color:#C9861B;background:#fdfaf3}
       .nx-px-verdict{margin-top:14px;border-radius:16px;padding:14px;border:1px solid #dbe5ee;background:#fff}
       .nx-px-verdict.ok{background:#eefaf1;border-color:#b7e4c5}
       .nx-px-verdict.no{background:#fff6ec;border-color:#f3cfa4}
@@ -2534,6 +2546,11 @@
       var lv = ev.target.closest('[data-level]'); if (lv) { state.level = lv.getAttribute('data-level'); state.subject = ''; renderSubjects(); return; }
       var resume = ev.target.closest('[data-resume]'); if (resume) { state.subject = resume.getAttribute('data-resume-subject'); startCp1Lesson(resume.getAttribute('data-resume-lesson')); return; }
       var help = ev.target.closest('[data-lesson-help]'); if (help) { toggleLessonHelp(); return; }
+      var exl = ev.target.closest('[data-examlist]'); if (exl) { renderExamList(); return; }
+      var exs = ev.target.closest('[data-exam]'); if (exs) { startExam(Number(exs.getAttribute('data-exam'))); return; }
+      var exq = ev.target.closest('[data-eq]'); if (exq) { examSaveAnswer(); renderExamQuestion(Number(exq.getAttribute('data-eq'))); return; }
+      var exe = ev.target.closest('[data-eend]'); if (exe) { finishExam(false); return; }
+      var exf = ev.target.closest('[data-eself]'); if (exf) { examSelfMark(Number(exf.getAttribute('data-eself')), Number(exf.getAttribute('data-eval'))); return; }
       var ps = ev.target.closest('[data-psubject]'); if (ps) { openPracticeSubject(ps.getAttribute('data-psubject')); return; }
       var pc = ev.target.closest('[data-pcorrect]'); if (pc) { correctPractice(Number(pc.getAttribute('data-pcorrect'))); return; }
       var ph = ev.target.closest('[data-phint]'); if (ph) { var hb = main().querySelector('[data-phint-box]'); if (hb) hb.hidden = !hb.hidden; return; }
@@ -2836,13 +2853,176 @@
     setHeader(l.label, 'Choisis une matière', true);
     var html = '<section class="nx-px-hero"><h2>' + esc(l.label) + '</h2><p>J’explique la partie, tu traites l’exercice, puis tu corriges.</p></section><div class="nx-px-grid">';
     Object.keys(lv).forEach(function (sub) {
+      if (sub === 'examen') return;
       var meta = SUBJECTS[canonSubject(sub)] || { name: sub, icon: '📘' };
       var parts = lv[sub].length, total = practiceTotal(sub), done = practiceDoneCount(sub);
       html += '<button type="button" class="nx-px-card" data-psubject="' + esc(sub) + '"><em>' + icoMat(sub) + '</em><strong>' + esc(meta.name) + '</strong><small>' + parts + ' parties · ' + total + ' exercices</small>' +
         (done ? '<div class="nx-px-progress">' + done + ' exercice' + (done > 1 ? 's' : '') + ' traité' + (done > 1 ? 's' : '') + '</div>' : '') + '</button>';
     });
     html += '</div>';
+    if (lv.examen && lv.examen.length) {
+      html += '<section class="nx-px-hero nx-px-examhero"><h2>Épreuve blanche</h2>' +
+        '<p>Passe une épreuve dans les conditions de l’examen : durée réelle, barème réel, note sur 20.</p>' +
+        '<button type="button" class="nx-px-go" data-examlist>Voir les épreuves →</button></section>';
+    }
     main().innerHTML = html;
+  }
+
+  /* ============ Épreuve blanche ============ */
+
+  var EXAM_STATE = null, EXAM_TIMER = null;
+  var EXAM_SAVE = 'nexora.primaire.examen.v649.';
+
+  function examSet() { var lv = practiceLevel(); return (lv && lv.examen) || []; }
+
+  function examDuree(secondes) {
+    var m = Math.floor(secondes / 60), s = secondes % 60;
+    return m + ' min ' + (s < 10 ? '0' : '') + s + ' s';
+  }
+
+  function examChrono(secondes) {
+    var m = Math.floor(secondes / 60), s = secondes % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function examStop() { if (EXAM_TIMER) { clearInterval(EXAM_TIMER); EXAM_TIMER = null; } }
+
+  function renderExamList() {
+    clearAuto(); examStop(); EXAM_STATE = null;
+    var set = examSet();
+    if (!set.length) { renderPracticeSubjects(); return; }
+    state.psubject = 'examen'; state.ppart = -1; state.pex = -1;
+    state.readText = '';
+    setHeader('Épreuve blanche', LEVELS[state.level].label + ' · ' + set.length + ' épreuves', true);
+    var html = '<section class="nx-px-hero"><h2>Choisis ton épreuve</h2><p>Une fois commencée, le temps défile. Traite les questions dans l’ordre, puis corrige.</p></section><div class="nx-px-list">';
+    set.forEach(function (e, i) {
+      var q = (e.q || []).length;
+      var fait = jsonRead(EXAM_SAVE + 'notes')[state.level + ':' + i];
+      html += '<button type="button" class="nx-px-lesson-row" data-exam="' + i + '"><span class="num">' + (i + 1) + '</span>' +
+        '<strong>' + esc(e.t) + '</strong>' +
+        '<span class="tag' + (fait !== undefined ? ' ok' : '') + '">' + (fait !== undefined ? fait + '/20' : q + ' questions') + '</span></button>';
+    });
+    html += '</div>';
+    main().innerHTML = html;
+    shell().scrollTop = 0;
+  }
+
+  function startExam(index) {
+    var set = examSet(), e = set[index];
+    if (!e) { renderExamList(); return; }
+    EXAM_STATE = {
+      index: index,
+      reponses: [],
+      restant: (e.duree || 60) * 60,
+      fini: false,
+      auto: []
+    };
+    (e.q || []).forEach(function () { EXAM_STATE.reponses.push(''); EXAM_STATE.auto.push(null); });
+    examStop();
+    EXAM_TIMER = setInterval(function () {
+      if (!EXAM_STATE || EXAM_STATE.fini) { examStop(); return; }
+      EXAM_STATE.restant -= 1;
+      var box = main().querySelector('[data-echrono]');
+      if (box) box.textContent = examChrono(Math.max(0, EXAM_STATE.restant));
+      if (EXAM_STATE.restant <= 0) { examStop(); finishExam(true); }
+    }, 1000);
+    renderExamQuestion(0);
+  }
+
+  function examSaveAnswer() {
+    if (!EXAM_STATE) return;
+    var champ = main().querySelector('[data-etext]');
+    if (champ) EXAM_STATE.reponses[EXAM_STATE.q] = champ.value || '';
+  }
+
+  function renderExamQuestion(k) {
+    clearAuto();
+    if (!EXAM_STATE) { renderExamList(); return; }
+    var e = examSet()[EXAM_STATE.index], liste = e.q || [];
+    if (k < 0) k = 0;
+    if (k >= liste.length) { finishExam(false); return; }
+    EXAM_STATE.q = k;
+    var q = liste[k];
+    state.readText = q.enonce;
+    setHeader(e.t, 'Question ' + (k + 1) + ' sur ' + liste.length, true);
+    var html = '<div class="nx-px-exambar"><span class="nx-px-examtime" data-echrono>' + examChrono(Math.max(0, EXAM_STATE.restant)) + '</span>' +
+      '<span class="nx-px-exampts">' + (q.points || 1) + ' point' + ((q.points || 1) > 1 ? 's' : '') + '</span></div>';
+    html += '<article class="nx-px-lesson"><div class="nx-px-step">Question ' + (k + 1) + '</div>' +
+      '<p class="nx-px-para">' + esc(q.enonce) + '</p></article>';
+    html += '<textarea class="nx-px-text" data-etext rows="4" placeholder="Écris ta réponse ici">' + esc(EXAM_STATE.reponses[k] || '') + '</textarea>';
+    html += '<div class="nx-px-examnav">';
+    if (k > 0) html += '<button type="button" class="nx-px-go nx-px-go-soft" data-eq="' + (k - 1) + '">← Précédente</button>';
+    if (k < liste.length - 1) html += '<button type="button" class="nx-px-go" data-eq="' + (k + 1) + '">Suivante →</button>';
+    else html += '<button type="button" class="nx-px-go" data-eend>Terminer l’épreuve</button>';
+    html += '</div>';
+    html += '<button type="button" class="nx-px-go nx-px-go-soft" data-eend>Rendre maintenant</button>';
+    main().innerHTML = html;
+    shell().scrollTop = 0;
+  }
+
+  function finishExam(tempsEcoule) {
+    examSaveAnswer(); examStop();
+    if (!EXAM_STATE) { renderExamList(); return; }
+    EXAM_STATE.fini = true;
+    var e = examSet()[EXAM_STATE.index], liste = e.q || [];
+    liste.forEach(function (q, i) {
+      if (q.reponse) {
+        EXAM_STATE.auto[i] = practiceMatch(EXAM_STATE.reponses[i] || '', q.reponse) ? (q.points || 1) : 0;
+      }
+    });
+    renderExamResult(tempsEcoule);
+  }
+
+  function examNote() {
+    if (!EXAM_STATE) return 0;
+    var total = 0;
+    EXAM_STATE.auto.forEach(function (p) { if (typeof p === 'number') total += p; });
+    return Math.round(total * 10) / 10;
+  }
+
+  function renderExamResult(tempsEcoule) {
+    clearAuto();
+    if (!EXAM_STATE) { renderExamList(); return; }
+    var e = examSet()[EXAM_STATE.index], liste = e.q || [];
+    var bareme = 0; liste.forEach(function (q) { bareme += (q.points || 1); });
+    var reste = EXAM_STATE.auto.filter(function (p) { return p === null; }).length;
+    state.readText = '';
+    setHeader(e.t, 'Correction', true);
+    var note = examNote();
+    var html = '<section class="nx-px-hero nx-px-examhero"><h2>' + note + ' / ' + bareme + '</h2>' +
+      '<p>' + (tempsEcoule ? 'Le temps est écoulé. ' : '') +
+      (reste ? 'Il te reste ' + reste + ' réponse' + (reste > 1 ? 's' : '') + ' à corriger toi-même, en comparant au corrigé.' : 'Correction terminée.') + '</p></section>';
+    liste.forEach(function (q, i) {
+      var p = EXAM_STATE.auto[i];
+      var etat = p === null ? 'attente' : (p > 0 ? 'juste' : 'faux');
+      html += '<article class="nx-px-lesson nx-px-examitem nx-px-' + etat + '">' +
+        '<div class="nx-px-step">Question ' + (i + 1) + ' · ' + (q.points || 1) + ' pt' + ((q.points || 1) > 1 ? 's' : '') +
+        (p === null ? '' : ' · ' + p + ' obtenu' + (p > 1 ? 's' : '')) + '</div>' +
+        '<p class="nx-px-para"><b>Énoncé.</b> ' + esc(q.enonce) + '</p>' +
+        '<p class="nx-px-para"><b>Ta réponse.</b> ' + (EXAM_STATE.reponses[i] ? esc(EXAM_STATE.reponses[i]) : '<i>rien écrit</i>') + '</p>' +
+        '<section class="nx-px-exemple"><b>Corrigé</b><p>' + esc(q.corrige || '') + '</p></section>';
+      if (p === null) {
+        html += '<div class="nx-px-examnav">' +
+          '<button type="button" class="nx-px-go" data-eself="' + i + '" data-eval="1">J’avais juste</button>' +
+          '<button type="button" class="nx-px-go nx-px-go-soft" data-eself="' + i + '" data-eval="0">À revoir</button></div>';
+      }
+      html += '</article>';
+    });
+    html += '<button type="button" class="nx-px-go" data-examlist>Retour aux épreuves</button>';
+    main().innerHTML = html;
+    shell().scrollTop = 0;
+    if (!reste) {
+      var notes = jsonRead(EXAM_SAVE + 'notes');
+      notes[state.level + ':' + EXAM_STATE.index] = note;
+      jsonWrite(EXAM_SAVE + 'notes', notes);
+    }
+  }
+
+  function examSelfMark(i, valeur) {
+    if (!EXAM_STATE) return;
+    var liste = examSet()[EXAM_STATE.index].q || [];
+    EXAM_STATE.auto[i] = valeur ? (liste[i].points || 1) : 0;
+    renderExamResult(false);
   }
 
   function openPracticeSubject(subject) {
@@ -3075,6 +3255,11 @@
   }
   function goBack() {
     clearAuto(); voiceAwaitingAnswer = false; stopVoiceListening();
+    if (state.psubject === 'examen') {
+      if (EXAM_STATE && !EXAM_STATE.fini) { examStop(); EXAM_STATE = null; renderExamList(); return; }
+      if (EXAM_STATE) { EXAM_STATE = null; renderExamList(); return; }
+      state.psubject = ''; renderPracticeSubjects(); return;
+    }
     if (state.psubject && state.pex >= 0) { renderPracticePart(state.ppart); return; }
     if (state.psubject && state.ppart >= 0) { state.ppart = -1; renderPracticeParts(); return; }
     if (state.psubject) { state.psubject = ''; renderSubjects(); return; }
