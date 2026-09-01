@@ -2,6 +2,13 @@ name: Verification Nexora
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/**'
+      - 'assets/js/**'
+      - 'version.json'
 
 permissions:
   contents: read
@@ -14,19 +21,63 @@ jobs:
       - name: Recuperer le depot
         uses: actions/checkout@v4
 
-      - name: Verifier JavaScript
+      - name: Verifier la syntaxe de la route des cours
         shell: bash
         run: |
           set -euo pipefail
-          node --check assets/js/nexora-secure-v525.js
-          node --check assets/js/nexora-academy-v524.js
-          node --check api/secure-content.js
+          test -f api/cours-primaire.js
+          cp api/cours-primaire.js /tmp/cours-primaire.mjs
+          node --check /tmp/cours-primaire.mjs
+          echo "Route des cours : syntaxe correcte."
+
+      - name: Verifier la syntaxe du moteur du primaire
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f assets/js/nx-v157-primary-school-script.js
+          node --check assets/js/nx-v157-primary-school-script.js
+          echo "Moteur du primaire : syntaxe correcte."
+
+      - name: Verifier les reglages et le service worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f assets/js/nexora-reglages.js
+          node --check assets/js/nexora-reglages.js
+          test -f service-worker.js
+          node --check service-worker.js
+          echo "Reglages et service worker : syntaxe correcte."
 
       - name: Verifier la version Nexora
         shell: bash
         run: |
           set -euo pipefail
           test -f version.json
-          grep -q '"version"' version.json
           test -f index.html
-          test -f service-worker.js
+          node -e "
+            const v = require('./version.json');
+            if (!v.version) { throw new Error('version.json : champ version manquant'); }
+            if (!/^V[0-9]+$/.test(v.version)) { throw new Error('version.json : format attendu VXXX, recu ' + v.version); }
+            console.log('Version declaree : ' + v.version);
+          "
+
+      - name: Verifier que la route protege bien les cours
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Connexion Nexora obligatoire' api/cours-primaire.js
+          grep -q 'abonnement Nexora actif' api/cours-primaire.js
+          grep -q 'nexora_my_subscription_status' api/cours-primaire.js
+          echo "Controle d abonnement : present dans la route."
+
+      - name: Compter les classes servies
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "
+            const fs = require('fs');
+            const src = fs.readFileSync('api/cours-primaire.js', 'utf8');
+            const classes = [...src.matchAll(/\n  \"([1-6])\": \{/g)].map(m => m[1]);
+            if (classes.length === 0) { throw new Error('Aucune classe trouvee dans la route.'); }
+            console.log('Classes servies : ' + classes.join(', '));
+          "
