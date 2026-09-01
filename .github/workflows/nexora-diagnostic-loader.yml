@@ -1,37 +1,127 @@
-name: Nexora diagnostic chargeur Académie
+name: Diagnostic Nexora en ligne
 
 on:
-  push:
-    paths:
-      - '.github/workflows/nexora-diagnostic-loader.yml'
+  workflow_dispatch:
+  schedule:
+    # Tous les jours a 07h00 UTC, soit 07h00 a Conakry.
+    - cron: '0 7 * * *'
 
 permissions:
   contents: read
 
+env:
+  SITE: https://nexora-plus-beta.vercel.app
+
 jobs:
-  inspect:
+  diagnostic:
+    name: Controler le site en production
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Tracer l’empaquetage Bac et Brevet V504
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Le site repond-il
         shell: bash
         run: |
           set -euo pipefail
-          git show c7000f29a7fe03622f23634b8d738f18689cb5d7:public/index.html > /tmp/nexora-v504.html
-          python3 - <<'PY'
-          from pathlib import Path
-          text = Path('/tmp/nexora-v504.html').read_text(encoding='utf-8', errors='replace')
-          for needle in ['modules/bac/index.html','modules/dixieme/index.html','__NEXORA_ACADEMY_EMBEDDED_GZIP_B64__','NexoraBac','NexoraDixieme']:
-              print('\n===== '+needle+' =====')
-              pos=0; count=0
-              while True:
-                  i=text.find(needle,pos)
-                  if i<0 or count>=12: break
-                  a=max(0,i-2600); b=min(len(text),i+5200)
-                  print(text[a:b].replace('\n','\\n'))
-                  print('\n--- occurrence '+str(count+1)+' ---')
-                  pos=i+len(needle); count+=1
-              print('occurrences:',count)
-          PY
+          code=$(curl -s -o /tmp/accueil.html -w '%{http_code}' "$SITE/")
+          echo "Page d accueil : HTTP $code"
+          test "$code" = "200"
+          test -s /tmp/accueil.html
+
+      - name: La version en ligne correspond-elle au depot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -s "$SITE/version.json" -o /tmp/en-ligne.json
+          node -e "
+            const enLigne = require('/tmp/en-ligne.json');
+            const depot = require('./version.json');
+            console.log('Depot   : ' + depot.version);
+            console.log('En ligne: ' + enLigne.version);
+            if (enLigne.version !== depot.version) {
+              throw new Error('La version en ligne ne correspond pas au depot. Vercel n a peut-etre pas publie.');
+            }
+          "
+
+      - name: Les cours sont-ils bien proteges
+        shell: bash
+        run: |
+          set -euo pipefail
+          sans=$(curl -s -o /dev/null -w '%{http_code}' "$SITE/api/cours-primaire?classe=3")
+          echo "Sans jeton              : HTTP $sans"
+          test "$sans" = "401"
+
+          faux=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer jeton-invalide-de-test" \
+            "$SITE/api/cours-primaire?classe=3")
+          echo "Avec un faux jeton      : HTTP $faux"
+          test "$faux" = "401"
+
+          methode=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer jeton-invalide-de-test" \
+            "$SITE/api/cours-primaire?classe=3")
+          echo "Methode POST refusee    : HTTP $methode"
+          test "$methode" = "405"
+
+          echo "Les cours ne sortent pas sans abonnement."
+
+      - name: Aucune lecon ne traine en acces libre
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -s "$SITE/assets/js/nexora-primaire-3.js" -o /tmp/clair.js || true
+          if grep -q '"explique"' /tmp/clair.js 2>/dev/null; then
+            echo "ALERTE : des lecons sont servies en clair dans nexora-primaire-3.js"
+            exit 1
+          fi
+          echo "Aucune lecon en acces libre dans ce fichier."
+
+      - name: Le moteur et les reglages se chargent
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in assets/js/nx-v157-primary-school-script.js assets/js/nexora-reglages.js service-worker.js; do
+            code=$(curl -s -o /tmp/fichier.js -w '%{http_code}' "$SITE/$f")
+            taille=$(wc -c < /tmp/fichier.js)
+            printf '%-46s HTTP %s  %s octets\n' "$f" "$code" "$taille"
+            test "$code" = "200"
+            node --check /tmp/fichier.js
+          done
+          echo "Moteur, reglages et service worker : charges et valides."
+
+      - name: Version du moteur en ligne
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -s "$SITE/assets/js/nx-v157-primary-school-script.js" -o /tmp/moteur.js
+          version=$(grep -o "var VERSION = '[^']*'" /tmp/moteur.js | head -1 | cut -d"'" -f2)
+          echo "Moteur du primaire : $version"
+          test -n "$version"
+          classes=$(grep -o "\['2', '3', '4', '5', '6'\]" /tmp/moteur.js | head -1)
+          if [ -n "$classes" ]; then
+            echo "Classes routees vers l API : 2 a 6"
+          else
+            echo "Attention : la liste des classes routees a change, verifier le moteur."
+          fi
+
+      - name: Resume
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "
+            const fs = require('fs');
+            const src = fs.readFileSync('api/cours-primaire.js', 'utf8');
+            const classes = [...src.matchAll(/\n  \"([1-6])\": \{/g)].map(m => m[1]);
+            let lecons = 0, exercices = 0;
+            for (const c of classes) {
+              const i = src.indexOf('\n  \"' + c + '\": ');
+              const fin = src.indexOf('\n  \"' + String(Number(c) + 1) + '\": ', i);
+              const bloc = src.slice(i, fin > 0 ? fin : src.length);
+              lecons += (bloc.match(/\"explique\":/g) || []).length;
+              exercices += (bloc.match(/\"corrige\":/g) || []).length;
+            }
+            console.log('Classes servies : ' + classes.join(', '));
+            console.log('Lecons          : ' + lecons);
+            console.log('Exercices       : ' + exercices);
+          "
