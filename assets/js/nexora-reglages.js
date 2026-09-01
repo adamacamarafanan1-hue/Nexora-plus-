@@ -897,3 +897,144 @@
   else setTimeout(surveiller, 300);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(poser, 200); });
 })();
+
+/* ===================================================================
+   Nexora V650 — Invitation à installer l'application
+   Deux manques corrigés ici :
+   1. index.html ne déclare pas le manifeste, donc Chrome ne propose
+      jamais l'installation. On le déclare au chargement.
+   2. Aucune invitation visible. On affiche une barre discrète.
+   =================================================================== */
+(function () {
+  'use strict';
+
+  var CLE_REFUS = 'nexora.installation.refus.v650';
+  var invite = null;
+
+  function dejaInstalle() {
+    try {
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+      if (window.navigator && window.navigator.standalone) return true;
+    } catch (_e) {}
+    return false;
+  }
+
+  function refuseRecemment() {
+    try {
+      var t = Number(localStorage.getItem(CLE_REFUS) || 0);
+      /* On ne represente pas la barre avant sept jours. */
+      return t && (Date.now() - t) < 7 * 24 * 3600 * 1000;
+    } catch (_e) { return false; }
+  }
+
+  function noterRefus() {
+    try { localStorage.setItem(CLE_REFUS, String(Date.now())); } catch (_e) {}
+  }
+
+  /* 1. Declarer le manifeste s'il manque. */
+  function poserManifeste() {
+    try {
+      if (document.querySelector('link[rel="manifest"]')) return;
+      var lien = document.createElement('link');
+      lien.rel = 'manifest';
+      lien.href = '/manifest.json';
+      (document.head || document.documentElement).appendChild(lien);
+    } catch (_e) {}
+  }
+
+  /* 2. Barre d'invitation. */
+  function styles() {
+    if (document.getElementById('nx-install-style')) return;
+    var s = document.createElement('style');
+    s.id = 'nx-install-style';
+    s.textContent =
+      '.nx-install{position:fixed;left:12px;right:12px;bottom:14px;z-index:99990;' +
+      'display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;' +
+      'background:#143B67;color:#fff;box-shadow:0 12px 30px rgba(10,30,60,.35);' +
+      'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
+      'transform:translateY(140%);transition:transform .35s ease}' +
+      '.nx-install.nx-visible{transform:translateY(0)}' +
+      '.nx-install img{width:44px;height:44px;border-radius:12px;flex:0 0 auto;background:#fff}' +
+      '.nx-install .nx-txt{flex:1;min-width:0}' +
+      '.nx-install .nx-txt b{display:block;font-size:15px;font-weight:800;line-height:1.2}' +
+      '.nx-install .nx-txt span{display:block;font-size:12.5px;opacity:.85;line-height:1.35;margin-top:2px}' +
+      '.nx-install button{border:0;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:800;cursor:pointer}' +
+      '.nx-install .nx-oui{background:#F2A93B;color:#22364a}' +
+      '.nx-install .nx-non{background:transparent;color:#cfe0f2;padding:10px 6px;font-weight:600}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function fermer(barre, refus) {
+    if (!barre) return;
+    barre.classList.remove('nx-visible');
+    if (refus) noterRefus();
+    setTimeout(function () { if (barre.parentNode) barre.parentNode.removeChild(barre); }, 400);
+  }
+
+  function afficher(mode) {
+    if (document.querySelector('.nx-install')) return;
+    styles();
+    var barre = document.createElement('div');
+    barre.className = 'nx-install';
+    var texte = mode === 'ios'
+      ? '<b>Installer Nexora</b><span>Touche Partager en bas, puis « Sur l’écran d’accueil ».</span>'
+      : '<b>Installer Nexora</b><span>Accès direct depuis l’écran d’accueil, même hors connexion.</span>';
+    barre.innerHTML =
+      '<img src="/assets/icons/nexora-192.png" alt="">' +
+      '<div class="nx-txt">' + texte + '</div>' +
+      (mode === 'ios' ? '' : '<button type="button" class="nx-oui">Installer</button>') +
+      '<button type="button" class="nx-non">Plus tard</button>';
+    document.body.appendChild(barre);
+    setTimeout(function () { barre.classList.add('nx-visible'); }, 60);
+
+    var oui = barre.querySelector('.nx-oui');
+    if (oui) {
+      oui.addEventListener('click', function () {
+        if (!invite) { fermer(barre, false); return; }
+        invite.prompt();
+        invite.userChoice.then(function (choix) {
+          if (choix && choix.outcome !== 'accepted') noterRefus();
+          invite = null;
+          fermer(barre, false);
+        }).catch(function () { fermer(barre, false); });
+      });
+    }
+    barre.querySelector('.nx-non').addEventListener('click', function () { fermer(barre, true); });
+  }
+
+  function estIOS() {
+    try {
+      var ua = navigator.userAgent || '';
+      return /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    } catch (_e) { return false; }
+  }
+
+  function demarrer() {
+    poserManifeste();
+    if (dejaInstalle() || refuseRecemment()) return;
+
+    window.addEventListener('beforeinstallprompt', function (ev) {
+      ev.preventDefault();
+      invite = ev;
+      /* On laisse la personne arriver sur l'application avant d'inviter. */
+      setTimeout(function () { afficher('android'); }, 20000);
+    });
+
+    window.addEventListener('appinstalled', function () {
+      invite = null;
+      var b = document.querySelector('.nx-install');
+      if (b) fermer(b, false);
+    });
+
+    /* iOS ne declenche jamais beforeinstallprompt : on explique le geste. */
+    if (estIOS()) setTimeout(function () { if (!dejaInstalle()) afficher('ios'); }, 25000);
+  }
+
+  /* Le fichier peut etre injecte avant ou apres le chargement de la page.
+     On couvre les deux cas, et on garantit un seul demarrage. */
+  var lance = false;
+  function lancer() { if (lance) return; lance = true; demarrer(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lancer);
+  else lancer();
+  setTimeout(lancer, 1200);
+})();
