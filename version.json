@@ -1,5 +1,5 @@
 {
-  "version": "V652",
-  "message": "Nexora V652 : correction de la creation de compte. Le formulaire s ouvre de nouveau. Lien de carte et invitation a installer.",
-  "critical": true
+  "version": "V653",
+  "message": "Nexora V653 : l ecran d accueil propose Se connecter a ceux qui reviennent.",
+  "critical": false
 }
