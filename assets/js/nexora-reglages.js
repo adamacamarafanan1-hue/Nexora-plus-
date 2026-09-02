@@ -1383,3 +1383,165 @@
   else lancer();
   setTimeout(lancer, 1500);
 })();
+
+/* ===================================================================
+   Nexora V654 — La mise à jour se fait seule
+   Personne ne devrait avoir à vider les données du site.
+
+   Ce que fait ce bloc :
+   1. Il écoute l'annonce du service worker, jusqu'ici ignorée.
+   2. Il contrôle la version au retour dans l'application.
+   3. Il propose la mise à jour, sans jamais l'imposer pendant
+      qu'on travaille.
+   4. Si la personne ne répond pas, la mise à jour s'applique
+      au retour suivant. Si la version est marquée « critical »,
+      elle s'applique dès le premier retour.
+   =================================================================== */
+(function () {
+  'use strict';
+  if (window.__nxMajV654) return;
+  window.__nxMajV654 = true;
+
+  var CLE_VUE = 'nexora.version.vue.v654';
+  var CLE_ATTENTE = 'nexora.version.attente.v654';
+  var DELAI_CONTROLE = 90 * 1000;   /* au plus un controle par minute et demie */
+  var dernierControle = 0;
+  var barreVisible = false;
+
+  function lire(cle) { try { return localStorage.getItem(cle) || ''; } catch (_e) { return ''; } }
+  function ecrire(cle, v) { try { localStorage.setItem(cle, v); } catch (_e) {} }
+  function effacer(cle) { try { localStorage.removeItem(cle); } catch (_e) {} }
+
+  /* ---- Peut-on recharger sans faire perdre son travail ? ---- */
+  function travailEnCours() {
+    try {
+      /* Une épreuve blanche est commencée : on ne touche à rien. */
+      if (document.querySelector('[data-echrono]')) return true;
+      /* Une réponse est en cours de rédaction. */
+      var zones = document.querySelectorAll('textarea');
+      for (var i = 0; i < zones.length; i++) {
+        if (zones[i].value && zones[i].value.trim().length > 2) return true;
+      }
+      /* Un formulaire de compte est ouvert et rempli. */
+      var champs = document.querySelectorAll('#accountModal input');
+      for (var j = 0; j < champs.length; j++) {
+        if (champs[j].value && champs[j].value.length > 2) return true;
+      }
+      /* Le clavier est actif sur un champ. */
+      var actif = document.activeElement;
+      if (actif && (actif.tagName === 'INPUT' || actif.tagName === 'TEXTAREA')) return true;
+    } catch (_e) {}
+    return false;
+  }
+
+  function appliquer() {
+    var attendue = lire(CLE_ATTENTE);
+    if (attendue) { ecrire(CLE_VUE, attendue); effacer(CLE_ATTENTE); }
+    try { window.location.reload(); } catch (_e) {}
+  }
+
+  /* ---- Barre d'information ---- */
+  function styles() {
+    if (document.getElementById('nx-maj-style')) return;
+    var s = document.createElement('style');
+    s.id = 'nx-maj-style';
+    s.textContent =
+      '.nx-maj{position:fixed;left:12px;right:12px;bottom:14px;z-index:99992;' +
+      'display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;' +
+      'background:#1F7A72;color:#fff;box-shadow:0 12px 30px rgba(10,40,40,.32);' +
+      'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
+      'transform:translateY(150%);transition:transform .35s ease}' +
+      '.nx-maj.nx-vu{transform:translateY(0)}' +
+      '.nx-maj .nx-txt{flex:1;min-width:0}' +
+      '.nx-maj .nx-txt b{display:block;font-size:14.5px;font-weight:800}' +
+      '.nx-maj .nx-txt span{display:block;font-size:12.5px;opacity:.9;margin-top:2px;line-height:1.35}' +
+      '.nx-maj button{border:0;border-radius:12px;padding:10px 14px;font-size:14px;' +
+      'font-weight:800;cursor:pointer;background:#F2A93B;color:#22364a;flex:0 0 auto}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function proposer(version) {
+    if (barreVisible || document.querySelector('.nx-maj')) return;
+    barreVisible = true;
+    styles();
+    var barre = document.createElement('div');
+    barre.className = 'nx-maj';
+    barre.innerHTML =
+      '<div class="nx-txt"><b>Nexora s’est amélioré</b>' +
+      '<span>La nouvelle version s’installera à votre prochain retour.</span></div>' +
+      '<button type="button">Maintenant</button>';
+    document.body.appendChild(barre);
+    setTimeout(function () { barre.classList.add('nx-vu'); }, 60);
+    barre.querySelector('button').addEventListener('click', appliquer);
+    /* La barre s'efface d'elle-meme : la mise a jour se fera au retour. */
+    setTimeout(function () {
+      barre.classList.remove('nx-vu');
+      setTimeout(function () {
+        if (barre.parentNode) barre.parentNode.removeChild(barre);
+        barreVisible = false;
+      }, 400);
+    }, 12000);
+  }
+
+  /* ---- Contrôle de la version publiée ---- */
+  function controler(auRetour) {
+    var maintenant = Date.now();
+    if (!auRetour && (maintenant - dernierControle) < DELAI_CONTROLE) return;
+    dernierControle = maintenant;
+
+    fetch('/version.json?t=' + maintenant, { cache: 'no-store' })
+      .then(function (r) { return r && r.ok ? r.json() : null; })
+      .then(function (info) {
+        if (!info || !info.version) return;
+        var publiee = String(info.version);
+        var vue = lire(CLE_VUE);
+
+        /* Première ouverture : on note simplement la version en place. */
+        if (!vue) { ecrire(CLE_VUE, publiee); return; }
+        if (publiee === vue) { effacer(CLE_ATTENTE); return; }
+
+        ecrire(CLE_ATTENTE, publiee);
+
+        /* Une correction importante s'applique dès le retour. */
+        if (info.critical === true && auRetour && !travailEnCours()) { appliquer(); return; }
+        /* Sinon, on applique au retour suivant, quand rien n'est en cours. */
+        if (auRetour && !travailEnCours()) { appliquer(); return; }
+        proposer(publiee);
+      })
+      .catch(function () {});
+  }
+
+  /* ---- Le service worker annonce lui-même les nouveautés ---- */
+  function ecouterServiceWorker() {
+    try {
+      if (!navigator.serviceWorker) return;
+      navigator.serviceWorker.addEventListener('message', function (ev) {
+        var d = ev && ev.data;
+        if (!d || d.type !== 'NEXORA_NOUVELLE_VERSION') return;
+        if (d.version) ecrire(CLE_ATTENTE, String(d.version));
+        if (!travailEnCours()) { appliquer(); return; }
+        proposer(d.version);
+      });
+    } catch (_e) {}
+  }
+
+  function demarrer() {
+    ecouterServiceWorker();
+    controler(false);
+
+    /* Au retour dans l'application : c'est le bon moment pour changer de version. */
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) return;
+      setTimeout(function () { controler(true); }, 400);
+    });
+    window.addEventListener('focus', function () {
+      setTimeout(function () { controler(true); }, 600);
+    });
+  }
+
+  var lance = false;
+  function lancer() { if (lance) return; lance = true; demarrer(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lancer);
+  else lancer();
+  setTimeout(lancer, 2000);
+})();
