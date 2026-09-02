@@ -1,5 +1,5 @@
 {
-  "version": "V650",
-  "message": "Nexora V650 : invitation a installer l application sur l ecran d accueil.",
-  "critical": false
+  "version": "V652",
+  "message": "Nexora V652 : correction de la creation de compte. Le formulaire s ouvre de nouveau. Lien de carte et invitation a installer.",
+  "critical": true
 }
