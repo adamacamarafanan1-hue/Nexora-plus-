@@ -675,9 +675,29 @@
 
   function porte() { return document.getElementById('welcomeGate'); }
 
+  /* V652 — Correction d'une erreur du V625.
+     La porte se rouvrait meme quand c'est l'application elle-meme qui
+     l'avait fermee pour afficher le formulaire de compte. Resultat :
+     le formulaire s'ouvrait derriere la porte, et plus personne ne
+     pouvait creer de compte. On ne rouvre donc plus la porte tant
+     qu'une fenetre de compte est ouverte. */
+  function fenetreCompteOuverte() {
+    try {
+      var m = document.getElementById('accountModal');
+      if (m && m.classList.contains('open')) return true;
+      /* Filet supplementaire : toute fenetre modale visible. */
+      var ouvertes = document.querySelectorAll('.modal.open, [data-modal].open');
+      for (var i = 0; i < ouvertes.length; i++) {
+        if (ouvertes[i].offsetParent !== null) return true;
+      }
+    } catch (_e) {}
+    return false;
+  }
+
   function ouvrir() {
     var g = porte();
     if (!g || connecte) return;
+    if (fenetreCompteOuverte()) return;
     if (g.hidden === false && document.body.classList.contains('welcome-active')) return;
     g.hidden = false;
     try { document.body.classList.add('welcome-active'); } catch (_e) {}
@@ -693,6 +713,7 @@
     if (!g) return;
     observateur = new MutationObserver(function () {
       if (connecte) return;
+      if (fenetreCompteOuverte()) return;
       if (porte() && porte().hidden !== false) ouvrir();
     });
     try { observateur.observe(g, { attributes: true, attributeFilter: ['hidden'] }); } catch (_e) {}
@@ -1037,4 +1058,216 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lancer);
   else lancer();
   setTimeout(lancer, 1200);
+})();
+
+/* ===================================================================
+   Nexora V651 — Ouverture par lien et activation d'une carte
+   Le code QR d'une carte conduit vers :
+     /?code=NXAAAABBBBCCCC&m=12
+   Ce bloc lit ces paramètres, ouvre l'écran de création de compte,
+   et propose l'activation en une touche une fois la session ouverte.
+   =================================================================== */
+(function () {
+  'use strict';
+
+  var MEMOIRE = 'nexora.carte.attente.v651';
+  var carte = null;
+
+  function lireUrl() {
+    try {
+      var p = new URLSearchParams(window.location.search || '');
+      var code = String(p.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      var mois = Number(p.get('m') || 0);
+      var compte = String(p.get('compte') || '').toLowerCase();
+      if (code.length >= 8) return { code: code, mois: mois, ouvrirCreation: true };
+      if (compte === 'nouveau') return { code: '', mois: 0, ouvrirCreation: true };
+    } catch (_e) {}
+    return null;
+  }
+
+  function memoriser(c) {
+    try { localStorage.setItem(MEMOIRE, JSON.stringify(c)); } catch (_e) {}
+  }
+  function relire() {
+    try {
+      var t = localStorage.getItem(MEMOIRE);
+      return t ? JSON.parse(t) : null;
+    } catch (_e) { return null; }
+  }
+  function oublier() {
+    try { localStorage.removeItem(MEMOIRE); } catch (_e) {}
+  }
+
+  /* Retire les parametres de l'adresse pour ne pas les rejouer au rechargement. */
+  function nettoyerUrl() {
+    try {
+      if (!window.history || !window.history.replaceState) return;
+      var u = new URL(window.location.href);
+      u.searchParams.delete('code');
+      u.searchParams.delete('m');
+      u.searchParams.delete('compte');
+      window.history.replaceState({}, '', u.pathname + (u.search || '') + (u.hash || ''));
+    } catch (_e) {}
+  }
+
+  /* ---- Ouvrir l'ecran de creation de compte ---- */
+  function ouvrirCreation(essaisRestants) {
+    var bouton = document.querySelector('[data-action="welcome-create"]');
+    if (bouton) { bouton.click(); return true; }
+    if (essaisRestants > 0) {
+      setTimeout(function () { ouvrirCreation(essaisRestants - 1); }, 400);
+    }
+    return false;
+  }
+
+  /* ---- Barre d'activation ---- */
+  function styles() {
+    if (document.getElementById('nx-carte-style')) return;
+    var s = document.createElement('style');
+    s.id = 'nx-carte-style';
+    s.textContent =
+      '.nx-carte{position:fixed;left:12px;right:12px;bottom:14px;z-index:99991;' +
+      'padding:14px 16px;border-radius:18px;background:#143B67;color:#fff;' +
+      'box-shadow:0 12px 30px rgba(10,30,60,.35);' +
+      'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
+      'transform:translateY(150%);transition:transform .35s ease}' +
+      '.nx-carte.nx-vu{transform:translateY(0)}' +
+      '.nx-carte h4{margin:0 0 4px;font-size:15px;font-weight:800}' +
+      '.nx-carte p{margin:0;font-size:13px;line-height:1.45;opacity:.9}' +
+      '.nx-carte .nx-code{display:block;margin:9px 0 11px;padding:9px;border-radius:11px;' +
+      'background:rgba(255,255,255,.12);text-align:center;font-family:ui-monospace,Menlo,monospace;' +
+      'font-size:15px;font-weight:800;letter-spacing:2px}' +
+      '.nx-carte .nx-actions{display:flex;gap:9px}' +
+      '.nx-carte button{flex:1;border:0;border-radius:12px;padding:11px;font-size:14px;' +
+      'font-weight:800;cursor:pointer}' +
+      '.nx-carte .nx-go{background:#F2A93B;color:#22364a}' +
+      '.nx-carte .nx-plus{background:transparent;color:#cfe0f2;flex:0 0 auto;padding:11px 8px;font-weight:600}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function joliCode(c) {
+    return String(c || '').replace(/(.{4})/g, '$1 ').trim();
+  }
+
+  function fermerBarre(barre) {
+    if (!barre) return;
+    barre.classList.remove('nx-vu');
+    setTimeout(function () { if (barre.parentNode) barre.parentNode.removeChild(barre); }, 400);
+  }
+
+  function afficherBarre(etat) {
+    var ancienne = document.querySelector('.nx-carte');
+    if (ancienne) ancienne.parentNode.removeChild(ancienne);
+    styles();
+
+    var barre = document.createElement('div');
+    barre.className = 'nx-carte';
+
+    if (etat === 'aConnecter') {
+      barre.innerHTML =
+        '<h4>Carte Nexora reconnue</h4>' +
+        '<p>Crée ton compte ou connecte-toi. La carte sera activée juste après.</p>' +
+        '<span class="nx-code">' + joliCode(carte.code) + '</span>';
+    } else if (etat === 'aActiver') {
+      barre.innerHTML =
+        '<h4>Activer ma carte</h4>' +
+        '<p>Ton compte est ouvert. Une touche suffit pour activer l’accès.</p>' +
+        '<span class="nx-code">' + joliCode(carte.code) + '</span>' +
+        '<div class="nx-actions">' +
+          '<button type="button" class="nx-go">Activer maintenant</button>' +
+          '<button type="button" class="nx-plus">Plus tard</button>' +
+        '</div>';
+    }
+
+    document.body.appendChild(barre);
+    setTimeout(function () { barre.classList.add('nx-vu'); }, 60);
+
+    var go = barre.querySelector('.nx-go');
+    if (go) {
+      go.addEventListener('click', function () {
+        go.disabled = true;
+        go.textContent = 'Activation…';
+        activer(barre, go);
+      });
+    }
+    var plus = barre.querySelector('.nx-plus');
+    if (plus) plus.addEventListener('click', function () { fermerBarre(barre); });
+    return barre;
+  }
+
+  function activer(barre, bouton) {
+    if (typeof window.nxActivateSubscriptionCode !== 'function') {
+      bouton.disabled = false;
+      bouton.textContent = 'Réessayer';
+      barre.querySelector('p').textContent =
+        'L’activation n’est pas encore prête. Attends un instant puis réessaie.';
+      return;
+    }
+    window.nxActivateSubscriptionCode(carte.code, carte.mois || 0, 'all')
+      .then(function () {
+        oublier();
+        barre.querySelector('h4').textContent = 'Carte activée';
+        barre.querySelector('p').textContent = 'Ton accès est ouvert. Bon travail.';
+        var a = barre.querySelector('.nx-actions');
+        if (a) a.parentNode.removeChild(a);
+        setTimeout(function () { fermerBarre(barre); }, 4000);
+        setTimeout(function () { window.location.reload(); }, 1200);
+      })
+      .catch(function (err) {
+        bouton.disabled = false;
+        bouton.textContent = 'Réessayer';
+        barre.querySelector('p').textContent =
+          (err && err.message) ? String(err.message) : 'Activation impossible pour le moment.';
+      });
+  }
+
+  /* ---- Suivi de la session ---- */
+  function sessionOuverte() {
+    return new Promise(function (resolve) {
+      var api = window.NexoraApp;
+      if (!api || typeof api.ensureSupabaseClientReady !== 'function') { resolve(false); return; }
+      api.ensureSupabaseClientReady().then(function (c) {
+        if (!c || !c.auth) { resolve(false); return; }
+        c.auth.getSession().then(function (r) {
+          resolve(!!(r && r.data && r.data.session));
+        }).catch(function () { resolve(false); });
+      }).catch(function () { resolve(false); });
+    });
+  }
+
+  function surveiller() {
+    var essais = 0;
+    var minuteur = setInterval(function () {
+      essais++;
+      if (essais > 120) { clearInterval(minuteur); return; }
+      sessionOuverte().then(function (ouverte) {
+        if (!ouverte) return;
+        clearInterval(minuteur);
+        afficherBarre('aActiver');
+      });
+    }, 1500);
+  }
+
+  function demarrer() {
+    var depuisUrl = lireUrl();
+    if (depuisUrl) {
+      if (depuisUrl.code) { carte = { code: depuisUrl.code, mois: depuisUrl.mois }; memoriser(carte); }
+      nettoyerUrl();
+      setTimeout(function () { ouvrirCreation(12); }, 600);
+    } else {
+      carte = relire();
+    }
+    if (!carte || !carte.code) return;
+
+    sessionOuverte().then(function (ouverte) {
+      if (ouverte) { setTimeout(function () { afficherBarre('aActiver'); }, 1200); }
+      else { setTimeout(function () { afficherBarre('aConnecter'); }, 1200); surveiller(); }
+    });
+  }
+
+  var lance = false;
+  function lancer() { if (lance) return; lance = true; demarrer(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lancer);
+  else lancer();
+  setTimeout(lancer, 1500);
 })();
