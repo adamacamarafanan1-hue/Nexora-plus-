@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V649
+/* NEXORA — École primaire interactive V655
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV649) return;
-  window.__nxPrimaryExercisesV649 = true;
+  if (window.__nxPrimaryExercisesV655) return;
+  window.__nxPrimaryExercisesV655 = true;
 
-  var VERSION = 'v649';
+  var VERSION = 'v655';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2460,6 +2460,10 @@
       .nx-px-examtime{font-size:20px;font-weight:800;letter-spacing:1px;font-variant-numeric:tabular-nums}
       .nx-px-exampts{font-size:13px;font-weight:700;opacity:.85}
       .nx-px-examnav{display:flex;gap:10px}
+      .nx-px-dictee{margin-top:10px}
+      .nx-px-dictee .nx-px-go{margin-top:8px}
+      .nx-px-dicteenote{margin:8px 0 0;font-size:13px;color:#5b7085}
+      .nx-px-compte{margin-top:6px;text-align:right;font-size:13px;font-weight:700;color:#5b7085}
       .nx-px-examnav .nx-px-go{margin-top:12px}
       .nx-px-examitem{margin-top:12px;border-left:5px solid #cbd8e4}
       .nx-px-juste{border-left-color:#1F7A3C;background:#f3faf5}
@@ -2548,6 +2552,22 @@
       var help = ev.target.closest('[data-lesson-help]'); if (help) { toggleLessonHelp(); return; }
       var exl = ev.target.closest('[data-examlist]'); if (exl) { renderExamList(); return; }
       var exs = ev.target.closest('[data-exam]'); if (exs) { startExam(Number(exs.getAttribute('data-exam'))); return; }
+      var exd = ev.target.closest('[data-edire]');
+      if (exd) {
+        var qd = (examSet()[EXAM_STATE.index].q || [])[Number(exd.getAttribute('data-edire'))];
+        if (qd && qd.lire) {
+          try { speechSynthesis.cancel(); } catch (_e) {}
+          lastSpeechText = '';
+          if (exd.getAttribute('data-lent')) {
+            try {
+              var u = new SpeechSynthesisUtterance(cleanSpeechText(qd.lire));
+              u.lang = 'fr-FR'; u.rate = .55; u.pitch = .96; u.volume = 1;
+              speechSynthesis.speak(u);
+            } catch (_e2) { speak(qd.lire); }
+          } else { speak(qd.lire); }
+        }
+        return;
+      }
       var exq = ev.target.closest('[data-eq]'); if (exq) { examSaveAnswer(); renderExamQuestion(Number(exq.getAttribute('data-eq'))); return; }
       var exe = ev.target.closest('[data-eend]'); if (exe) { finishExam(false); return; }
       var exf = ev.target.closest('[data-eself]'); if (exf) { examSelfMark(Number(exf.getAttribute('data-eself')), Number(exf.getAttribute('data-eval'))); return; }
@@ -2948,8 +2968,21 @@
     var html = '<div class="nx-px-exambar"><span class="nx-px-examtime" data-echrono>' + examChrono(Math.max(0, EXAM_STATE.restant)) + '</span>' +
       '<span class="nx-px-exampts">' + (q.points || 1) + ' point' + ((q.points || 1) > 1 ? 's' : '') + '</span></div>';
     html += '<article class="nx-px-lesson"><div class="nx-px-step">Question ' + (k + 1) + '</div>' +
-      '<p class="nx-px-para">' + esc(q.enonce) + '</p></article>';
-    html += '<textarea class="nx-px-text" data-etext rows="4" placeholder="Écris ta réponse ici">' + esc(EXAM_STATE.reponses[k] || '') + '</textarea>';
+      '<p class="nx-px-para">' + esc(q.enonce) + '</p>';
+    /* Une dictée : l'application lit le texte, l'élève écrit ce qu'il entend. */
+    if (q.lire) {
+      html += '<div class="nx-px-dictee">' +
+        '<button type="button" class="nx-px-go" data-edire="' + k + '">Écouter la dictée</button>' +
+        '<button type="button" class="nx-px-go nx-px-go-soft" data-edire="' + k + '" data-lent="1">Écouter lentement</button>' +
+        '<p class="nx-px-dicteenote">Tu peux écouter autant de fois que nécessaire.</p></div>';
+    }
+    html += '</article>';
+    var lignes = q.long ? 12 : 4;
+    var invite = q.long ? 'Rédige ici' : 'Écris ta réponse ici';
+    html += '<textarea class="nx-px-text" data-etext rows="' + lignes + '" placeholder="' + invite + '">' + esc(EXAM_STATE.reponses[k] || '') + '</textarea>';
+    if (q.long) {
+      html += '<div class="nx-px-compte" data-ecompte>0 mot</div>';
+    }
     html += '<div class="nx-px-examnav">';
     if (k > 0) html += '<button type="button" class="nx-px-go nx-px-go-soft" data-eq="' + (k - 1) + '">← Précédente</button>';
     if (k < liste.length - 1) html += '<button type="button" class="nx-px-go" data-eq="' + (k + 1) + '">Suivante →</button>';
@@ -2958,6 +2991,16 @@
     html += '<button type="button" class="nx-px-go nx-px-go-soft" data-eend>Rendre maintenant</button>';
     main().innerHTML = html;
     shell().scrollTop = 0;
+    var zone = main().querySelector('[data-etext]');
+    var compteur = main().querySelector('[data-ecompte]');
+    if (zone && compteur) {
+      var majCompte = function () {
+        var mots = (zone.value || '').trim().split(/\s+/).filter(Boolean).length;
+        compteur.textContent = mots + ' mot' + (mots > 1 ? 's' : '');
+      };
+      zone.addEventListener('input', majCompte);
+      majCompte();
+    }
   }
 
   function finishExam(tempsEcoule) {
