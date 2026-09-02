@@ -1271,3 +1271,115 @@
   else lancer();
   setTimeout(lancer, 1500);
 })();
+
+/* ===================================================================
+   Nexora V653 — L'écran d'accueil s'adapte à qui revient
+   Première visite : « Créer mon compte » reste le bouton principal.
+   Retour après une inscription : « Se connecter » passe devant.
+   Les deux boutons restent toujours présents.
+
+   Ce bloc agit une seule fois, au chargement. Il ne surveille rien
+   en continu et ne corrige aucun élément derrière l'application.
+   =================================================================== */
+(function () {
+  'use strict';
+  if (window.__nxAccueilV653) return;
+  window.__nxAccueilV653 = true;
+
+  var MEMOIRE = 'nexora.compte.deja.cree.v653';
+
+  function dejaInscrit() {
+    try {
+      if (localStorage.getItem(MEMOIRE) === '1') return true;
+      /* Un compte Supabase memorise sur ce telephone vaut aussi preuve. */
+      for (var i = 0; i < localStorage.length; i++) {
+        var cle = localStorage.key(i) || '';
+        if (cle.indexOf('sb-') === 0 && cle.indexOf('-auth-token') > 0) return true;
+      }
+    } catch (_e) {}
+    return false;
+  }
+
+  function noterInscription() {
+    try { localStorage.setItem(MEMOIRE, '1'); } catch (_e) {}
+  }
+
+  /* Des qu'une session s'ouvre, on retient que ce telephone a servi. */
+  function suivreSession() {
+    var api = window.NexoraApp;
+    if (!api || typeof api.ensureSupabaseClientReady !== 'function') return;
+    api.ensureSupabaseClientReady().then(function (c) {
+      if (!c || !c.auth) return;
+      c.auth.getSession().then(function (r) {
+        if (r && r.data && r.data.session) noterInscription();
+      }).catch(function () {});
+      if (typeof c.auth.onAuthStateChange === 'function') {
+        try {
+          c.auth.onAuthStateChange(function (_e, session) {
+            if (session && session.user) noterInscription();
+          });
+        } catch (_e) {}
+      }
+    }).catch(function () {});
+  }
+
+  function styles() {
+    if (document.getElementById('nx-accueil-v653')) return;
+    var s = document.createElement('style');
+    s.id = 'nx-accueil-v653';
+    /* On echange l'apparence des deux boutons sans toucher au balisage. */
+    s.textContent =
+      '.nx-retour .nxo-create-main-v379{order:2;min-height:48px;margin-top:10px;' +
+      'border:1px solid #BCCFE5;border-radius:6px;background:#fff;color:#323942;' +
+      'font-size:13.5px;font-weight:950;box-shadow:none}' +
+      '.nx-retour .nxo-login-main-v379{order:1;min-height:52px;margin-top:0;border:0;' +
+      'border-radius:6px;background:linear-gradient(135deg,#13457E,#3A754E);color:#fff;' +
+      'font-size:15px;font-weight:1000;box-shadow:0 13px 28px rgba(19,69,126,.22)}' +
+      '.nx-retour .nxo-single-account-v379{display:flex;flex-direction:column}' +
+      '.nx-retour .nxo-single-head-v379{order:0}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function adapter() {
+    var bloc = document.querySelector('.nxo-single-account-v379');
+    if (!bloc) return false;
+    if (bloc.classList.contains('nx-retour')) return true;
+
+    styles();
+    bloc.classList.add('nx-retour');
+
+    /* Le titre et le texte suivent, sinon la page se contredit. */
+    var titre = bloc.querySelector('.nxo-single-head-v379 h2');
+    var texte = bloc.querySelector('.nxo-single-head-v379 p');
+    if (titre) titre.textContent = 'Me connecter';
+    if (texte) texte.textContent =
+      'Retrouve ton compte avec ton adresse email et ton mot de passe. ' +
+      'Ta progression est conservée.';
+
+    var creer = bloc.querySelector('.nxo-create-main-v379');
+    var entrer = bloc.querySelector('.nxo-login-main-v379');
+    if (entrer) entrer.textContent = 'Se connecter';
+    if (creer) {
+      /* On garde la fleche d'origine si elle existe. */
+      creer.textContent = 'Créer un autre compte';
+    }
+    return true;
+  }
+
+  function essayer(restants) {
+    if (adapter()) return;
+    if (restants > 0) setTimeout(function () { essayer(restants - 1); }, 400);
+  }
+
+  function demarrer() {
+    suivreSession();
+    if (!dejaInscrit()) return;
+    essayer(10);
+  }
+
+  var lance = false;
+  function lancer() { if (lance) return; lance = true; demarrer(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lancer);
+  else lancer();
+  setTimeout(lancer, 1500);
+})();
