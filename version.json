@@ -1,5 +1,6 @@
+
 {
-  "version": "V657",
-  "message": "Nexora V657 : l activation d une carte patiente si le chargement prend quelques secondes, au lieu d abandonner.",
+  "version": "V658",
+  "message": "Nexora V658 : l activation d une carte declenche elle-meme le chargement du module necessaire, au lieu d attendre qu il arrive tout seul.",
   "critical": true
 }
