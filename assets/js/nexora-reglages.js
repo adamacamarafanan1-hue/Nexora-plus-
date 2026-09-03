@@ -1545,3 +1545,82 @@
   else lancer();
   setTimeout(lancer, 2000);
 })();
+
+/* ===================================================================
+   Nexora V656 — « J'ai une carte Nexora » sur l'écran d'accueil
+   La saisie du code était cachée derrière un petit lien, au bas de la
+   fenêtre de paiement. Or la carte est devenue le principal moyen
+   d'accès. Le bouton monte donc sur l'écran d'entrée, pour tous.
+
+   Ce bloc n'agit qu'une fois, au chargement. Il n'observe rien.
+   =================================================================== */
+(function () {
+  'use strict';
+  if (window.__nxCarteBoutonV656) return;
+  window.__nxCarteBoutonV656 = true;
+
+  function styles() {
+    if (document.getElementById('nx-carte-bouton-v656')) return;
+    var s = document.createElement('style');
+    s.id = 'nx-carte-bouton-v656';
+    s.textContent =
+      '.nx-carte-entree{margin-top:14px;padding:13px 14px;border-radius:10px;' +
+      'border:1px solid #C9861B;background:#FDF7EC}' +
+      '.nx-carte-entree .nx-t{display:flex;align-items:center;gap:9px;margin-bottom:9px}' +
+      '.nx-carte-entree .nx-t svg{width:22px;height:22px;flex:0 0 auto}' +
+      '.nx-carte-entree .nx-t b{font-size:14px;font-weight:900;color:#7A5310;line-height:1.25}' +
+      '.nx-carte-entree p{margin:0 0 10px;font-size:12.5px;line-height:1.45;color:#6b5426}' +
+      '.nx-carte-entree button{width:100%;min-height:46px;border:0;border-radius:6px;' +
+      'background:#C9861B;color:#22364a;font-size:14px;font-weight:950;cursor:pointer}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  /* Le gestionnaire de clic de Nexora est delegue sur le document :
+     un bouton portant le meme attribut suffit a ouvrir la saisie. */
+  function ouvrirSaisie() {
+    var relais = document.querySelector('[data-nx-open-card-code]');
+    if (relais && relais.offsetParent !== null) { relais.click(); return; }
+    var faux = document.createElement('button');
+    faux.type = 'button';
+    faux.setAttribute('data-nx-open-card-code', '');
+    faux.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    document.body.appendChild(faux);
+    faux.click();
+    setTimeout(function () { if (faux.parentNode) faux.parentNode.removeChild(faux); }, 300);
+  }
+
+  function poser() {
+    var bloc = document.querySelector('.nxo-single-account-v379');
+    if (!bloc) return false;
+    if (bloc.querySelector('.nx-carte-entree')) return true;
+
+    styles();
+    var boite = document.createElement('div');
+    boite.className = 'nx-carte-entree';
+    boite.innerHTML =
+      '<div class="nx-t">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="#C9861B" stroke-width="1.8" ' +
+        'stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect>' +
+        '<path d="M2.5 9.5h19"></path><path d="M6 14.5h4"></path></svg>' +
+        '<b>J’ai une carte Nexora</b>' +
+      '</div>' +
+      '<p>Achetée à l’école ou chez un revendeur. Entre le code inscrit dessus ' +
+      'pour ouvrir ton accès.</p>' +
+      '<button type="button">Entrer mon code</button>';
+    bloc.appendChild(boite);
+    boite.querySelector('button').addEventListener('click', ouvrirSaisie);
+    return true;
+  }
+
+  function essayer(restants) {
+    if (poser()) return;
+    if (restants > 0) setTimeout(function () { essayer(restants - 1); }, 400);
+  }
+
+  var lance = false;
+  function lancer() { if (lance) return; lance = true; essayer(12); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lancer);
+  else lancer();
+  setTimeout(lancer, 1500);
+})();
