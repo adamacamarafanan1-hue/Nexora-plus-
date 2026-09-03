@@ -1195,32 +1195,44 @@
     return barre;
   }
 
-  /* V657 — Correction : la fonction d'activation de Nexora peut ne pas
-     encore etre chargee au moment ou la personne touche le bouton, si
-     son script arrive apres le notre. Avant, on abandonnait aussitot
-     avec un message d'echec. Desormais, on patiente jusqu'a 6 secondes
-     en verifiant plusieurs fois avant de conclure a un vrai probleme. */
+  /* V658 — Vraie cause trouvee. La fonction d'activation vit dans
+     nexora-secure-v522.js, qui ne se charge automatiquement que sur
+     cinq ecrans (kdo, adams, academy, subjects, novels) — jamais sur
+     l'ecran d'accueil, la ou arrive quelqu'un qui vient de scanner
+     une carte. Attendre ne suffisait donc pas : rien n'etait en train
+     d'arriver. Nexora expose une fonction publique pour declencher ce
+     chargement a la demande ; on l'appelle directement. */
+  function assurerScriptSecurise() {
+    if (typeof window.NexoraEnsureSecureV506 === 'function') {
+      try { return window.NexoraEnsureSecureV506(); } catch (_e) {}
+    }
+    return Promise.resolve(false);
+  }
+
   function attendreActivation(tentatives) {
     return new Promise(function (resolve) {
       if (typeof window.nxActivateSubscriptionCode === 'function') { resolve(true); return; }
       if (tentatives <= 0) { resolve(false); return; }
       setTimeout(function () {
         attendreActivation(tentatives - 1).then(resolve);
-      }, 500);
+      }, 400);
     });
   }
 
   function activer(barre, bouton) {
-    attendreActivation(12).then(function (prete) {
-      if (!prete) {
-        bouton.disabled = false;
-        bouton.textContent = 'Réessayer';
-        barre.querySelector('p').textContent =
-          'L’activation met du temps à démarrer. Touche encore une fois.';
-        return;
-      }
-      lancerActivation(barre, bouton);
-    });
+    assurerScriptSecurise()
+      .catch(function () {})
+      .then(function () { return attendreActivation(10); })
+      .then(function (prete) {
+        if (!prete) {
+          bouton.disabled = false;
+          bouton.textContent = 'Réessayer';
+          barre.querySelector('p').textContent =
+            'L’activation met du temps à démarrer. Touche encore une fois.';
+          return;
+        }
+        lancerActivation(barre, bouton);
+      });
   }
 
   function lancerActivation(barre, bouton) {
@@ -1279,6 +1291,11 @@
       carte = relire();
     }
     if (!carte || !carte.code) return;
+
+    /* On declenche le chargement du script d'activation des maintenant,
+       sans attendre le clic : il a ainsi le temps d'arriver pendant que
+       la personne cree son compte ou lit la barre. */
+    assurerScriptSecurise().catch(function () {});
 
     sessionOuverte().then(function (ouverte) {
       if (ouverte) { setTimeout(function () { afficherBarre('aActiver'); }, 1200); }
