@@ -1,5 +1,5 @@
 {
-  "version": "V656",
-  "message": "Nexora V656 : le bouton J ai une carte Nexora est desormais sur l ecran d accueil.",
-  "critical": false
+  "version": "V657",
+  "message": "Nexora V657 : l activation d une carte patiente si le chargement prend quelques secondes, au lieu d abandonner.",
+  "critical": true
 }
