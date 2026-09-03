@@ -1195,14 +1195,35 @@
     return barre;
   }
 
+  /* V657 — Correction : la fonction d'activation de Nexora peut ne pas
+     encore etre chargee au moment ou la personne touche le bouton, si
+     son script arrive apres le notre. Avant, on abandonnait aussitot
+     avec un message d'echec. Desormais, on patiente jusqu'a 6 secondes
+     en verifiant plusieurs fois avant de conclure a un vrai probleme. */
+  function attendreActivation(tentatives) {
+    return new Promise(function (resolve) {
+      if (typeof window.nxActivateSubscriptionCode === 'function') { resolve(true); return; }
+      if (tentatives <= 0) { resolve(false); return; }
+      setTimeout(function () {
+        attendreActivation(tentatives - 1).then(resolve);
+      }, 500);
+    });
+  }
+
   function activer(barre, bouton) {
-    if (typeof window.nxActivateSubscriptionCode !== 'function') {
-      bouton.disabled = false;
-      bouton.textContent = 'Réessayer';
-      barre.querySelector('p').textContent =
-        'L’activation n’est pas encore prête. Attends un instant puis réessaie.';
-      return;
-    }
+    attendreActivation(12).then(function (prete) {
+      if (!prete) {
+        bouton.disabled = false;
+        bouton.textContent = 'Réessayer';
+        barre.querySelector('p').textContent =
+          'L’activation met du temps à démarrer. Touche encore une fois.';
+        return;
+      }
+      lancerActivation(barre, bouton);
+    });
+  }
+
+  function lancerActivation(barre, bouton) {
     window.nxActivateSubscriptionCode(carte.code, carte.mois || 0, 'all')
       .then(function () {
         oublier();
