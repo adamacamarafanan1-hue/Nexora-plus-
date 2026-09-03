@@ -1,6 +1,5 @@
-
 {
-  "version": "V658",
-  "message": "Nexora V658 : l activation d une carte declenche elle-meme le chargement du module necessaire, au lieu d attendre qu il arrive tout seul.",
+  "version": "V659",
+  "message": "Nexora V659 : le bouton J ai une carte Nexora de l ecran d accueil declenche desormais le meme chargement que l activation. Il ne restait plus muet.",
   "critical": true
 }
