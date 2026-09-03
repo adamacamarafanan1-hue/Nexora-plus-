@@ -1613,9 +1613,25 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
-  /* Le gestionnaire de clic de Nexora est delegue sur le document :
-     un bouton portant le meme attribut suffit a ouvrir la saisie. */
-  function ouvrirSaisie() {
+  /* V659 — Correction : le gestionnaire qui repond au clic sur
+     [data-nx-open-card-code] vit dans nexora-secure-v522.js, comme la
+     fonction d'activation corrigee en V658. Sur l'ecran d'accueil, ce
+     fichier n'est jamais charge automatiquement : le clic simule ne
+     rencontrait donc personne pour l'ecouter et ne faisait rien, sans
+     le moindre message. On force maintenant le meme chargement avant
+     de simuler le clic, et le bouton se met en attente le temps qu'il
+     arrive plutot que de rester silencieux. */
+  /* Le chargement force retourne une promesse qui se resout une fois
+     le script execute : les fonctions et gestionnaires qu'il installe
+     sont alors surement en place, sans qu'il faille les deviner. */
+  function chargerModuleSecurise() {
+    if (typeof window.NexoraEnsureSecureV506 === 'function') {
+      try { return window.NexoraEnsureSecureV506(); } catch (_e) { return Promise.resolve(false); }
+    }
+    return Promise.resolve(false);
+  }
+
+  function declencherClic() {
     var relais = document.querySelector('[data-nx-open-card-code]');
     if (relais && relais.offsetParent !== null) { relais.click(); return; }
     var faux = document.createElement('button');
@@ -1625,6 +1641,24 @@
     document.body.appendChild(faux);
     faux.click();
     setTimeout(function () { if (faux.parentNode) faux.parentNode.removeChild(faux); }, 300);
+  }
+
+  function avecDelai(promesse, ms) {
+    return new Promise(function (resolve) {
+      var fini = false;
+      var minuteur = setTimeout(function () { if (!fini) { fini = true; resolve(false); } }, ms);
+      promesse.then(function (v) { if (!fini) { fini = true; clearTimeout(minuteur); resolve(v); } })
+              .catch(function () { if (!fini) { fini = true; clearTimeout(minuteur); resolve(false); } });
+    });
+  }
+
+  function ouvrirSaisie(bouton) {
+    var texteOrigine = bouton ? bouton.textContent : '';
+    if (bouton) { bouton.disabled = true; bouton.textContent = 'Ouverture…'; }
+    avecDelai(chargerModuleSecurise(), 6000).then(function () {
+      if (bouton) { bouton.disabled = false; bouton.textContent = texteOrigine; }
+      declencherClic();
+    });
   }
 
   function poser() {
@@ -1647,7 +1681,7 @@
       'pour ouvrir ton accès.</p>' +
       '<button type="button">Entrer mon code</button>';
     bloc.appendChild(boite);
-    boite.querySelector('button').addEventListener('click', ouvrirSaisie);
+    boite.querySelector('button').addEventListener('click', function (ev) { ouvrirSaisie(ev.currentTarget); });
     return true;
   }
 
