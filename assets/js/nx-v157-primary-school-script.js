@@ -1,12 +1,12 @@
-/* NEXORA — École primaire interactive V655
+/* NEXORA — École primaire interactive V664
    Expérience CP1 enfant : audio-first, image-first, grandes zones tactiles, navigation simplifiée et pédagogie adaptative.
    Contrat public conservé : window.NexoraPrimarySchoolV157.open(). */
 (function () {
   'use strict';
-  if (window.__nxPrimaryExercisesV655) return;
-  window.__nxPrimaryExercisesV655 = true;
+  if (window.__nxPrimaryExercisesV664) return;
+  window.__nxPrimaryExercisesV664 = true;
 
-  var VERSION = 'v655';
+  var VERSION = 'v664';
   var STORAGE = 'nexora.primary.exercises.v600.progress';
   var LAST_CP1 = 'nexora.primary.cp1.last.v610';
   var viewer = null;
@@ -2765,7 +2765,28 @@
     if (PRACTICE_ABSENT[level]) return false;
     return ['2', '3', '4', '5', '6'].indexOf(level) >= 0;
   }
-  var CACHE_CONTENU = 'nexora.primaire.contenu.v628.';
+  /* V664 — Le contenu ne quitte plus jamais la memoire vive.
+     Avant cette version, chaque classe ouverte etait recopiee en clair
+     dans le telephone (localStorage), et cette copie continuait a
+     s'afficher meme sans session active, meme apres l'expiration d'un
+     abonnement, meme hors ligne. Un eleve n'avait besoin de se
+     connecter qu'une seule fois dans sa vie pour garder l'acces a une
+     classe entiere indefiniment, et n'importe qui pouvait extraire
+     cette copie via les outils du navigateur. Desormais, sans jeton de
+     session valide et sans reponse fraiche du serveur, aucune lecon ne
+     s'affiche. Rien n'est conserve au-dela de l'onglet ouvert. */
+  var CACHE_CONTENU_ANCIEN = 'nexora.primaire.contenu.v628.';
+
+  (function nettoyerAncienCache() {
+    try {
+      var aSupprimer = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var cle = localStorage.key(i);
+        if (cle && cle.indexOf(CACHE_CONTENU_ANCIEN) === 0) aSupprimer.push(cle);
+      }
+      for (var j = 0; j < aSupprimer.length; j++) localStorage.removeItem(aSupprimer[j]);
+    } catch (_e) {}
+  })();
 
   function jetonSupabase() {
     var api = window.NexoraApp;
@@ -2777,19 +2798,6 @@
         return (s && s.access_token) ? s.access_token : '';
       });
     }).catch(function () { return ''; });
-  }
-
-  function contenuEnCache(level) {
-    try {
-      var brut = localStorage.getItem(CACHE_CONTENU + level);
-      if (!brut) return null;
-      var o = JSON.parse(brut);
-      return (o && typeof o === 'object') ? o : null;
-    } catch (_e) { return null; }
-  }
-
-  function garderContenu(level, contenu) {
-    try { localStorage.setItem(CACHE_CONTENU + level, JSON.stringify(contenu)); } catch (_e) {}
   }
 
   function loadPracticeLevel(level) {
@@ -2811,15 +2819,13 @@
       return r.json();
     }).then(function (data) {
       if (!data || data.success !== true || !data.contenu) throw new Error('REPONSE_INVALIDE');
+      /* Garde uniquement en memoire, pour la duree de cet onglet.
+         Rien n'est ecrit sur le disque du telephone. */
       store[level] = data.contenu;
-      garderContenu(level, data.contenu);
       return true;
     }).catch(function (err) {
-      /* Hors ligne ou serveur indisponible : on rouvre ce que l'élève a déjà reçu. */
-      var garde = contenuEnCache(level);
-      if (garde) { store[level] = garde; return true; }
-      /* Un seul essai par session : sans cela l'écran se redessine en boucle
-         et rappelle la route indéfiniment. */
+      /* Sans session valide ou sans reponse fraiche du serveur, la
+         classe ne s'ouvre pas. Aucune copie de secours locale. */
       PRACTICE_ABSENT[level] = true;
       PRACTICE_LOADING[level] = null;
       return false;
