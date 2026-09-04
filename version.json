@@ -1,5 +1,5 @@
 {
-  "version": "V663",
-  "message": "Nexora V663 : la reconnaissance d une carte s affiche desormais en plein ecran, impossible a manquer.",
-  "critical": false
+  "version": "V664",
+  "message": "Nexora V664 : securite. Le contenu des cours n est plus jamais conserve sur le telephone. Sans session valide, aucune lecon ne s ouvre.",
+  "critical": true
 }
