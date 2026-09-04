@@ -206,7 +206,7 @@
   setInterval(poserBouton, 4000);
 })();
 
-/* ===== V552 — invitation à installer Nexora =====
+/* ===== V552 — invitation à installer Nexora (fusionné avec V650/V660 au nettoyage) =====
    Le bloc nx-install-v468 existe déjà dans index.html, mais il est placé
    en bas de l'écran d'entrée et reste masqué : presque personne ne le voit.
    Ce module propose l'installation dès l'ouverture, avec une carte visible,
@@ -217,19 +217,46 @@
    - « Plus tard » repousse d'une semaine ;
    - trois refus et on n'insiste plus jamais ;
    - sur iPhone, où le navigateur n'autorise aucune installation
-     automatique, on affiche les trois gestes à faire. */
+     automatique, on affiche les trois gestes à faire ;
+   - EXCEPTION voulue : pour quelqu'un venu d'une carte Nexora, ces
+     trois règles de politesse s'effacent. L'invitation revient à
+     chaque ouverture, sans semaine d'attente ni plafond de refus,
+     jusqu'à l'installation réelle. Un « Plus tard » ferme seulement
+     pour cette fois. Décision explicite du fondateur : la carte est
+     l'entrée la plus rentable, et une session installée dure bien
+     plus longtemps qu'un onglet de navigateur.
+
+   Ce module réparait aussi un manque qui l'empêchait de fonctionner :
+   index.html ne déclare le manifeste nulle part, donc Chrome ne
+   proposait jamais l'installation. On le déclare ici au chargement. */
 (function () {
   'use strict';
   if (window.__nxInstallV552) return;
   window.__nxInstallV552 = true;
 
   var CLE = 'nexora.install.v552';
+  var CLE_CARTE = 'nexora.carte.installer.v660';
   var DELAI_AVANT = 3500;          /* laisser l'application s'ouvrir d'abord */
+  var DELAI_CARTE = 1200;          /* venu d'une carte : le meilleur moment est maintenant */
   var REPOUSSE = 7 * 24 * 3600 * 1000;
   var REFUS_MAX = 3;
 
   var invite = null;               /* l'événement retenu par le navigateur */
   var carteAffichee = false;
+
+  function vientDUneCarte() {
+    try { return localStorage.getItem(CLE_CARTE) === '1'; } catch (_e) { return false; }
+  }
+
+  function poserManifeste() {
+    try {
+      if (document.querySelector('link[rel="manifest"]')) return;
+      var lien = document.createElement('link');
+      lien.rel = 'manifest';
+      lien.href = '/manifest.json';
+      (document.head || document.documentElement).appendChild(lien);
+    } catch (_e) {}
+  }
 
   function etat() {
     try { return JSON.parse(localStorage.getItem(CLE) || '{}') || {}; }
@@ -256,6 +283,7 @@
 
   function autorisee() {
     if (dejaInstallee()) return false;
+    if (vientDUneCarte()) return true;
     var e = etat();
     if ((e.refus || 0) >= REFUS_MAX) return false;
     if (e.prochaine && Date.now() < e.prochaine) return false;
@@ -295,10 +323,12 @@
     document.head.appendChild(s);
   }
 
-  function fermer(carte, refus) {
-    carte.classList.remove('on');
-    setTimeout(function () { if (carte.parentNode) carte.parentNode.removeChild(carte); }, 400);
-    if (refus) {
+  function fermer(elt, refus) {
+    elt.classList.remove('on');
+    setTimeout(function () { if (elt.parentNode) elt.parentNode.removeChild(elt); }, 400);
+    /* Venu d'une carte : « Plus tard » ferme sans jamais compter contre
+       le plafond de trois refus ni poser le delai d'une semaine. */
+    if (refus && !vientDUneCarte()) {
       var e = etat();
       e.refus = (e.refus || 0) + 1;
       e.prochaine = Date.now() + REPOUSSE;
@@ -311,10 +341,16 @@
     var c = document.createElement('div');
     c.className = 'nx-inst-v552';
     c.setAttribute('role', 'dialog');
+    var carteTitre = vientDUneCarte()
+      ? 'Garde ton accès à portée de main'
+      : 'Ajouter Nexora à votre écran d’accueil';
+    var carteSous = vientDUneCarte()
+      ? 'Ta carte reste active plus longtemps ainsi.'
+      : 'Trois gestes, une seule fois.';
     c.innerHTML =
       '<div class="nx-inst-tete-v552"><span class="nx-inst-ico-v552" aria-hidden="true">📚</span>' +
-      '<div><strong>Ajouter Nexora à votre écran d’accueil</strong>' +
-      '<small>Trois gestes, une seule fois.</small></div></div>' +
+      '<div><strong>' + carteTitre + '</strong>' +
+      '<small>' + carteSous + '</small></div></div>' +
       '<ol class="nx-inst-pas-v552">' +
       '<li>Touchez l’icône <b>Partager</b> en bas de Safari.</li>' +
       '<li>Choisissez <b>Sur l’écran d’accueil</b>.</li>' +
@@ -336,10 +372,12 @@
     var c = document.createElement('div');
     c.className = 'nx-inst-v552';
     c.setAttribute('role', 'dialog');
+    var carteTitreA = vientDUneCarte() ? 'Garde ton accès à portée de main' : 'Installer Nexora';
+    var carteSousA = vientDUneCarte() ? 'Ta session dure plus longtemps ainsi.' : 'Gratuit, en quelques secondes.';
     c.innerHTML =
       '<div class="nx-inst-tete-v552"><span class="nx-inst-ico-v552" aria-hidden="true">📚</span>' +
-      '<div><strong>Installer Nexora</strong>' +
-      '<small>Gratuit, en quelques secondes.</small></div></div>' +
+      '<div><strong>' + carteTitreA + '</strong>' +
+      '<small>' + carteSousA + '</small></div></div>' +
       '<ul class="nx-inst-list-v552">' +
       '<li><b>✓</b><span>S’ouvre depuis votre écran d’accueil, sans passer par le navigateur.</span></li>' +
       '<li><b>✓</b><span>Vos cours restent disponibles même sans connexion.</span></li>' +
@@ -376,16 +414,21 @@
   window.addEventListener('beforeinstallprompt', function (ev) {
     try { ev.preventDefault(); } catch (_e) {}
     invite = ev;
-    if (autorisee()) setTimeout(carte, DELAI_AVANT);
+    if (autorisee()) setTimeout(carte, vientDUneCarte() ? DELAI_CARTE : DELAI_AVANT);
   });
 
   window.addEventListener('appinstalled', function () {
     invite = null;
     var e = etat(); e.installee = true; noter(e);
+    try { localStorage.removeItem(CLE_CARTE); } catch (_e) {}
   });
 
+  poserManifeste();
+
   /* Sur iPhone, aucun événement n'est émis : on décide seuls. */
-  if (estIOS() && autorisee()) setTimeout(carte, DELAI_AVANT + 1500);
+  if (estIOS() && autorisee()) {
+    setTimeout(carte, vientDUneCarte() ? DELAI_CARTE + 400 : DELAI_AVANT + 1500);
+  }
 })();
 
 
@@ -920,147 +963,6 @@
 })();
 
 /* ===================================================================
-   Nexora V650 — Invitation à installer l'application
-   Deux manques corrigés ici :
-   1. index.html ne déclare pas le manifeste, donc Chrome ne propose
-      jamais l'installation. On le déclare au chargement.
-   2. Aucune invitation visible. On affiche une barre discrète.
-   =================================================================== */
-(function () {
-  'use strict';
-
-  var CLE_REFUS = 'nexora.installation.refus.v650';
-  var invite = null;
-
-  function dejaInstalle() {
-    try {
-      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
-      if (window.navigator && window.navigator.standalone) return true;
-    } catch (_e) {}
-    return false;
-  }
-
-  function refuseRecemment() {
-    try {
-      var t = Number(localStorage.getItem(CLE_REFUS) || 0);
-      /* On ne represente pas la barre avant sept jours. */
-      return t && (Date.now() - t) < 7 * 24 * 3600 * 1000;
-    } catch (_e) { return false; }
-  }
-
-  function noterRefus() {
-    try { localStorage.setItem(CLE_REFUS, String(Date.now())); } catch (_e) {}
-  }
-
-  /* 1. Declarer le manifeste s'il manque. */
-  function poserManifeste() {
-    try {
-      if (document.querySelector('link[rel="manifest"]')) return;
-      var lien = document.createElement('link');
-      lien.rel = 'manifest';
-      lien.href = '/manifest.json';
-      (document.head || document.documentElement).appendChild(lien);
-    } catch (_e) {}
-  }
-
-  /* 2. Barre d'invitation. */
-  function styles() {
-    if (document.getElementById('nx-install-style')) return;
-    var s = document.createElement('style');
-    s.id = 'nx-install-style';
-    s.textContent =
-      '.nx-install{position:fixed;left:12px;right:12px;bottom:14px;z-index:99990;' +
-      'display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;' +
-      'background:#143B67;color:#fff;box-shadow:0 12px 30px rgba(10,30,60,.35);' +
-      'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
-      'transform:translateY(140%);transition:transform .35s ease}' +
-      '.nx-install.nx-visible{transform:translateY(0)}' +
-      '.nx-install img{width:44px;height:44px;border-radius:12px;flex:0 0 auto;background:#fff}' +
-      '.nx-install .nx-txt{flex:1;min-width:0}' +
-      '.nx-install .nx-txt b{display:block;font-size:15px;font-weight:800;line-height:1.2}' +
-      '.nx-install .nx-txt span{display:block;font-size:12.5px;opacity:.85;line-height:1.35;margin-top:2px}' +
-      '.nx-install button{border:0;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:800;cursor:pointer}' +
-      '.nx-install .nx-oui{background:#F2A93B;color:#22364a}' +
-      '.nx-install .nx-non{background:transparent;color:#cfe0f2;padding:10px 6px;font-weight:600}';
-    (document.head || document.documentElement).appendChild(s);
-  }
-
-  function fermer(barre, refus) {
-    if (!barre) return;
-    barre.classList.remove('nx-visible');
-    if (refus) noterRefus();
-    setTimeout(function () { if (barre.parentNode) barre.parentNode.removeChild(barre); }, 400);
-  }
-
-  function afficher(mode) {
-    if (document.querySelector('.nx-install')) return;
-    styles();
-    var barre = document.createElement('div');
-    barre.className = 'nx-install';
-    var texte = mode === 'ios'
-      ? '<b>Installer Nexora</b><span>Touche Partager en bas, puis « Sur l’écran d’accueil ».</span>'
-      : '<b>Installer Nexora</b><span>Accès direct depuis l’écran d’accueil, même hors connexion.</span>';
-    barre.innerHTML =
-      '<img src="/assets/icons/nexora-192.png" alt="">' +
-      '<div class="nx-txt">' + texte + '</div>' +
-      (mode === 'ios' ? '' : '<button type="button" class="nx-oui">Installer</button>') +
-      '<button type="button" class="nx-non">Plus tard</button>';
-    document.body.appendChild(barre);
-    setTimeout(function () { barre.classList.add('nx-visible'); }, 60);
-
-    var oui = barre.querySelector('.nx-oui');
-    if (oui) {
-      oui.addEventListener('click', function () {
-        if (!invite) { fermer(barre, false); return; }
-        invite.prompt();
-        invite.userChoice.then(function (choix) {
-          if (choix && choix.outcome !== 'accepted') noterRefus();
-          invite = null;
-          fermer(barre, false);
-        }).catch(function () { fermer(barre, false); });
-      });
-    }
-    barre.querySelector('.nx-non').addEventListener('click', function () { fermer(barre, true); });
-  }
-
-  function estIOS() {
-    try {
-      var ua = navigator.userAgent || '';
-      return /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    } catch (_e) { return false; }
-  }
-
-  function demarrer() {
-    poserManifeste();
-    if (dejaInstalle() || refuseRecemment()) return;
-
-    window.addEventListener('beforeinstallprompt', function (ev) {
-      ev.preventDefault();
-      invite = ev;
-      /* On laisse la personne arriver sur l'application avant d'inviter. */
-      setTimeout(function () { afficher('android'); }, 20000);
-    });
-
-    window.addEventListener('appinstalled', function () {
-      invite = null;
-      var b = document.querySelector('.nx-install');
-      if (b) fermer(b, false);
-    });
-
-    /* iOS ne declenche jamais beforeinstallprompt : on explique le geste. */
-    if (estIOS()) setTimeout(function () { if (!dejaInstalle()) afficher('ios'); }, 25000);
-  }
-
-  /* Le fichier peut etre injecte avant ou apres le chargement de la page.
-     On couvre les deux cas, et on garantit un seul demarrage. */
-  var lance = false;
-  function lancer() { if (lance) return; lance = true; demarrer(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lancer);
-  else lancer();
-  setTimeout(lancer, 1200);
-})();
-
-/* ===================================================================
    Nexora V651 — Ouverture par lien et activation d'une carte
    Le code QR d'une carte conduit vers :
      /?code=NXAAAABBBBCCCC&m=12
@@ -1239,6 +1141,13 @@
     window.nxActivateSubscriptionCode(carte.code, carte.mois || 0, 'all')
       .then(function () {
         oublier();
+        /* V660 : marque le passage par une carte. Tant que Nexora n'est
+           pas installee sur l'ecran d'accueil, l'invitation reviendra
+           a chaque ouverture au lieu de s'effacer sept jours apres un
+           « Plus tard ». C'est une demande explicite du fondateur : la
+           carte est l'entree la plus rentable, et une session installee
+           tient bien plus longtemps qu'un onglet de navigateur. */
+        try { localStorage.setItem('nexora.carte.installer.v660', '1'); } catch (_e) {}
         barre.querySelector('h4').textContent = 'Carte activée';
         barre.querySelector('p').textContent = 'Ton accès est ouvert. Bon travail.';
         var a = barre.querySelector('.nx-actions');
