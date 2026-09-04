@@ -1022,28 +1022,42 @@
     return false;
   }
 
-  /* ---- Barre d'activation ---- */
+  /* ---- Écran plein d'activation ----
+     V662 : remplace la petite barre en bas de l'écran, trop discrète
+     sur certains telephones ou certaines photos. Impossible a manquer
+     desormais : un ecran entier, un bouton enorme au centre. */
   function styles() {
     if (document.getElementById('nx-carte-style')) return;
     var s = document.createElement('style');
     s.id = 'nx-carte-style';
     s.textContent =
-      '.nx-carte{position:fixed;left:12px;right:12px;bottom:14px;z-index:99991;' +
-      'padding:14px 16px;border-radius:18px;background:#143B67;color:#fff;' +
-      'box-shadow:0 12px 30px rgba(10,30,60,.35);' +
+      '.nx-carte{position:fixed;inset:0;z-index:99991;display:flex;' +
+      'align-items:center;justify-content:center;padding:20px;' +
+      'background:rgba(10,25,45,.55);backdrop-filter:blur(2px);' +
       'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
-      'transform:translateY(150%);transition:transform .35s ease}' +
-      '.nx-carte.nx-vu{transform:translateY(0)}' +
-      '.nx-carte h4{margin:0 0 4px;font-size:15px;font-weight:800}' +
-      '.nx-carte p{margin:0;font-size:13px;line-height:1.45;opacity:.9}' +
-      '.nx-carte .nx-code{display:block;margin:9px 0 11px;padding:9px;border-radius:11px;' +
-      'background:rgba(255,255,255,.12);text-align:center;font-family:ui-monospace,Menlo,monospace;' +
-      'font-size:15px;font-weight:800;letter-spacing:2px}' +
-      '.nx-carte .nx-actions{display:flex;gap:9px}' +
-      '.nx-carte button{flex:1;border:0;border-radius:12px;padding:11px;font-size:14px;' +
-      'font-weight:800;cursor:pointer}' +
-      '.nx-carte .nx-go{background:#F2A93B;color:#22364a}' +
-      '.nx-carte .nx-plus{background:transparent;color:#cfe0f2;flex:0 0 auto;padding:11px 8px;font-weight:600}';
+      'opacity:0;transition:opacity .3s ease}' +
+      '.nx-carte.nx-vu{opacity:1}' +
+      '.nx-carte .nx-boite{width:100%;max-width:420px;padding:28px 24px 26px;' +
+      'border-radius:26px;background:#143B67;color:#fff;text-align:center;' +
+      'box-shadow:0 20px 60px rgba(0,0,0,.4);' +
+      'transform:scale(.92);transition:transform .3s ease}' +
+      '.nx-carte.nx-vu .nx-boite{transform:scale(1)}' +
+      '.nx-carte .nx-icone{width:64px;height:64px;margin:0 auto 14px;border-radius:18px;' +
+      'background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;' +
+      'font-size:32px}' +
+      '.nx-carte h4{margin:0 0 8px;font-size:21px;font-weight:900;line-height:1.25}' +
+      '.nx-carte p{margin:0 0 16px;font-size:15px;line-height:1.5;opacity:.9}' +
+      '.nx-carte .nx-code{display:block;margin:0 0 20px;padding:14px;border-radius:14px;' +
+      'background:rgba(255,255,255,.14);text-align:center;font-family:ui-monospace,Menlo,monospace;' +
+      'font-size:18px;font-weight:800;letter-spacing:2.5px}' +
+      '.nx-carte .nx-actions{display:flex;flex-direction:column;gap:12px}' +
+      '.nx-carte button{border:0;border-radius:16px;padding:18px;font-size:17px;' +
+      'font-weight:900;cursor:pointer;width:100%}' +
+      '.nx-carte .nx-go{background:#F2A93B;color:#22364a;' +
+      'box-shadow:0 8px 22px rgba(242,169,59,.4)}' +
+      '.nx-carte .nx-go:active{transform:scale(.98)}' +
+      '.nx-carte .nx-plus{background:transparent;color:#cfe0f2;font-weight:700;' +
+      'font-size:14px;padding:8px;text-decoration:underline}';
     (document.head || document.documentElement).appendChild(s);
   }
 
@@ -1067,17 +1081,23 @@
 
     if (etat === 'aConnecter') {
       barre.innerHTML =
-        '<h4>Carte Nexora reconnue</h4>' +
-        '<p>Crée ton compte ou connecte-toi. La carte sera activée juste après.</p>' +
-        '<span class="nx-code">' + joliCode(carte.code) + '</span>';
+        '<div class="nx-boite">' +
+          '<div class="nx-icone">💳</div>' +
+          '<h4>Carte Nexora reconnue</h4>' +
+          '<p>Crée ton compte ou connecte-toi. La carte sera activée juste après.</p>' +
+          '<span class="nx-code">' + joliCode(carte.code) + '</span>' +
+        '</div>';
     } else if (etat === 'aActiver') {
       barre.innerHTML =
-        '<h4>Activer ma carte</h4>' +
-        '<p>Ton compte est ouvert. Une touche suffit pour activer l’accès.</p>' +
-        '<span class="nx-code">' + joliCode(carte.code) + '</span>' +
-        '<div class="nx-actions">' +
-          '<button type="button" class="nx-go">Activer maintenant</button>' +
-          '<button type="button" class="nx-plus">Plus tard</button>' +
+        '<div class="nx-boite">' +
+          '<div class="nx-icone">✅</div>' +
+          '<h4>Activer ma carte</h4>' +
+          '<p>Ton compte est ouvert. Une touche suffit pour activer l’accès.</p>' +
+          '<span class="nx-code">' + joliCode(carte.code) + '</span>' +
+          '<div class="nx-actions">' +
+            '<button type="button" class="nx-go">Activer maintenant</button>' +
+            '<button type="button" class="nx-plus">Plus tard</button>' +
+          '</div>' +
         '</div>';
     }
 
