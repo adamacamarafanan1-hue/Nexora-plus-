@@ -1,5 +1,5 @@
 {
-  "version": "V659",
-  "message": "Nexora V659 : le bouton J ai une carte Nexora de l ecran d accueil declenche desormais le meme chargement que l activation. Il ne restait plus muet.",
-  "critical": true
+  "version": "V661",
+  "message": "Nexora V661 : nettoyage. Deux invitations a installer coexistaient sans se voir ; fusionnees en une seule, plus complete.",
+  "critical": false
 }
