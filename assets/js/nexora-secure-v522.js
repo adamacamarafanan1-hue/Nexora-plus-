@@ -1114,11 +1114,11 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
   }
 
   function physicalCardMarkup(){
-    return '<section class="nx-card-access-v465" aria-label="Activation carte Nexora 6 mois"><header><span aria-hidden="true">🎫</span><div><h4>Activer ma carte d’accès Nexora</h4><p>Votre carte physique donne 6 mois d’accès complet. Saisissez simplement le code imprimé pour prolonger ou activer votre accès.</p></div></header><div class="nx-card-price-v465"><b>180 000 GNF</b><span>Accès complet · 6 mois · une seule activation</span></div><div class="nx-card-code-row-v465"><input data-nx-access-code-v208 type="text" inputmode="text" autocomplete="one-time-code" maxlength="40" placeholder="NX-CARTE6-XXXXX-XXXXX" aria-label="Code de la carte Nexora"><button type="button" data-nx-activate-code-v208 data-nx-card-months="6">Activer la carte</button></div><div class="nx-card-feedback-v465" data-nx-code-feedback-v208 aria-live="polite"></div></section>';
+    return '<section class="nx-card-access-v465" aria-label="Activation carte Nexora"><header><span aria-hidden="true">🎫</span><div><h4>Activer ma carte d’accès Nexora</h4><p>Saisissez le code imprimé sur votre carte. La durée accordée est celle indiquée sur la carte elle-même.</p></div></header><div class="nx-card-price-v465"><b>Accès complet</b><span>Durée indiquée sur la carte · une seule activation</span></div><div class="nx-card-code-row-v465"><input data-nx-access-code-v208 type="text" inputmode="text" autocomplete="one-time-code" maxlength="40" placeholder="NX-XXXX-XXXX-XXXX" aria-label="Code de la carte Nexora"><button type="button" data-nx-activate-code-v208 data-nx-card-months="6">Activer la carte</button></div><div class="nx-card-feedback-v465" data-nx-code-feedback-v208 aria-live="polite"></div></section>';
   }
 
   function modalCardMarkup(){
-    return '<div class="nx-card-intro-v467"><b>Carte d’accès Nexora</b><span>Une carte physique, un code, 6 mois d’accès complet. Aucun abonnement mensuel n’est demandé ici.</span></div>'+physicalCardMarkup();
+    return '<div class="nx-card-intro-v467"><b>Carte d’accès Nexora</b><span>Une carte physique, un code, un accès complet à tout Nexora. Aucun abonnement mensuel n’est demandé ici.</span></div>'+physicalCardMarkup();
   }
 
   function modalPlansMarkup(){
