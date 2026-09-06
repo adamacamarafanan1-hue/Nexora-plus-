@@ -1,5 +1,5 @@
 {
-  "version": "V664",
-  "message": "Nexora V664 : securite. Le contenu des cours n est plus jamais conserve sur le telephone. Sans session valide, aucune lecon ne s ouvre.",
-  "critical": true
+  "version": "V666",
+  "message": "Nexora V666 : l ecran d activation d une carte n annonce plus 6 mois a 180 000 GNF. La duree affichee est celle de la carte.",
+  "critical": false
 }
