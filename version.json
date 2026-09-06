@@ -1,5 +1,5 @@
 {
-  "version": "V666",
-  "message": "Nexora V666 : l ecran d activation d une carte n annonce plus 6 mois a 180 000 GNF. La duree affichee est celle de la carte.",
-  "critical": false
+  "version": "V667",
+  "message": "Nexora V667 : securite. Un doublon oublie exposait la 3eme annee en clair, 87 lecons et 261 exercices lisibles sans compte. Fichier vide.",
+  "critical": true
 }
