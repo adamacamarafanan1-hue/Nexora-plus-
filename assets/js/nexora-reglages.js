@@ -1134,7 +1134,17 @@
       'box-shadow:0 8px 22px rgba(242,169,59,.4)}' +
       '.nx-carte .nx-go:active{transform:scale(.98)}' +
       '.nx-carte .nx-plus{background:transparent;color:#cfe0f2;font-weight:700;' +
-      'font-size:14px;padding:8px;text-decoration:underline}';
+      'font-size:14px;padding:8px;text-decoration:underline}' +
+      '.nx-carte .nx-marches{margin:4px 0 18px;text-align:left}' +
+      '.nx-carte .nx-marche{display:flex;align-items:center;gap:11px;padding:7px 0;' +
+      'font-size:14.5px;color:rgba(255,255,255,.55);transition:color .3s ease}' +
+      '.nx-carte .nx-marche .nx-num{flex:0 0 auto;width:26px;height:26px;border-radius:50%;' +
+      'display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;' +
+      'background:rgba(255,255,255,.12);color:rgba(255,255,255,.6)}' +
+      '.nx-carte .nx-marche.nx-encours{color:#fff;font-weight:800}' +
+      '.nx-carte .nx-marche.nx-encours .nx-num{background:#F2A93B;color:#22364a}' +
+      '.nx-carte .nx-marche.nx-faite{color:rgba(255,255,255,.8)}' +
+      '.nx-carte .nx-marche.nx-faite .nx-num{background:#3FA96B;color:#fff}';
     (document.head || document.documentElement).appendChild(s);
   }
 
@@ -1148,6 +1158,27 @@
     setTimeout(function () { if (barre.parentNode) barre.parentNode.removeChild(barre); }, 400);
   }
 
+  /* V669 — Parcours annonce en trois etapes, activation automatique.
+     Avant : un ecran surgissait sans prevenir, et il fallait toucher
+     « Activer maintenant » apres avoir cree son compte. Quelqu'un qui
+     venait de payer une carte pouvait croire qu'on lui redemandait de
+     l'argent, ou fermer l'ecran sans finir. Desormais le parcours est
+     annonce des le scan — trois etapes, moins d'une minute — et
+     l'activation se declenche seule des que le compte est ouvert :
+     l'intention a deja ete exprimee en scannant la carte. */
+
+  function marches(active) {
+    var etapes = ['Crée ton compte', 'Ton accès s’ouvre', 'Installe Nexora'];
+    var html = '<div class="nx-marches">';
+    for (var i = 0; i < etapes.length; i++) {
+      var etat = i < active ? ' nx-faite' : (i === active ? ' nx-encours' : '');
+      html += '<div class="nx-marche' + etat + '">' +
+        '<span class="nx-num">' + (i < active ? '✓' : (i + 1)) + '</span>' +
+        '<span class="nx-lib">' + etapes[i] + '</span></div>';
+    }
+    return html + '</div>';
+  }
+
   function afficherBarre(etat) {
     var ancienne = document.querySelector('.nx-carte');
     if (ancienne) ancienne.parentNode.removeChild(ancienne);
@@ -1157,24 +1188,35 @@
     barre.className = 'nx-carte';
 
     if (etat === 'aConnecter') {
+      /* Juste apres le scan : on annonce le chemin entier. */
       barre.innerHTML =
         '<div class="nx-boite">' +
           '<div class="nx-icone">💳</div>' +
-          '<h4>Carte Nexora reconnue</h4>' +
-          '<p>Crée ton compte ou connecte-toi. La carte sera activée juste après.</p>' +
+          '<h4>Ta carte est reconnue</h4>' +
+          '<p>Trois étapes, moins d’une minute.</p>' +
           '<span class="nx-code">' + joliCode(carte.code) + '</span>' +
+          marches(0) +
+          '<div class="nx-actions">' +
+            '<button type="button" class="nx-go">Commencer</button>' +
+          '</div>' +
         '</div>';
     } else if (etat === 'aActiver') {
+      /* Le compte vient d'etre cree : on active sans rien demander. */
+      barre.innerHTML =
+        '<div class="nx-boite">' +
+          '<div class="nx-icone">⏳</div>' +
+          '<h4>Ouverture de ton accès</h4>' +
+          '<p>Ta carte s’active, patiente un instant.</p>' +
+          '<span class="nx-code">' + joliCode(carte.code) + '</span>' +
+          marches(1) +
+        '</div>';
+    } else if (etat === 'reussi') {
       barre.innerHTML =
         '<div class="nx-boite">' +
           '<div class="nx-icone">✅</div>' +
-          '<h4>Activer ma carte</h4>' +
-          '<p>Ton compte est ouvert. Une touche suffit pour activer l’accès.</p>' +
-          '<span class="nx-code">' + joliCode(carte.code) + '</span>' +
-          '<div class="nx-actions">' +
-            '<button type="button" class="nx-go">Activer maintenant</button>' +
-            '<button type="button" class="nx-plus">Plus tard</button>' +
-          '</div>' +
+          '<h4>Ton accès est ouvert</h4>' +
+          '<p>' + (carte.mois ? carte.mois + ' mois d’accès à tout Nexora.' : 'Accès à tout Nexora.') + '</p>' +
+          marches(2) +
         '</div>';
     }
 
@@ -1183,14 +1225,8 @@
 
     var go = barre.querySelector('.nx-go');
     if (go) {
-      go.addEventListener('click', function () {
-        go.disabled = true;
-        go.textContent = 'Activation…';
-        activer(barre, go);
-      });
+      go.addEventListener('click', function () { fermerBarre(barre); });
     }
-    var plus = barre.querySelector('.nx-plus');
-    if (plus) plus.addEventListener('click', function () { fermerBarre(barre); });
     return barre;
   }
 
@@ -1218,45 +1254,54 @@
     });
   }
 
-  function activer(barre, bouton) {
+  function echec(barre, message) {
+    if (!barre) return;
+    var t = barre.querySelector('h4');
+    var p = barre.querySelector('p');
+    var ic = barre.querySelector('.nx-icone');
+    if (ic) ic.textContent = '⚠️';
+    if (t) t.textContent = 'Activation à reprendre';
+    if (p) p.textContent = message;
+    if (!barre.querySelector('.nx-actions')) {
+      var d = document.createElement('div');
+      d.className = 'nx-actions';
+      d.innerHTML = '<button type="button" class="nx-go">Réessayer</button>';
+      barre.querySelector('.nx-boite').appendChild(d);
+      d.querySelector('.nx-go').addEventListener('click', function () {
+        afficherBarre('aActiver');
+        activer(document.querySelector('.nx-carte'));
+      });
+    }
+  }
+
+  /* L'activation part seule : plus aucun bouton a toucher. */
+  function activer(barre) {
     assurerScriptSecurise()
       .catch(function () {})
       .then(function () { return attendreActivation(10); })
       .then(function (prete) {
         if (!prete) {
-          bouton.disabled = false;
-          bouton.textContent = 'Réessayer';
-          barre.querySelector('p').textContent =
-            'L’activation met du temps à démarrer. Touche encore une fois.';
+          echec(barre, 'L’activation met du temps à démarrer. Touche pour reprendre.');
           return;
         }
-        lancerActivation(barre, bouton);
+        lancerActivation(barre);
       });
   }
 
-  function lancerActivation(barre, bouton) {
+  function lancerActivation(barre) {
     window.nxActivateSubscriptionCode(carte.code, carte.mois || 0, 'all')
       .then(function () {
         oublier();
-        /* V660 : marque le passage par une carte. Tant que Nexora n'est
-           pas installee sur l'ecran d'accueil, l'invitation reviendra
-           a chaque ouverture au lieu de s'effacer sept jours apres un
-           « Plus tard ». C'est une demande explicite du fondateur : la
-           carte est l'entree la plus rentable, et une session installee
-           tient bien plus longtemps qu'un onglet de navigateur. */
+        /* V660 : marque le passage par une carte, pour que l'invitation
+           a installer revienne jusqu'a l'installation reelle. */
         try { localStorage.setItem('nexora.carte.installer.v660', '1'); } catch (_e) {}
-        barre.querySelector('h4').textContent = 'Carte activée';
-        barre.querySelector('p').textContent = 'Ton accès est ouvert. Bon travail.';
-        var a = barre.querySelector('.nx-actions');
-        if (a) a.parentNode.removeChild(a);
-        setTimeout(function () { fermerBarre(barre); }, 4000);
-        setTimeout(function () { window.location.reload(); }, 1200);
+        afficherBarre('reussi');
+        /* On laisse voir la reussite avant de recharger : c'est le
+           moment ou l'installation sera proposee, etape 3 annoncee. */
+        setTimeout(function () { window.location.reload(); }, 2600);
       })
       .catch(function (err) {
-        bouton.disabled = false;
-        bouton.textContent = 'Réessayer';
-        barre.querySelector('p').textContent =
-          (err && err.message) ? String(err.message) : 'Activation impossible pour le moment.';
+        echec(barre, (err && err.message) ? String(err.message) : 'Activation impossible pour le moment.');
       });
   }
 
@@ -1282,7 +1327,8 @@
       sessionOuverte().then(function (ouverte) {
         if (!ouverte) return;
         clearInterval(minuteur);
-        afficherBarre('aActiver');
+        var b = afficherBarre('aActiver');
+        activer(b);
       });
     }, 1500);
   }
@@ -1304,8 +1350,13 @@
     assurerScriptSecurise().catch(function () {});
 
     sessionOuverte().then(function (ouverte) {
-      if (ouverte) { setTimeout(function () { afficherBarre('aActiver'); }, 1200); }
-      else { setTimeout(function () { afficherBarre('aConnecter'); }, 1200); surveiller(); }
+      if (ouverte) {
+        /* Compte deja ouvert : rien a demander, on active. */
+        setTimeout(function () { activer(afficherBarre('aActiver')); }, 1200);
+      } else {
+        setTimeout(function () { afficherBarre('aConnecter'); }, 1200);
+        surveiller();
+      }
     });
   }
 
