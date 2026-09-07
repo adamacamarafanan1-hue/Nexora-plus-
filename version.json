@@ -1,5 +1,5 @@
 {
-  "version": "V668",
-  "message": "Nexora V668 : securite. Les 121 series de 1ere annee ne sont plus en clair dans un fichier public. Elles passent par la route protegee.",
-  "critical": true
+  "version": "V669",
+  "message": "Nexora V669 : le parcours d une carte scannee est annonce en trois etapes et l activation se fait seule.",
+  "critical": false
 }
