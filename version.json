@@ -1,5 +1,5 @@
 {
-  "version": "V667",
-  "message": "Nexora V667 : securite. Un doublon oublie exposait la 3eme annee en clair, 87 lecons et 261 exercices lisibles sans compte. Fichier vide.",
+  "version": "V668",
+  "message": "Nexora V668 : securite. Les 121 series de 1ere annee ne sont plus en clair dans un fichier public. Elles passent par la route protegee.",
   "critical": true
 }
