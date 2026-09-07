@@ -448,7 +448,57 @@
   if (window.__nxExosV554) return;
   window.__nxExosV554 = true;
 
-  var SERIES = {"entretien": [{"t": "choix", "c": "En entrant en classe, je dis :", "p": ["Bonjour maître", "Rien"], "r": "Bonjour maître", "l": 1, "v": ""}, {"t": "choix", "c": "Quand on appelle ton nom, tu réponds :", "p": ["Présent", "Absent"], "r": "Présent", "l": 1, "v": ""}, {"t": "choix", "c": "Aujourd’hui il pleut. Le temps est :", "p": ["☔ pluvieux", "☀️ ensoleillé"], "r": "☔ pluvieux", "l": 2, "v": ""}, {"t": "choix", "c": "Le soleil brille. Le temps est :", "p": ["☀️ ensoleillé", "☔ pluvieux"], "r": "☀️ ensoleillé", "l": 2, "v": ""}, {"t": "choix", "c": "Après lundi vient :", "p": ["mardi", "dimanche"], "r": "mardi", "l": 2, "v": ""}, {"t": "choix", "c": "Tu as très soif. Tu dis :", "p": ["J’ai soif, puis-je boire ?", "Rien"], "r": "J’ai soif, puis-je boire ?", "l": 3, "v": ""}, {"t": "choix", "c": "Tu ne te sens pas bien. Tu dois :", "p": ["le dire au maître", "le cacher"], "r": "le dire au maître", "l": 3, "v": ""}, {"t": "choix", "c": "Avant le cours, je prépare :", "p": ["✏️ mon crayon et mon cahier", "🍽️ mon assiette"], "r": "✏️ mon crayon et mon cahier", "l": 4, "v": ""}, {"t": "choix", "c": "Mon cahier est en désordre. Je :", "p": ["le range", "le laisse"], "r": "le range", "l": 4, "v": ""}], "francais": [{"t": "choix", "c": "Le matin, en arrivant, on dit :", "p": ["Bonjour", "Au revoir"], "r": "Bonjour", "l": 1, "v": ""}, {"t": "choix", "c": "Le soir, en partant, on dit :", "p": ["Bonjour", "Au revoir"], "r": "Au revoir", "l": 1, "v": ""}, {"t": "choix", "c": "On te demande ton nom. Tu réponds :", "p": ["Je m’appelle Awa", "J’ai faim"], "r": "Je m’appelle Awa", "l": 2, "v": ""}, {"t": "choix", "c": "Pour demander le nom de quelqu’un, tu dis :", "p": ["Comment tu t’appelles ?", "Où est le livre ?"], "r": "Comment tu t’appelles ?", "l": 2, "v": ""}, {"t": "choix", "c": "Avec quoi écris-tu ?", "p": ["✏️ le crayon", "🍽️ l’assiette"], "r": "✏️ le crayon", "l": 3, "v": ""}, {"t": "choix", "c": "Où ranges-tu tes livres ?", "p": ["🎒 le cartable", "🚗 la voiture"], "r": "🎒 le cartable", "l": 3, "v": ""}, {"t": "choix", "c": "Le maître dit : « Levez-vous. » Que fais-tu ?", "p": ["Je me lève", "Je m’assieds"], "r": "Je me lève", "l": 4, "v": ""}, {"t": "choix", "c": "Le maître dit : « Écoutez. » Que fais-tu ?", "p": ["Je me tais et j’écoute", "Je parle fort"], "r": "Je me tais et j’écoute", "l": 4, "v": ""}, {"t": "choix", "c": "Quelle forme est différente ?", "p": ["🔺", "🔺", "🟦"], "r": "🟦", "l": 5, "v": ""}, {"t": "choix", "c": "Quelle lettre est différente ?", "p": ["a", "a", "i"], "r": "i", "l": 5, "v": ""}, {"t": "choix", "c": "Dans quel mot entends-tu le son [a] ?", "p": ["papa", "lit"], "r": "papa", "l": 6, "v": ""}, {"t": "choix", "c": "Touche la lettre a.", "p": ["a", "i", "m"], "r": "a", "l": 6, "v": ""}, {"t": "choix", "c": "Dans quel mot entends-tu le son [i] ?", "p": ["riz", "mangue"], "r": "riz", "l": 7, "v": ""}, {"t": "choix", "c": "Touche la lettre i.", "p": ["i", "l", "a"], "r": "i", "l": 7, "v": ""}, {"t": "choix", "c": "Dans quel mot entends-tu le son [m] ?", "p": ["maman", "riz"], "r": "maman", "l": 8, "v": ""}, {"t": "choix", "c": "Touche la lettre m.", "p": ["m", "a", "i"], "r": "m", "l": 8, "v": ""}, {"t": "choix", "c": "Dans quel mot entends-tu le son [l] ?", "p": ["lune", "papa"], "r": "lune", "l": 9, "v": ""}, {"t": "choix", "c": "Touche la lettre l.", "p": ["l", "m", "i"], "r": "l", "l": 9, "v": ""}, {"t": "choix", "c": "m + a se lit :", "p": ["ma", "am"], "r": "ma", "l": 10, "v": ""}, {"t": "choix", "c": "l + i se lit :", "p": ["li", "il"], "r": "li", "l": 10, "v": ""}, {"t": "choix", "c": "m + i se lit :", "p": ["mi", "im"], "r": "mi", "l": 10, "v": ""}, {"t": "choix", "c": "Lis : ma-ma. C’est le mot :", "p": ["mama", "lila"], "r": "mama", "l": 11, "v": ""}, {"t": "choix", "c": "Lis : li-li. C’est le mot :", "p": ["lili", "mimi"], "r": "lili", "l": 11, "v": ""}, {"t": "choix", "c": "Pour tracer un rond, ma main fait :", "p": ["un tour", "un trait droit"], "r": "un tour", "l": 12, "v": ""}, {"t": "choix", "c": "Quel trait est droit ?", "p": ["|", "~"], "r": "|", "l": 12, "v": ""}, {"t": "choix", "c": "Quelle lettre commence par un rond ?", "p": ["a", "i"], "r": "a", "l": 13, "v": ""}, {"t": "choix", "c": "Quelle lettre a un point au-dessus ?", "p": ["i", "m"], "r": "i", "l": 13, "v": ""}], "calcul": [{"t": "choix", "c": "Où y a-t-il BEAUCOUP de mangues ?", "p": ["🥭🥭🥭🥭🥭🥭", "🥭🥭", "(rien)"], "r": "🥭🥭🥭🥭🥭🥭", "l": 1, "v": ""}, {"t": "choix", "c": "Où n’y a-t-il RIEN ?", "p": ["🐟🐟", "(rien)", "🐟"], "r": "(rien)", "l": 1, "v": ""}, {"t": "choix", "c": "Qui a le PLUS de billes ?", "p": ["Awa 🔵🔵🔵🔵", "Sory 🔵🔵"], "r": "Awa 🔵🔵🔵🔵", "l": 2, "v": ""}, {"t": "choix", "c": "Qui a le MOINS de bananes ?", "p": ["Fatou 🍌🍌🍌", "Moussa 🍌"], "r": "Moussa 🍌", "l": 2, "v": ""}, {"t": "choix", "c": "Y a-t-il AUTANT de ronds que de carrés ?", "p": ["🔴🔴🔴 et 🟦🟦🟦 → oui", "🔴🔴🔴 et 🟦 → non"], "r": "🔴🔴🔴 et 🟦🟦🟦 → oui", "l": 2, "v": ""}, {"t": "choix", "c": "Touche la forme qui n’a pas la même COULEUR.", "p": ["🔴", "🔴", "🔵"], "r": "🔵", "l": 3, "v": ""}, {"t": "choix", "c": "Touche l’objet qui n’a pas la même FORME.", "p": ["🟦", "🟦", "🔺"], "r": "🔺", "l": 3, "v": ""}, {"t": "choix", "c": "L’oiseau est SUR l’arbre ou SOUS l’arbre ? 🌳🐦 (l’oiseau est en haut)", "p": ["sur", "sous"], "r": "sur", "l": 4, "v": ""}, {"t": "choix", "c": "Le chat est DEVANT ou DERRIÈRE la maison ? 🏠 … 🐈 (le chat est caché)", "p": ["devant", "derrière"], "r": "derrière", "l": 4, "v": ""}, {"t": "compter", "c": "Combien vois-tu de poissons ?", "o": "🐟", "r": "1", "l": 5}, {"t": "compter", "c": "Combien vois-tu de mangues ?", "o": "🥭", "r": "2", "l": 6}, {"t": "compter", "c": "Combien vois-tu de fleurs ?", "o": "🌼", "r": "3", "l": 7}, {"t": "compter", "c": "Combien vois-tu de ballons ?", "o": "⚽", "r": "4", "l": 8}, {"t": "compter", "c": "Combien vois-tu d’étoiles ?", "o": "⭐", "r": "5", "l": 9}, {"t": "compter", "c": "Combien vois-tu de bananes ?", "o": "🍌", "r": "3", "l": 7}, {"t": "compter", "c": "Combien vois-tu de tortues ?", "o": "🐢", "r": "4", "l": 8}, {"t": "compter", "c": "Le panier est vide. Combien vois-tu de poissons ?", "o": "", "r": "0", "l": 10}, {"t": "choix", "c": "Il n’y a rien dans le panier. On écrit :", "p": ["0", "1"], "r": "0", "l": 10, "v": ""}, {"t": "clavier", "c": "2 + 1 = ?", "r": "3", "l": 11, "v": "🥭🥭 + 🥭"}, {"t": "clavier", "c": "1 + 1 = ?", "r": "2", "l": 11, "v": "🐟 + 🐟"}, {"t": "clavier", "c": "3 + 2 = ?", "r": "5", "l": 11, "v": "⭐⭐⭐ + ⭐⭐"}, {"t": "clavier", "c": "2 + 2 = ?", "r": "4", "l": 11, "v": "🌼🌼 + 🌼🌼"}, {"t": "clavier", "c": "4 + 1 = ?", "r": "5", "l": 11, "v": "⚽⚽⚽⚽ + ⚽"}, {"t": "clavier", "c": "0 + 3 = ?", "r": "3", "l": 11, "v": ""}, {"t": "clavier", "c": "3 − 1 = ?", "r": "2", "l": 12, "v": "🍌🍌🍌 − 🍌"}, {"t": "clavier", "c": "5 − 2 = ?", "r": "3", "l": 12, "v": "⭐⭐⭐⭐⭐ − ⭐⭐"}, {"t": "clavier", "c": "4 − 4 = ?", "r": "0", "l": 12, "v": ""}, {"t": "clavier", "c": "2 − 1 = ?", "r": "1", "l": 12, "v": "🐢🐢 − 🐢"}, {"t": "clavier", "c": "5 − 1 = ?", "r": "4", "l": 12, "v": ""}, {"t": "choix", "c": "Quel trait est le plus LONG ?", "p": ["▬▬▬▬▬▬", "▬▬"], "r": "▬▬▬▬▬▬", "l": 13, "v": ""}, {"t": "choix", "c": "Quel serpent est le plus COURT ?", "p": ["🐍🐍🐍", "🐍"], "r": "🐍", "l": 13, "v": ""}, {"t": "choix", "c": "Touche le CARRÉ.", "p": ["🟦", "▬▬▬"], "r": "🟦", "l": 14, "v": ""}, {"t": "choix", "c": "Un carré a combien de côtés ?", "p": ["4", "3"], "r": "4", "l": 14, "v": ""}], "sciences": [{"t": "choix", "c": "Lequel est un animal ?", "p": ["🐐 la chèvre", "🪨 la pierre"], "r": "🐐 la chèvre", "l": 1, "v": ""}, {"t": "choix", "c": "Lequel est une plante ?", "p": ["🌴 le palmier", "🚗 la voiture"], "r": "🌴 le palmier", "l": 1, "v": ""}, {"t": "choix", "c": "Lequel est VIVANT ?", "p": ["🐟 le poisson", "🥄 la cuillère"], "r": "🐟 le poisson", "l": 2, "v": ""}, {"t": "choix", "c": "Lequel n’est PAS vivant ?", "p": ["🪨 la pierre", "🌱 la plante"], "r": "🪨 la pierre", "l": 2, "v": ""}, {"t": "choix", "c": "Un être vivant grandit et mange. Le caillou :", "p": ["ne grandit pas", "grandit"], "r": "ne grandit pas", "l": 2, "v": ""}, {"t": "choix", "c": "Avec quoi marches-tu ?", "p": ["🦶 les pieds", "👂 les oreilles"], "r": "🦶 les pieds", "l": 3, "v": ""}, {"t": "choix", "c": "Avec quoi attrapes-tu un objet ?", "p": ["✋ la main", "👃 le nez"], "r": "✋ la main", "l": 3, "v": ""}, {"t": "compter", "c": "Combien as-tu de mains ?", "o": "✋", "r": "2", "l": 3}, {"t": "choix", "c": "Avec quoi sens-tu l’odeur du pain ?", "p": ["👃 le nez", "👀 les yeux"], "r": "👃 le nez", "l": 4, "v": ""}, {"t": "choix", "c": "Avec quoi goûtes-tu le sucre ?", "p": ["👅 la langue", "👂 l’oreille"], "r": "👅 la langue", "l": 4, "v": ""}, {"t": "choix", "c": "Avec quoi entends-tu le tam-tam ?", "p": ["👂 les oreilles", "🦶 les pieds"], "r": "👂 les oreilles", "l": 5, "v": ""}, {"t": "choix", "c": "Quand faut-il se laver les mains ?", "p": ["Avant de manger", "Jamais"], "r": "Avant de manger", "l": 6, "v": ""}, {"t": "choix", "c": "Avec quoi te laves-tu les dents ?", "p": ["🪥 la brosse", "🥄 la cuillère"], "r": "🪥 la brosse", "l": 6, "v": ""}, {"t": "choix", "c": "D’où vient le lait ?", "p": ["🐄 la vache", "🪨 la pierre"], "r": "🐄 la vache", "l": 7, "v": ""}, {"t": "choix", "c": "D’où vient la mangue ?", "p": ["🌳 l’arbre", "🐟 le poisson"], "r": "🌳 l’arbre", "l": 7, "v": ""}, {"t": "choix", "c": "Que fais-tu avant de manger un fruit ?", "p": ["Je le lave", "Je le jette"], "r": "Je le lave", "l": 8, "v": ""}, {"t": "choix", "c": "Peut-on boire de l’eau sale ?", "p": ["Non", "Oui"], "r": "Non", "l": 8, "v": ""}, {"t": "choix", "c": "Lequel est fabriqué par l’homme ?", "p": ["🪑 la chaise", "🌳 l’arbre"], "r": "🪑 la chaise", "l": 9, "v": ""}, {"t": "choix", "c": "Lequel vient de la nature ?", "p": ["🪨 la pierre", "✏️ le crayon"], "r": "🪨 la pierre", "l": 9, "v": ""}, {"t": "choix", "c": "À quoi sert un balai ?", "p": ["À balayer", "À manger"], "r": "À balayer", "l": 10, "v": ""}, {"t": "choix", "c": "À quoi sert une cuillère ?", "p": ["À manger", "À écrire"], "r": "À manger", "l": 10, "v": ""}], "ecm": [{"t": "choix", "c": "En classe, pour parler, je :", "p": ["lève le doigt", "crie"], "r": "lève le doigt", "l": 1, "v": ""}, {"t": "choix", "c": "Pendant que le maître parle, je :", "p": ["écoute", "joue"], "r": "écoute", "l": 1, "v": ""}, {"t": "choix", "c": "On te donne quelque chose. Tu dis :", "p": ["Merci", "Rien"], "r": "Merci", "l": 2, "v": ""}, {"t": "choix", "c": "Tu bouscules quelqu’un. Tu dis :", "p": ["Pardon", "Tant pis"], "r": "Pardon", "l": 2, "v": ""}, {"t": "choix", "c": "Tu arrives en classe. Tu dis :", "p": ["Bonjour", "Au revoir"], "r": "Bonjour", "l": 2, "v": ""}, {"t": "choix", "c": "Ton ami n’a pas de crayon. Tu :", "p": ["partages le tien", "refuses"], "r": "partages le tien", "l": 3, "v": ""}, {"t": "choix", "c": "Plusieurs enfants attendent. Tu :", "p": ["attends ton tour", "passes devant"], "r": "attends ton tour", "l": 3, "v": ""}, {"t": "choix", "c": "Tu prends un livre de la classe. Tu :", "p": ["en prends soin", "le déchires"], "r": "en prends soin", "l": 4, "v": ""}, {"t": "choix", "c": "Après avoir lu, tu :", "p": ["ranges le livre", "le laisses par terre"], "r": "ranges le livre", "l": 4, "v": ""}, {"t": "choix", "c": "Un papier traîne par terre. Tu :", "p": ["le mets à la poubelle", "le laisses"], "r": "le mets à la poubelle", "l": 5, "v": ""}, {"t": "choix", "c": "Où jette-t-on les ordures ?", "p": ["🗑️ dans la poubelle", "dans la cour"], "r": "🗑️ dans la poubelle", "l": 5, "v": ""}, {"t": "choix", "c": "Avant de traverser la route, je :", "p": ["regarde à gauche et à droite", "cours vite"], "r": "regarde à gauche et à droite", "l": 6, "v": ""}, {"t": "choix", "c": "Où traverse-t-on la route ?", "p": ["Sur le passage piéton", "N’importe où"], "r": "Sur le passage piéton", "l": 6, "v": ""}], "arts": [{"t": "choix", "c": "Le tam-tam fait : ta — ta — ta. Ensuite vient :", "p": ["ta", "silence"], "r": "ta", "l": 1, "v": ""}, {"t": "choix", "c": "Quel rythme est plus rapide ?", "p": ["ta-ta-ta-ta", "ta … ta"], "r": "ta-ta-ta-ta", "l": 1, "v": ""}, {"t": "choix", "c": "Pour bien réciter, il faut :", "p": ["parler clairement", "murmurer"], "r": "parler clairement", "l": 2, "v": ""}, {"t": "choix", "c": "Touche la couleur ROUGE.", "p": ["🔴", "🔵", "🟡"], "r": "🔴", "l": 3, "v": ""}, {"t": "choix", "c": "Touche la couleur BLEUE.", "p": ["🔵", "🟢", "🔴"], "r": "🔵", "l": 3, "v": ""}, {"t": "choix", "c": "Touche la couleur JAUNE.", "p": ["🟡", "🟢", "🔵"], "r": "🟡", "l": 3, "v": ""}, {"t": "choix", "c": "Touche la couleur VERTE.", "p": ["🟢", "🔴", "🟡"], "r": "🟢", "l": 3, "v": ""}, {"t": "choix", "c": "Pour dessiner un objet, je dois d’abord :", "p": ["bien le regarder", "fermer les yeux"], "r": "bien le regarder", "l": 4, "v": ""}, {"t": "choix", "c": "Avec quoi peut-on modeler ?", "p": ["l’argile", "le verre"], "r": "l’argile", "l": 5, "v": ""}, {"t": "choix", "c": "Une étiquette-mot sert à :", "p": ["nommer un objet", "manger"], "r": "nommer un objet", "l": 6, "v": ""}], "eps": [{"t": "choix", "c": "Au signal « stop », je :", "p": ["m’arrête", "continue"], "r": "m’arrête", "l": 1, "v": ""}, {"t": "choix", "c": "Marcher, c’est :", "p": ["poser un pied puis l’autre", "sauter"], "r": "poser un pied puis l’autre", "l": 1, "v": ""}, {"t": "choix", "c": "Pour courir vite, je regarde :", "p": ["devant moi", "mes pieds"], "r": "devant moi", "l": 2, "v": ""}, {"t": "choix", "c": "Sauter à pieds joints, c’est sauter avec :", "p": ["les deux pieds ensemble", "un seul pied"], "r": "les deux pieds ensemble", "l": 3, "v": ""}, {"t": "choix", "c": "Pour lancer loin, je lance avec :", "p": ["le bras", "la tête"], "r": "le bras", "l": 4, "v": ""}, {"t": "choix", "c": "Pour garder l’équilibre, j’écarte :", "p": ["les bras", "les oreilles"], "r": "les bras", "l": 5, "v": ""}, {"t": "choix", "c": "Dans un jeu, la règle sert à :", "p": ["jouer ensemble sans se disputer", "gagner en trichant"], "r": "jouer ensemble sans se disputer", "l": 6, "v": ""}, {"t": "choix", "c": "Ton camarade tombe. Tu :", "p": ["l’aides à se relever", "ris de lui"], "r": "l’aides à se relever", "l": 6, "v": ""}]};
+  /* V668 — Le contenu ne voyage plus dans ce fichier public.
+     Avant cette version, les 121 séries d'exercices de 1ère année
+     étaient écrites en clair ici : n'importe qui pouvait ouvrir
+     l'adresse de ce fichier et tout lire, sans compte ni abonnement.
+     Le contrôle d'abonnement qui existait ne protégeait que
+     l'affichage, jamais le fichier lui-même.
+     Elles sont désormais servies par /api/cours-primaire?classe=1,
+     qui exige une session Supabase valide et un abonnement actif,
+     exactement comme les classes 2 à 6. Rien n'est conservé sur
+     l'appareil : le contenu ne vit que le temps de l'onglet ouvert. */
+  var SERIES = null;
+  var CHARGEMENT = null;
+
+  function jetonSupabase() {
+    var api = window.NexoraApp;
+    if (!api || typeof api.ensureSupabaseClientReady !== 'function') return Promise.resolve('');
+    return api.ensureSupabaseClientReady().then(function (c) {
+      if (!c || !c.auth || typeof c.auth.getSession !== 'function') return '';
+      return c.auth.getSession().then(function (r) {
+        var sess = r && r.data && r.data.session;
+        return (sess && sess.access_token) ? sess.access_token : '';
+      });
+    }).catch(function () { return ''; });
+  }
+
+  function chargerSeries() {
+    if (SERIES) return Promise.resolve(true);
+    if (CHARGEMENT) return CHARGEMENT;
+    CHARGEMENT = jetonSupabase().then(function (jeton) {
+      if (!jeton) throw new Error('SANS_SESSION');
+      return fetch('/api/cours-primaire?classe=1', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer ' + jeton },
+        cache: 'no-store'
+      });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP_' + r.status);
+      return r.json();
+    }).then(function (data) {
+      if (!data || data.success !== true || !data.contenu || !data.contenu.series) {
+        throw new Error('REPONSE_INVALIDE');
+      }
+      SERIES = data.contenu.series;
+      return true;
+    }).catch(function () {
+      CHARGEMENT = null;
+      return false;
+    });
+    return CHARGEMENT;
+  }
+
 
   var NOMS = {
     entretien: 'Entretien du matin', francais: 'Français',
@@ -532,6 +582,33 @@
   function fermer() { if (panneau && panneau.parentNode) panneau.parentNode.removeChild(panneau); panneau = null; }
 
   function ouvrirMenu() {
+    /* V668 : le contenu vient desormais du serveur. On l'attend avant
+       d'afficher quoi que ce soit, et on explique clairement si la
+       session ou l'abonnement manque, plutot que d'ouvrir un menu vide. */
+    if (!SERIES) {
+      styles(); fermer();
+      panneau = document.createElement('div');
+      panneau.className = 'nx-ex-v554';
+      panneau.innerHTML =
+        '<div class="nx-ex-tete-v554"><b>Exercices — 1ère année</b>' +
+        '<button type="button" class="nx-ex-x-v554">Fermer</button></div>' +
+        '<p style="margin:0;opacity:.75;font-size:15px">Chargement…</p>';
+      document.body.appendChild(panneau);
+      panneau.querySelector('.nx-ex-x-v554').addEventListener('click', fermer);
+      chargerSeries().then(function (ok) {
+        if (!ok) {
+          if (panneau) {
+            panneau.querySelector('p').textContent =
+              'Un abonnement Nexora actif est nécessaire pour ces exercices. ' +
+              'Connecte-toi, puis réessaie.';
+          }
+          return;
+        }
+        fermer();
+        ouvrirMenu();
+      });
+      return;
+    }
     styles(); fermer();
     panneau = document.createElement('div');
     panneau.className = 'nx-ex-v554';
