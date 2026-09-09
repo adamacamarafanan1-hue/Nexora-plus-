@@ -1374,12 +1374,42 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!p
 'use strict';
 var DATA={};
 /* V410 : les leçons vivent dans un fichier, téléchargé à la première ouverture. */
-var NX_URL="modules/classes/12eme.json", NX_READY=false, NX_PENDING=null;
+var NX_READY=false, NX_PENDING=null;
 function NX_APPLY(payload){var src=payload||{};Object.keys(src).forEach(function(k){DATA[k]=src[k]});}
+/* V670 : le contenu de la 12eme ne passe plus par le systeme de
+   fichiers chiffres, qui exige une cle maitresse que je n'ai jamais
+   eue. Il passe desormais par une route protegee, /api/cours-lycee,
+   qui exige une session Supabase valide et un abonnement "eleves"
+   actif a chaque demande — exactement le meme principe que la route
+   du primaire, deja verifiee a plusieurs reprises. */
+function NX_JETON(){
+  var api = window.NexoraApp;
+  if (!api || typeof api.ensureSupabaseClientReady !== 'function') return Promise.resolve('');
+  return api.ensureSupabaseClientReady().then(function (c) {
+    if (!c || !c.auth || typeof c.auth.getSession !== 'function') return '';
+    return c.auth.getSession().then(function (r) {
+      var sess = r && r.data && r.data.session;
+      return (sess && sess.access_token) ? sess.access_token : '';
+    });
+  }).catch(function () { return ''; });
+}
 function NX_LOAD(){
   if(NX_READY) return Promise.resolve();
   if(!NX_PENDING){
-    NX_PENDING=(window.NexoraSecureContent&&typeof window.NexoraSecureContent.json==='function'?window.NexoraSecureContent.json(NX_URL):Promise.reject(new Error('Accès sécurisé aux cours indisponible.'))).then(function(payload){ NX_APPLY(payload); NX_READY=true; }).catch(function(error){
+    NX_PENDING = NX_JETON().then(function (jeton) {
+      if (!jeton) throw new Error('SANS_SESSION');
+      return fetch('/api/cours-lycee?classe=12', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer ' + jeton },
+        cache: 'no-store'
+      });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP_' + r.status);
+      return r.json();
+    }).then(function (data) {
+      if (!data || data.success !== true || !data.contenu) throw new Error('REPONSE_INVALIDE');
+      NX_APPLY(data.contenu); NX_READY=true;
+    }).catch(function(error){
       NX_PENDING=null; throw error;
     });
   }
@@ -1926,7 +1956,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!p
 
 var CHEMINS={
   '[data-nx-open-eleventh-v368]':'modules/classes/11eme.json',
-  '[data-nx-open-twelfth-v369]':'modules/classes/12eme.json',
+  /* V670 : la 12eme ne lit plus le fichier chiffre — precharger cette
+     entree serait desormais du transfert perdu pour rien. */
   '[data-nx-open-terminal-v475]':'modules/classes/terminale.json'
 };
 var PAR_ACTION={
