@@ -1,5 +1,6 @@
+
 {
-  "version": "V669",
-  "message": "Nexora V669 : le parcours d une carte scannee est annonce en trois etapes et l activation se fait seule.",
+  "version": "V670",
+  "message": "Nexora V670 : la 12eme est disponible. Elle passe par une route protegee dediee, sans dependre du systeme de fichiers chiffres.",
   "critical": false
 }
