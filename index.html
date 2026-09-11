@@ -23855,9 +23855,23 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   }
 
   async function extraireTerminale(zoneAvis, boutonRefaire){
-    zoneAvis.textContent = 'Téléchargement en cours…';
+    zoneAvis.textContent = "Activation de l'accès puis téléchargement…";
     boutonRefaire.hidden = true;
     try{
+      /* V679 : window.NexoraSecureContent.text() seul ne suffit pas — sans
+         etre passe par nxRequireSubscriptionAccess au prealable, la seule
+         voie de secours interne (entitlement -> activate({})) envoie un
+         produit vide au serveur, qui la refuse ("Demande de contenu
+         invalide"). L'application reelle active toujours un vrai statut
+         avant de lire quoi que ce soit ; on fait exactement pareil ici. */
+      if (typeof window.nxRequireSubscriptionAccess !== 'function'){
+        throw new Error('nxRequireSubscriptionAccess introuvable.');
+      }
+      await new Promise(function(resolve, reject){
+        window.nxRequireSubscriptionAccess('academy', function(){ resolve(); });
+        setTimeout(function(){ reject(new Error('Accès non accordé après 8 secondes (abonnement élèves manquant ou expiré ?).')); }, 8000);
+      });
+
       var texte = await window.NexoraSecureContent.text('modules/classes/terminale.json');
       var contenu = JSON.parse(texte);
       var matieres = Object.keys(contenu).length;
@@ -23933,7 +23947,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
           tentative++;
           if (window.NexoraSecureContent && typeof window.NexoraSecureContent.text === 'function'){
             clearInterval(intervalle);
-            etat.textContent = 'Compte reconnu. Prêt. (V678)';
+            etat.textContent = 'Compte reconnu. Prêt. (V679)';
             extraireTerminale(avisZone, boutonRefaire);
             return;
           }
