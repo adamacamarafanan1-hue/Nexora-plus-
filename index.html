@@ -23924,7 +23924,8 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
       function tenter(){
         etat.textContent = 'Chargement du module sécurisé…';
         boutonRefaire.hidden = true;
-        if (typeof window.NexoraEnsureSecureV506 === 'function'){
+        var presente = (typeof window.NexoraEnsureSecureV506 === 'function');
+        if (presente){
           try{ window.NexoraEnsureSecureV506(); }catch(_e){}
         }
         var tentative = 0;
@@ -23932,13 +23933,15 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
           tentative++;
           if (window.NexoraSecureContent && typeof window.NexoraSecureContent.text === 'function'){
             clearInterval(intervalle);
-            etat.textContent = 'Compte reconnu. Prêt.';
+            etat.textContent = 'Compte reconnu. Prêt. (V678)';
             extraireTerminale(avisZone, boutonRefaire);
             return;
           }
           if (tentative >= 100){
             clearInterval(intervalle);
-            etat.textContent = 'Module de contenu sécurisé introuvable après 20 secondes.';
+            etat.textContent = 'Version V678 · NexoraEnsureSecureV506 '
+              + (presente ? 'présente mais sans effet' : 'ABSENTE (page probablement en cache)')
+              + ' · module toujours introuvable après 20 secondes.';
             boutonRefaire.hidden = false;
           }
         }, 200);
