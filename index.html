@@ -23874,20 +23874,46 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   }
 
   function demarrer(){
-    var api = window.NexoraApp;
-    if (!api || typeof api.getSupabaseClient !== 'function') return;
-    var client = api.getSupabaseClient();
+    var tentativeApp = 0;
+    var intervalleApp = setInterval(function(){
+      tentativeApp++;
+      var api = window.NexoraApp;
+      var pret = api && typeof api.getSupabaseClient === 'function' && api.getSupabaseClient();
+      if (pret){
+        clearInterval(intervalleApp);
+        verifierCompteEtDemarrer(api.getSupabaseClient());
+        return;
+      }
+      if (tentativeApp >= 100){
+        clearInterval(intervalleApp);
+        var d = panneau();
+        d.querySelector('#nxExpEtat').textContent = 'Nexora (window.NexoraApp) introuvable après 20 secondes.';
+        d.querySelector('#nxExpRefaire').hidden = false;
+        d.querySelector('#nxExpRefaire').addEventListener('click', function(){ location.reload(); });
+      }
+    }, 200);
+  }
+
+  function verifierCompteEtDemarrer(client){
     if (!client || !client.auth) return;
 
     client.auth.getSession().then(function(r){
       var session = r && r.data && r.data.session;
       var email = session && session.user && session.user.email;
-      if (!email || email.toLowerCase() !== EMAIL_AUTORISE) return;
 
       var d = panneau();
       var etat = d.querySelector('#nxExpEtat');
       var avisZone = d.querySelector('#nxExpAvis');
       var boutonRefaire = d.querySelector('#nxExpRefaire');
+
+      if (!email){
+        etat.textContent = 'Aucune session détectée — connecte-toi, puis reviens ici.';
+        return;
+      }
+      if (email.toLowerCase() !== EMAIL_AUTORISE){
+        etat.textContent = 'Compte connecté : ' + email + ' (pas le compte attendu).';
+        return;
+      }
 
       boutonRefaire.addEventListener('click', function(){
         extraireTerminale(avisZone, boutonRefaire);
@@ -23898,7 +23924,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
         tentative++;
         if (window.NexoraSecureContent && typeof window.NexoraSecureContent.text === 'function'){
           clearInterval(intervalle);
-          etat.textContent = 'Prêt.';
+          etat.textContent = 'Compte reconnu. Prêt.';
           extraireTerminale(avisZone, boutonRefaire);
           return;
         }
@@ -23908,7 +23934,11 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
           boutonRefaire.hidden = false;
         }
       }, 200);
-    }).catch(function(){});
+    }).catch(function(e){
+      var d = panneau();
+      d.querySelector('#nxExpEtat').textContent = 'Erreur de session : ' + (e && e.message || e);
+      d.querySelector('#nxExpRefaire').hidden = false;
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer, { once: true });
