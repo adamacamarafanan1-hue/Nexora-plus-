@@ -23915,25 +23915,37 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
         return;
       }
 
-      boutonRefaire.addEventListener('click', function(){
-        extraireTerminale(avisZone, boutonRefaire);
-      });
+      /* V677 : nexora-secure-v522.js ne se charge par defaut que sur
+         cinq ecrans precis de l'application (kdo, adams, academy,
+         subjects, novels), jamais sur l'ecran d'accueil "Choisissez
+         votre espace". tenter() force son chargement a chaque essai,
+         initial comme via Relancer, exactement comme le fait deja
+         le bouton d'activation de carte (V658) pour la meme raison. */
+      function tenter(){
+        etat.textContent = 'Chargement du module sécurisé…';
+        boutonRefaire.hidden = true;
+        if (typeof window.NexoraEnsureSecureV506 === 'function'){
+          try{ window.NexoraEnsureSecureV506(); }catch(_e){}
+        }
+        var tentative = 0;
+        var intervalle = setInterval(function(){
+          tentative++;
+          if (window.NexoraSecureContent && typeof window.NexoraSecureContent.text === 'function'){
+            clearInterval(intervalle);
+            etat.textContent = 'Compte reconnu. Prêt.';
+            extraireTerminale(avisZone, boutonRefaire);
+            return;
+          }
+          if (tentative >= 100){
+            clearInterval(intervalle);
+            etat.textContent = 'Module de contenu sécurisé introuvable après 20 secondes.';
+            boutonRefaire.hidden = false;
+          }
+        }, 200);
+      }
 
-      var tentative = 0;
-      var intervalle = setInterval(function(){
-        tentative++;
-        if (window.NexoraSecureContent && typeof window.NexoraSecureContent.text === 'function'){
-          clearInterval(intervalle);
-          etat.textContent = 'Compte reconnu. Prêt.';
-          extraireTerminale(avisZone, boutonRefaire);
-          return;
-        }
-        if (tentative >= 100){
-          clearInterval(intervalle);
-          etat.textContent = 'Module de contenu sécurisé introuvable après 20 secondes.';
-          boutonRefaire.hidden = false;
-        }
-      }, 200);
+      boutonRefaire.addEventListener('click', tenter);
+      tenter();
     }).catch(function(e){
       var d = panneau();
       d.querySelector('#nxExpEtat').textContent = 'Erreur de session : ' + (e && e.message || e);
