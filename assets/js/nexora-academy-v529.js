@@ -1335,12 +1335,43 @@ document.addEventListener('visibilitychange',function(){if(examScreenActive()&&N
 'use strict';
 var DATA={};
 /* V484 : 25 leçons par matière au lycée et dans les trois classes du collège, chargées depuis les fichiers natifs des classes. */
-var NX_URL="modules/classes/11eme.json", NX_READY=false, NX_PENDING=null;
+var NX_READY=false, NX_PENDING=null;
 function NX_APPLY(payload){var src=payload||{};Object.keys(src).forEach(function(k){DATA[k]=src[k]});}
+/* V673 : meme correctif que la 12eme (V670) — la 11eme ne depend plus du
+   systeme de fichiers chiffres, dont la cle etait partagee avec tout
+   Nexora (faille confirmee le 10 septembre 2026). Elle passe par la
+   route protegee /api/cours-lycee, qui exige une session Supabase
+   valide et un abonnement "eleves" actif a chaque demande. */
+function NX_JETON(){
+  var api = window.NexoraApp;
+  if (!api || typeof api.ensureSupabaseClientReady !== 'function') return Promise.resolve('');
+  return api.ensureSupabaseClientReady().then(function (c) {
+    if (!c || !c.auth || typeof c.auth.getSession !== 'function') return '';
+    return c.auth.getSession().then(function (r) {
+      var sess = r && r.data && r.data.session;
+      return (sess && sess.access_token) ? sess.access_token : '';
+    });
+  }).catch(function () { return ''; });
+}
 function NX_LOAD(){
   if(NX_READY) return Promise.resolve();
   if(!NX_PENDING){
-    NX_PENDING=(window.NexoraSecureContent&&typeof window.NexoraSecureContent.json==='function'?window.NexoraSecureContent.json(NX_URL):Promise.reject(new Error('Accès sécurisé aux cours indisponible.'))).then(function(payload){NX_APPLY(payload);NX_READY=true;}).catch(function(error){NX_PENDING=null;throw error;});
+    NX_PENDING = NX_JETON().then(function (jeton) {
+      if (!jeton) throw new Error('SANS_SESSION');
+      return fetch('/api/cours-lycee?classe=11', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer ' + jeton },
+        cache: 'no-store'
+      });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP_' + r.status);
+      return r.json();
+    }).then(function (data) {
+      if (!data || data.success !== true || !data.contenu) throw new Error('REPONSE_INVALIDE');
+      NX_APPLY(data.contenu); NX_READY=true;
+    }).catch(function(error){
+      NX_PENDING=null; throw error;
+    });
   }
   return NX_PENDING;
 }
@@ -1955,8 +1986,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel()&&!p
    Les eleves en mode economie de donnees ou en 2G sont exclus du prechargement. */
 
 var CHEMINS={
-  '[data-nx-open-eleventh-v368]':'modules/classes/11eme.json',
-  /* V670 : la 12eme ne lit plus le fichier chiffre — precharger cette
+  /* V673 : la 11eme ne lit plus le fichier chiffre — precharger cette
      entree serait desormais du transfert perdu pour rien. */
   '[data-nx-open-terminal-v475]':'modules/classes/terminale.json'
 };
