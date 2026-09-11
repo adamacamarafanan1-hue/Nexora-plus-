@@ -1,5 +1,5 @@
 {
-  "version": "V673",
-  "message": "Nexora V673 : la 11eme ferme la faille de la cle partagee. Meme correctif que la 12eme (V670) : route protegee dediee, exigeant un abonnement eleves.",
+  "version": "V680",
+  "message": "Nexora V680 : la Terminale ferme la derniere porte de la faille de la cle partagee. 11eme, 12eme et Terminale passent desormais toutes par la route protegee.",
   "critical": true
 }
