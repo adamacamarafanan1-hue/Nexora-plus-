@@ -23818,5 +23818,102 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
 })();
 </script>
 
+<!-- V674 : extraction Terminale seule, admin uniquement. Les deux
+     fichiers sont desormais traites independamment l'un de l'autre :
+     un echec sur l'un n'efface plus la confirmation de l'autre, et
+     chacun affiche son propre message d'erreur precis. La 11eme est
+     deja migree (V673), seule la Terminale reste necessaire ici.
+     A retirer une fois l'extraction terminee. -->
+<script>
+(function(){
+  'use strict';
+  var EMAIL_AUTORISE = 'adamacamara.fanan1@gmail.com';
+
+  function panneau(){
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:auto 12px 12px 12px;z-index:999999;'+
+      'background:#0d1b2a;border:1px solid #33465c;border-radius:12px;padding:12px 14px;'+
+      'font:13px/1.4 system-ui;color:#eef3f8;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:340px';
+    d.innerHTML =
+      '<div style="font-weight:800;margin-bottom:6px">Extraction Terminale</div>'+
+      '<div id="nxExpEtat" style="color:#9db0c4">Vérification…</div>'+
+      '<div id="nxExpAvis" style="margin-top:6px"></div>'+
+      '<div style="margin-top:8px">'+
+        '<button id="nxExpRefaire" type="button" style="padding:8px 10px;border:0;border-radius:8px;'+
+        'background:#1d3a56;color:#cfe0f2;font-weight:700;font-size:12px" hidden>Relancer</button>'+
+      '</div>';
+    document.body.appendChild(d);
+    return d;
+  }
+
+  function telecharger(nomFichier, texteJson){
+    var blob = new Blob([texteJson], { type: 'application/json;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nomFichier;
+    a.click();
+  }
+
+  async function extraireTerminale(zoneAvis, boutonRefaire){
+    zoneAvis.textContent = 'Téléchargement en cours…';
+    boutonRefaire.hidden = true;
+    try{
+      var texte = await window.NexoraSecureContent.text('modules/classes/terminale.json');
+      var contenu = JSON.parse(texte);
+      var matieres = Object.keys(contenu).length;
+      var lecons = Object.values(contenu).reduce(function(t,m){
+        return t + (m && Array.isArray(m.lessons) ? m.lessons.length : 0);
+      }, 0);
+      telecharger('nexora-terminale-extrait.json', texte);
+      zoneAvis.innerHTML = 'Réussi : ' + matieres + ' matières, ' + lecons + ' leçons.<br><b>Envoie ce fichier.</b>';
+    }catch(e){
+      zoneAvis.innerHTML = '<b>Échec précis :</b><br>' + (e && e.message || String(e));
+    }finally{
+      boutonRefaire.hidden = false;
+    }
+  }
+
+  function demarrer(){
+    var api = window.NexoraApp;
+    if (!api || typeof api.getSupabaseClient !== 'function') return;
+    var client = api.getSupabaseClient();
+    if (!client || !client.auth) return;
+
+    client.auth.getSession().then(function(r){
+      var session = r && r.data && r.data.session;
+      var email = session && session.user && session.user.email;
+      if (!email || email.toLowerCase() !== EMAIL_AUTORISE) return;
+
+      var d = panneau();
+      var etat = d.querySelector('#nxExpEtat');
+      var avisZone = d.querySelector('#nxExpAvis');
+      var boutonRefaire = d.querySelector('#nxExpRefaire');
+
+      boutonRefaire.addEventListener('click', function(){
+        extraireTerminale(avisZone, boutonRefaire);
+      });
+
+      var tentative = 0;
+      var intervalle = setInterval(function(){
+        tentative++;
+        if (window.NexoraSecureContent && typeof window.NexoraSecureContent.text === 'function'){
+          clearInterval(intervalle);
+          etat.textContent = 'Prêt.';
+          extraireTerminale(avisZone, boutonRefaire);
+          return;
+        }
+        if (tentative >= 100){
+          clearInterval(intervalle);
+          etat.textContent = 'Module de contenu sécurisé introuvable après 20 secondes.';
+          boutonRefaire.hidden = false;
+        }
+      }, 200);
+    }).catch(function(){});
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer, { once: true });
+  else demarrer();
+})();
+</script>
 </body>
 </html>
