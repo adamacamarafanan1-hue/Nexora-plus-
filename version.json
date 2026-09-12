@@ -1,5 +1,5 @@
 {
-  "version": "V680",
-  "message": "Nexora V680 : la Terminale ferme la derniere porte de la faille de la cle partagee. 11eme, 12eme et Terminale passent desormais toutes par la route protegee.",
-  "critical": true
+  "version": "V681",
+  "message": "Nexora V681 : Philosophie Terminale entierement reecrite (19 lecons corrigees, generique retire). 10 matieres restent a reprendre.",
+  "critical": false
 }
