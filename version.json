@@ -1,5 +1,5 @@
 {
-  "version": "V690",
-  "message": "Nexora V690 : Biologie Terminale entierement reecrite (19 lecons, dont paludisme et drepanocytose ancres en Guinee). Il ne reste que la Geologie.",
-  "critical": false
+  "version": "V691",
+  "message": "Nexora V691 : Geologie Terminale entierement reecrite (19 lecons, dont la formation de la bauxite guineenne). LE CHANTIER DU LYCEE EST TERMINE : 11eme, 12eme et Terminale, 275 lecons chacune, plus une seule generique sur les 829 lecons du lycee.",
+  "critical": true
 }
