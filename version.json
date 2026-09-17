@@ -1,5 +1,5 @@
 {
-  "version": "V693",
-  "message": "Nexora V693 : correction de la Chimie 11eme -- 15 lecons generiques reecrites (calculs verifies), incluant la correction des Mathematiques 11eme deja livree (V692) au cas ou elle n'aurait pas encore ete deposee. Seule la Geographie 11eme (22 lecons) reste a corriger.",
-  "critical": false
+  "version": "V694",
+  "message": "Nexora V694 : correction de la Geographie 11eme -- 22 lecons generiques reecrites, ancrees dans le contexte guineen (Fouta-Djalon, Boke, Conakry, CEDEAO). LE CHANTIER EST MAINTENANT REELLEMENT TERMINE : 11eme, 12eme et Terminale comptent chacune 275 lecons, 829 au total, zero generique decele.",
+  "critical": true
 }
