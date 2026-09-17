@@ -1,5 +1,5 @@
 {
-  "version": "V691",
-  "message": "Nexora V691 : Geologie Terminale entierement reecrite (19 lecons, dont la formation de la bauxite guineenne). LE CHANTIER DU LYCEE EST TERMINE : 11eme, 12eme et Terminale, 275 lecons chacune, plus une seule generique sur les 829 lecons du lycee.",
-  "critical": true
+  "version": "V693",
+  "message": "Nexora V693 : correction de la Chimie 11eme -- 15 lecons generiques reecrites (calculs verifies), incluant la correction des Mathematiques 11eme deja livree (V692) au cas ou elle n'aurait pas encore ete deposee. Seule la Geographie 11eme (22 lecons) reste a corriger.",
+  "critical": false
 }
