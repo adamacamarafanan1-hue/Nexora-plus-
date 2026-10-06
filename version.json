@@ -1,5 +1,5 @@
 {
-  "version": "V702",
-  "message": "Nexora V702 : après la déclaration d'un paiement, les cours s'ouvrent tout de suite pendant 48 h, le temps de la vérification.",
-  "critical": true
+  "version": "V703",
+  "message": "Nexora V703 : Nexora mieux présenté sur Google, WhatsApp et Facebook (titre, description, image de partage).",
+  "critical": false
 }

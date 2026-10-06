@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /protected/
+
+Sitemap: https://nexora-plus-beta.vercel.app/sitemap.xml
