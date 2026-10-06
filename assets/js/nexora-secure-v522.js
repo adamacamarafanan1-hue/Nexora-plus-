@@ -817,7 +817,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     var state=requestState();
     if(state==='processing')return 'Validation en cours…';
     if(state==='error')return PAYMENT_UI_ERROR||'Impossible de valider. Réessayez.';
-    if(state==='pending')return 'Paiement envoyé. Vérification en cours.';
+    if(state==='pending')return 'Paiement envoyé. Votre accès est ouvert pendant 48 h, le temps de vérifier votre paiement.';
     if(state==='approved')return 'Accès activé'+(CURRENT_REQUEST.subscription_ends_at?' jusqu’au '+formatDate(CURRENT_REQUEST.subscription_ends_at):'')+'.';
     if(state==='rejected')return 'Paiement non validé. Vérifiez le numéro et réessayez.';
     if(SELECTED_PLAN)return 'Payez '+formatGNF(SELECTED_PLAN.total)+', entrez le numéro utilisé, puis validez.';
@@ -853,7 +853,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
       validationBanner.hidden=!state;
       validationBanner.className='nx-pay-validation-banner-v170'+(state?' '+(state==='error'?'rejected':state):'');
       if(state==='processing')validationBanner.innerHTML='<b>Validation en cours…</b>';
-      else if(state==='pending')validationBanner.innerHTML='<b>Paiement envoyé</b><span>Vérification en cours.</span>';
+      else if(state==='pending')validationBanner.innerHTML='<b>Paiement envoyé</b><span>Vos cours sont ouverts pendant 48 h, le temps de vérifier votre paiement.</span>';
       else if(state==='approved')validationBanner.innerHTML='<b>Accès activé</b>';
       else if(state==='rejected')validationBanner.innerHTML='<b>Paiement non validé</b><span>Vérifiez le numéro utilisé.</span>';
       else if(state==='error')validationBanner.innerHTML='<b>Impossible de valider</b><span>'+esc(PAYMENT_UI_ERROR||'Réessayez.')+'</span>';
@@ -1084,11 +1084,13 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
       });
       setupRealtime();
       managePendingPolling();
+      /* V702 : accès provisoire 48 h — relire tout de suite le statut pour ouvrir les cours. */
+      fetchStatus(true).then(function(){try{refreshSubscriptionUI();}catch(_e){window.nxLog&&window.nxLog(_e)}}).catch(function(_e){window.nxLog&&window.nxLog(_e)});
       setTimeout(function(){
         var banner=document.querySelector('#nxSubscriptionModal [data-nx-validation-banner]');
         if(banner&&!banner.hidden)try{banner.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(_e){window.nxLog&&window.nxLog(_e)}
       },80);
-      try{if(typeof window.toast==='function')window.toast('Paiement envoyé. Vérification en cours.');}catch(_e){window.nxLog&&window.nxLog(_e)}
+      try{if(typeof window.toast==='function')window.toast('Paiement envoyé. Vos cours sont ouverts pendant 48 h, le temps de la vérification.');}catch(_e){window.nxLog&&window.nxLog(_e)}
       return data;
     }catch(err){
       PAYMENT_UI_PHASE='error';

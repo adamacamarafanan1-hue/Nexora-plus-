@@ -1,5 +1,5 @@
 {
-  "version": "V701",
-  "message": "Nexora V701 : Professeur Nexora mis en pause.",
+  "version": "V702",
+  "message": "Nexora V702 : après la déclaration d'un paiement, les cours s'ouvrent tout de suite pendant 48 h, le temps de la vérification.",
   "critical": true
 }
