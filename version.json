@@ -1,5 +1,5 @@
 {
-  "version": "V695",
-  "message": "Nexora V695 : accueil guidé après inscription et connexion — « Vous êtes / Votre classe » à l'inscription, puis ouverture directe des leçons de la classe, du KDO gratuit ou de l'Espace professionnel (au lieu du fil social). Les anciens inscrits indiquent leur classe une fois à la connexion.",
+  "version": "V696",
+  "message": "Nexora V696 : activation des cartes Nexora par QR code — scanner la carte ouvre Nexora avec le code déjà rempli (après connexion ou création du compte). Inclut l'accueil guidé V695.",
   "critical": true
 }

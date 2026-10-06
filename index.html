@@ -23822,7 +23822,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
 
 <script>
 /* =====================================================================
-   NEXORA V695 — ACCUEIL APRÈS INSCRIPTION / CONNEXION
+   NEXORA V695/V696 — ACCUEIL APRÈS INSCRIPTION / CONNEXION + CARTES QR
    But : qu'un nouvel inscrit (ou un ancien qui revient) sache tout de
    suite quoi faire : ouvrir les leçons de SA classe, jouer au KDO
    gratuit, ou entrer dans l'Espace professionnel.
@@ -24104,6 +24104,94 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     c.addEventListener('change', sauver);
   }
 
+
+  /* ---------- V696 : activation d'une carte Nexora par QR code ----------
+     Le QR imprimé sur la carte ouvre : https://…/?carte=NXABCD1234EFGH
+     - On garde le code sur le téléphone (7 jours max) et on l'efface de l'adresse.
+     - Connecté : la fenêtre « Activer ma carte » s'ouvre avec le code déjà rempli.
+     - Pas connecté : un bandeau demande de se connecter / créer son compte ;
+       juste après, la même fenêtre s'ouvre automatiquement.
+     L'activation reste faite par la fonction sécurisée habituelle (une seule fois par carte). */
+  var CLE_CARTE = 'nx_carte_attente_v696';
+  function lireCarteURL() {
+    try {
+      var u = new URL(location.href);
+      var brut = u.searchParams.get('carte');
+      if (!brut) { var m = (location.hash || '').match(/carte=([A-Za-z0-9-]+)/); brut = m && m[1]; }
+      if (!brut) return;
+      var code = String(brut).toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (code.length >= 8 && code.length <= 32) ecrire(CLE_CARTE, { code: code, t: Date.now() });
+      u.searchParams.delete('carte');
+      var hash = (u.hash || '').replace(/[#&]?carte=[A-Za-z0-9-]+/, '');
+      history.replaceState(history.state, '', u.pathname + (u.search || '') + (hash && hash !== '#' ? hash : ''));
+    } catch (e) {}
+  }
+  function carteEnAttente() {
+    var x = lire(CLE_CARTE);
+    if (!x || !x.code) return null;
+    if (Date.now() - (x.t || 0) > 7 * 24 * 3600 * 1000) { try { localStorage.removeItem(CLE_CARTE); } catch (e) {} return null; }
+    return x.code;
+  }
+  function formaterCode(c) {
+    return (c.length === 14 && c.indexOf('NX') === 0) ? c.slice(0, 2) + '-' + c.slice(2, 6) + '-' + c.slice(6, 10) + '-' + c.slice(10) : c;
+  }
+  function sessionPresente() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (/^sb-.+-auth-token$/.test(k)) { var v = JSON.parse(localStorage.getItem(k) || 'null'); if (v && (v.access_token || (v.currentSession && v.currentSession.access_token))) return true; }
+      }
+    } catch (e) {}
+    return false;
+  }
+  var bandeauCarte = null;
+  function afficherBandeauCarte() {
+    if (bandeauCarte || !carteEnAttente()) return;
+    styles();
+    bandeauCarte = document.createElement('div');
+    bandeauCarte.setAttribute('role', 'status');
+    bandeauCarte.style.cssText = 'position:fixed;left:12px;right:12px;top:12px;z-index:2147482990;background:var(--nx-ardoise,#16324F);color:#fff;border-radius:12px;padding:12px 14px;font:14.5px/1.45 system-ui,-apple-system,Roboto,Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;gap:10px;align-items:flex-start';
+    bandeauCarte.innerHTML = '<span aria-hidden="true" style="font-size:20px">🎫</span><span style="flex:1"><b>Carte Nexora détectée.</b> Connectez-vous ou créez votre compte : votre carte s’activera juste après.</span><button type="button" aria-label="Fermer" style="border:0;background:transparent;color:#fff;font-size:20px;line-height:1;cursor:pointer">×</button>';
+    bandeauCarte.querySelector('button').addEventListener('click', function () { bandeauCarte.remove(); bandeauCarte = null; });
+    document.body.appendChild(bandeauCarte);
+  }
+  function ouvrirActivationCarte() {
+    var code = carteEnAttente();
+    if (!code) return false;
+    if (bandeauCarte) { bandeauCarte.remove(); bandeauCarte = null; }
+    var pret = (typeof window.NexoraEnsureSecureV506 === 'function' && !(typeof window.NexoraSecureReadyV506 === 'function' && window.NexoraSecureReadyV506()))
+      ? window.NexoraEnsureSecureV506() : Promise.resolve();
+    Promise.resolve(pret).catch(function () {}).then(function () {
+      var b = document.createElement('button');
+      b.type = 'button'; b.hidden = true; b.setAttribute('data-nx-open-card-code', '');
+      document.body.appendChild(b); b.click();
+      setTimeout(function () { b.remove(); }, 200);
+      return attendre(function () {
+        var i = document.querySelector('#nxSubscriptionModal [data-nx-access-code-v208]');
+        return visible(i) ? i : null;
+      }, 9000);
+    }).then(function (input) {
+      if (!input) { try { window.toast && window.toast('Ouvrez « Activer mon code » et saisissez le code de votre carte.'); } catch (e) {} return; }
+      input.value = formaterCode(code);
+      try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+      var fb = document.querySelector('#nxSubscriptionModal [data-nx-code-feedback-v208]');
+      if (fb) { fb.className = ''; fb.textContent = 'Le code de votre carte est déjà rempli. Touchez « Activer la carte ».'; }
+      var btn = document.querySelector('#nxSubscriptionModal [data-nx-activate-code-v208]');
+      if (btn) { try { btn.focus(); } catch (e) {} }
+      try { localStorage.removeItem(CLE_CARTE); } catch (e) {}
+    });
+    return true;
+  }
+  function demarrerCarte() {
+    lireCarteURL();
+    if (!carteEnAttente()) return;
+    attendre(function () { return document.body && document.readyState !== 'loading'; }, 5000).then(function () {
+      setTimeout(function () {
+        if (sessionPresente()) ouvrirActivationCarte(); else afficherBandeauCarte();
+      }, 1800);
+    });
+  }
+
   /* ---------- point d'entrée appelé par finalizeAuthEntry ---------- */
   function apresConnexion(opts) {
     opts = opts || {};
@@ -24114,6 +24202,8 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
 
     /* L'écran du dessous : l'Académie (au lieu du fil social / du profil). */
     aller('academy');
+    /* V696 : une carte scannée attend ? On l'active en priorité. */
+    if (carteEnAttente()) { setTimeout(ouvrirActivationCarte, 600); return true; }
 
     var getUser = (client && client.auth && typeof client.auth.getUser === 'function')
       ? client.auth.getUser().then(function (r) { return (r && r.data && r.data.user) || null; }).catch(function () { return null; })
@@ -24148,8 +24238,10 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     ouvrirClasse: ouvrirClasse,
     ouvrirKdo: ouvrirKdo,
     choisir: function (opts) { fenetreChoix(Object.assign({ cree: false }, opts || {})); },
+    ouvrirActivationCarte: ouvrirActivationCarte,
     _classes: CLASSES
   };
+  demarrerCarte();
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', brancherFormulaire, { once: true });
   else brancherFormulaire();
