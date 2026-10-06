@@ -8771,7 +8771,7 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 <div class="form-grid"><div class="field"><label class="label" for="nxAccountJobV379">Métier ou activité</label><input class="input" data-account-job="" id="nxAccountJobV379" placeholder="Ex : Élève, étudiant, enseignant" type="text"/></div><div class="field"><label class="label" for="nxAccountLocationV379">Pays / ville</label><input autocomplete="address-level2" class="input" data-account-location="" id="nxAccountLocationV379" placeholder="Ex : Guinée, Conakry" type="text"/></div></div>
 </div>
 </details>
-<div class="account-legal-consent account-create-only"><input data-account-legal-accept="" id="nxAccountLegalAcceptV504" type="checkbox"/><span><label for="nxAccountLegalAcceptV504">J’accepte les</label> <button class="legal-inline-link" data-action="open-rules" data-legal-tab="terms" type="button">CGU</button>, la <button class="legal-inline-link" data-action="open-rules" data-legal-tab="privacy" type="button">Politique de confidentialité</button> et les <button class="legal-inline-link" data-action="open-rules" data-legal-tab="community" type="button">Règles de communauté</button> de Nexora.</span></div>
+<div class="account-create-only nx-bienvenue-champs-v695" style="margin:4px 0 12px"><div class="field"><label class="label" for="nxBienvenueProfilV695">Vous êtes</label><select class="input" data-nx-bienvenue-profil="" id="nxBienvenueProfilV695"><option value="">Choisir (facultatif)</option><option value="eleve">Élève</option><option value="parent">Parent d’élève</option><option value="enseignant">Enseignant ou école</option><option value="pro">Adulte / professionnel</option></select></div><div class="field" data-nx-bienvenue-zone-classe="" hidden><label class="label" for="nxBienvenueClasseV695">Votre classe (ou celle de votre enfant)</label><select class="input" data-nx-bienvenue-classe="" id="nxBienvenueClasseV695"><option value="">Choisir la classe</option><option value="maternelle">Maternelle</option><option value="cp1">1ère année (CP1)</option><option value="cp2">2ème année (CP2)</option><option value="ce1">3ème année (CE1)</option><option value="ce2">4ème année (CE2)</option><option value="cm1">5ème année (CM1)</option><option value="cm2">6ème année (CM2)</option><option value="7eme">7ème année</option><option value="8eme">8ème année</option><option value="9eme">9ème année</option><option value="10eme">10ème année (Brevet)</option><option value="11eme">11ème année</option><option value="12eme">12ème année</option><option value="terminale">Terminale (BAC)</option></select></div></div><div class="account-legal-consent account-create-only"><input data-account-legal-accept="" id="nxAccountLegalAcceptV504" type="checkbox"/><span><label for="nxAccountLegalAcceptV504">J’accepte les</label> <button class="legal-inline-link" data-action="open-rules" data-legal-tab="terms" type="button">CGU</button>, la <button class="legal-inline-link" data-action="open-rules" data-legal-tab="privacy" type="button">Politique de confidentialité</button> et les <button class="legal-inline-link" data-action="open-rules" data-legal-tab="community" type="button">Règles de communauté</button> de Nexora.</span></div>
 <div class="account-actions-premium">
 <button class="btn btn-primary account-create-only" data-action="create-account" type="button">Créer mon compte</button>
 <button class="btn btn-primary account-login-only" data-action="login-account" type="button">Se connecter</button>
@@ -21720,6 +21720,8 @@ function renderTeacherRequestCenter(db){
     if(currentAuthUserId){
       setActiveProfileSafely(currentAuthUserId);
       render();
+      /* V695 : après inscription/connexion, guider vers SA classe (au lieu du fil social). */
+      try{if(window.NexoraBienvenueV695&&window.NexoraBienvenueV695.apresConnexion({cree:createdNow,client:getSupabaseClient(),userId:currentAuthUserId,go:go}))return;}catch(_nxB695){window.nxLog&&window.nxLog(_nxB695)}
       go(createdNow?'network':'profile');
       return;
     }
@@ -23818,5 +23820,342 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
 })();
 </script>
 
+<script>
+/* =====================================================================
+   NEXORA V695 — ACCUEIL APRÈS INSCRIPTION / CONNEXION
+   But : qu'un nouvel inscrit (ou un ancien qui revient) sache tout de
+   suite quoi faire : ouvrir les leçons de SA classe, jouer au KDO
+   gratuit, ou entrer dans l'Espace professionnel.
+   - À l'inscription : « Vous êtes… » + « Votre classe » (facultatifs).
+   - Après création du compte : fenêtre « Par où commencer ? ».
+   - À la connexion : si la classe est inconnue, on la demande une fois ;
+     sinon, raccourci « Reprendre mes leçons » (au plus une fois / 20 h).
+   - Le choix est enregistré dans le compte (user_metadata) et sur le
+     téléphone, pour les prochaines fois.
+   Aucune donnée n'est supprimée, aucun accès payant n'est contourné :
+   les leçons restent soumises à l'abonnement comme avant.
+   ===================================================================== */
+(function () {
+  'use strict';
+  if (window.NexoraBienvenueV695) return;
+
+  var CLE_CHOIX = 'nx_bienvenue_choix_v695';
+  var CLE_VU = 'nx_bienvenue_vu_v695';
+  var WA_ADAMA = 'https://wa.me/224620417383?text=' +
+    encodeURIComponent('Bonjour, je souhaite proposer Nexora à mon école.');
+
+  var PROFILS = {
+    eleve: 'Élève',
+    parent: 'Parent d’élève',
+    enseignant: 'Enseignant ou école',
+    pro: 'Adulte / professionnel'
+  };
+
+  /* code -> libellé + bouton existant de l'Académie à ouvrir */
+  var CLASSES = [
+    { code: 'maternelle', label: 'Maternelle', cycle: 'maternelle', sel: '[data-nx-open-v342="maternelle"][data-section=""]' },
+    { code: 'cp1', label: '1ère année (CP1)', cycle: 'primaire', sel: '[data-nx-open-v342="primary-class"][data-class-id="cp1"]' },
+    { code: 'cp2', label: '2ème année (CP2)', cycle: 'primaire', sel: '[data-nx-open-v342="primary-class"][data-class-id="cp2"]' },
+    { code: 'ce1', label: '3ème année (CE1)', cycle: 'primaire', sel: '[data-nx-open-v342="primary-class"][data-class-id="ce1"]' },
+    { code: 'ce2', label: '4ème année (CE2)', cycle: 'primaire', sel: '[data-nx-open-v342="primary-class"][data-class-id="ce2"]' },
+    { code: 'cm1', label: '5ème année (CM1)', cycle: 'primaire', sel: '[data-nx-open-v342="primary-class"][data-class-id="cm1"]' },
+    { code: 'cm2', label: '6ème année (CM2)', cycle: 'primaire', sel: '[data-nx-open-v342="primary-class"][data-class-id="cm2"]' },
+    { code: '7eme', label: '7ème année', cycle: 'college', sel: '[data-nx-open-v342="seventh"]' },
+    { code: '8eme', label: '8ème année', cycle: 'college', sel: '[data-nx-open-v342="eighth"]' },
+    { code: '9eme', label: '9ème année', cycle: 'college', sel: '[data-nx-open-v342="ninth"]' },
+    { code: '10eme', label: '10ème année (Brevet)', cycle: 'college', sel: '[data-nx-acad-v406="brevet-cours"]' },
+    { code: '11eme', label: '11ème année', cycle: 'lycee', sel: '[data-nx-open-eleventh-v368]' },
+    { code: '12eme', label: '12ème année', cycle: 'lycee', sel: '[data-nx-open-twelfth-v369]' },
+    { code: 'terminale', label: 'Terminale (BAC)', cycle: 'lycee', sel: '[data-nx-open-terminal-v475]' }
+  ];
+  function classe(code) { for (var i = 0; i < CLASSES.length; i++) if (CLASSES[i].code === code) return CLASSES[i]; return null; }
+
+  /* ---------- petits outils ---------- */
+  function lire(cle) { try { return JSON.parse(localStorage.getItem(cle) || 'null'); } catch (e) { return null; } }
+  function ecrire(cle, v) { try { localStorage.setItem(cle, JSON.stringify(v)); } catch (e) {} }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function visible(el) { return !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length)); }
+  function attendre(test, maxMs) {
+    return new Promise(function (ok) {
+      var t0 = Date.now();
+      (function boucle() {
+        var r = null; try { r = test(); } catch (e) {}
+        if (r) return ok(r);
+        if (Date.now() - t0 > (maxMs || 8000)) return ok(null);
+        setTimeout(boucle, 150);
+      })();
+    });
+  }
+  function prenomDe(user) {
+    var m = (user && user.user_metadata) || {};
+    var n = String(m.name || m.full_name || m.display_name || '').trim().split(/\s+/)[0] || '';
+    if (!n || /\d/.test(n) || n.length > 14) return '';
+    return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
+  }
+
+  /* ---------- navigation (réutilise les boutons existants) ---------- */
+  var goNexora = null;
+  function aller(ecran) {
+    if (typeof goNexora === 'function') { try { goNexora(ecran); return; } catch (e) {} }
+    var b = document.querySelector('[data-action="go"][data-screen="' + ecran + '"]');
+    if (b) b.click();
+  }
+  function ouvrirEspace(espace) {
+    aller('academy');
+    return attendre(function () {
+      var p = document.querySelector('[data-nx-porte-v510="' + espace + '"]');
+      return visible(p) ? p : null;
+    }, 9000).then(function (porte) { if (porte) porte.click(); return !!porte; });
+  }
+  function ouvrirClasse(code) {
+    var c = classe(code);
+    if (!c) return ouvrirEspace('eleves');
+    return ouvrirEspace('eleves').then(function () {
+      return attendre(function () {
+        var cyc = document.querySelector('[data-nx-cycle-v406="' + c.cycle + '"]');
+        return cyc && visible(cyc) ? cyc : null;
+      }, 6000);
+    }).then(function (cyc) {
+      if (!cyc) return false;
+      var tete = cyc.querySelector('[data-nx-volet-v510]');
+      if (tete && tete.getAttribute('aria-expanded') !== 'true') tete.click();
+      try { cyc.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      var puce = cyc.querySelector(c.sel) || document.querySelector(c.sel);
+      if (!puce) return false;
+      setTimeout(function () { puce.click(); }, 250);
+      return true;
+    });
+  }
+  function ouvrirKdo() { aller('access'); }
+
+  /* ---------- styles ---------- */
+  function styles() {
+    if (document.getElementById('nxBienvenueStyleV695')) return;
+    var css =
+      '.nxb695-fond{position:fixed;inset:0;z-index:2147483000;background:rgba(10,20,32,.55);display:flex;align-items:flex-end;justify-content:center;padding:16px;animation:nxb695f .18s ease-out}' +
+      '@media(min-width:640px){.nxb695-fond{align-items:center}}' +
+      '.nxb695-boite{width:100%;max-width:460px;max-height:88vh;overflow:auto;background:#fff;color:#1d2733;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.28);padding:22px 18px 16px;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;animation:nxb695m .22s ease-out}' +
+      '.nxb695-boite h2{margin:0 0 4px;font-size:21px;line-height:1.25;color:var(--nx-ardoise,#16324F)}' +
+      '.nxb695-boite p{margin:0 0 14px;color:#4a5562}' +
+      '.nxb695-act{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid #dfe5ec;background:#f7f9fb;border-radius:12px;padding:13px 14px;margin:0 0 9px;cursor:pointer;font:inherit;color:inherit}' +
+      '.nxb695-act:focus-visible,.nxb695-puce:focus-visible,.nxb695-lien:focus-visible{outline:3px solid var(--nx-ocre-clair,#6AA2E3);outline-offset:2px}' +
+      '.nxb695-act b{display:block;font-size:15.5px;color:var(--nx-ardoise,#16324F)}' +
+      '.nxb695-act small{display:block;color:#5d6773;font-size:13px}' +
+      '.nxb695-act .ic{flex:0 0 38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:#fff;border:1px solid #e3e8ee}' +
+      '.nxb695-act.principal{background:var(--nx-ocre,#2F77C9);border-color:var(--nx-ocre,#2F77C9)}' +
+      '.nxb695-act.principal b,.nxb695-act.principal small{color:#fff}' +
+      '.nxb695-act.principal .ic{background:rgba(255,255,255,.18);border-color:transparent}' +
+      '.nxb695-puces{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}' +
+      '.nxb695-puce{border:1px solid #cfd8e2;background:#fff;border-radius:999px;padding:9px 13px;font:inherit;font-size:14px;cursor:pointer;color:var(--nx-ardoise,#16324F)}' +
+      '.nxb695-puce[aria-pressed="true"]{background:var(--nx-ardoise,#16324F);border-color:var(--nx-ardoise,#16324F);color:#fff}' +
+      '.nxb695-titre-sec{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6b7580;margin:6px 0 6px}' +
+      '.nxb695-pied{display:flex;justify-content:space-between;align-items:center;margin-top:6px}' +
+      '.nxb695-lien{border:0;background:none;color:#5d6773;font:inherit;font-size:14px;padding:8px 4px;cursor:pointer;text-decoration:underline}' +
+      '.nxb695-ok{border:0;background:var(--nx-ardoise,#16324F);color:#fff;border-radius:10px;padding:11px 18px;font:inherit;font-weight:600;cursor:pointer}' +
+      '.nxb695-ok[disabled]{opacity:.45;cursor:not-allowed}' +
+      '.nxb695-note{font-size:12.5px;color:#6b7580;margin:8px 0 0}' +
+      '.nxb695-champ select{width:100%}' +
+      '@keyframes nxb695f{from{opacity:0}to{opacity:1}}@keyframes nxb695m{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}' +
+      '@media(prefers-reduced-motion:reduce){.nxb695-fond,.nxb695-boite{animation:none}}';
+    var st = document.createElement('style');
+    st.id = 'nxBienvenueStyleV695';
+    st.textContent = css;
+    document.head.appendChild(st);
+  }
+
+  /* ---------- fenêtre ---------- */
+  var fenetreOuverte = null;
+  function fermer() {
+    if (!fenetreOuverte) return;
+    document.removeEventListener('keydown', fenetreOuverte.clavier, true);
+    fenetreOuverte.el.remove();
+    fenetreOuverte = null;
+  }
+  function ouvrir(html, surFermeture) {
+    styles();
+    fermer();
+    var fond = document.createElement('div');
+    fond.className = 'nxb695-fond';
+    fond.innerHTML = '<div class="nxb695-boite" role="dialog" aria-modal="true" aria-labelledby="nxb695Titre">' + html + '</div>';
+    function clavier(e) { if (e.key === 'Escape') { e.stopPropagation(); fermer(); if (surFermeture) surFermeture(); } }
+    fond.addEventListener('click', function (e) { if (e.target === fond) { fermer(); if (surFermeture) surFermeture(); } });
+    document.addEventListener('keydown', clavier, true);
+    document.body.appendChild(fond);
+    fenetreOuverte = { el: fond, clavier: clavier };
+    var premier = fond.querySelector('button');
+    if (premier) setTimeout(function () { try { premier.focus(); } catch (e) {} }, 60);
+    return fond;
+  }
+
+  function action(ic, titre, sousTitre, nom, principal) {
+    return '<button type="button" class="nxb695-act' + (principal ? ' principal' : '') + '" data-nxb695="' + nom + '">' +
+      '<span class="ic" aria-hidden="true">' + ic + '</span><span><b>' + esc(titre) + '</b><small>' + esc(sousTitre) + '</small></span></button>';
+  }
+
+  /* Fenêtre « Par où commencer ? » */
+  function fenetreActions(ctx) {
+    var c = classe(ctx.classe);
+    var titre = ctx.cree
+      ? 'Bienvenue sur Nexora' + (ctx.prenom ? ', ' + esc(ctx.prenom) : '') + ' !'
+      : 'Content de vous revoir' + (ctx.prenom ? ', ' + esc(ctx.prenom) : '') + ' !';
+    var intro = ctx.cree ? 'Votre compte est prêt. Par où voulez-vous commencer ?' : 'Que voulez-vous faire aujourd’hui ?';
+    var h = '<h2 id="nxb695Titre">' + titre + '</h2><p>' + intro + '</p>';
+
+    if (ctx.profil === 'pro') {
+      h += action('💼', 'Ouvrir l’Espace professionnel', '22 modules : compétences, emploi, entrepreneuriat', 'pro', true);
+    } else if (ctx.profil === 'enseignant') {
+      h += action('🏫', 'Proposer Nexora à mon école', 'L’école touche 25 % sur chaque élève inscrit', 'ecole', true);
+      h += action('📚', 'Voir les leçons des élèves', 'De la maternelle à la Terminale', 'eleves', false);
+    } else if (c) {
+      h += action('📚', (ctx.cree ? 'Ouvrir ' : 'Reprendre ') + 'mes leçons de ' + c.label, ctx.profil === 'parent' ? 'Le programme de votre enfant, matière par matière' : 'Toutes les matières de votre classe', 'classe', true);
+    } else {
+      h += action('📚', 'Choisir ma classe', 'Maternelle, primaire, collège, lycée', 'choisir', true);
+    }
+    h += action('🎁', 'Jouer au KDO gratuit', '45 bonnes réponses sur 50 et vous gagnez le cadeau', 'kdo', false);
+    if (ctx.cree) h += action('🧭', 'Découvrir Nexora en 2 minutes', 'Le guide pour bien démarrer', 'guide', false);
+    h += '<div class="nxb695-pied">' +
+      (c || ctx.profil ? '<button type="button" class="nxb695-lien" data-nxb695="changer">Changer ma classe</button>' : '<span></span>') +
+      '<button type="button" class="nxb695-lien" data-nxb695="plustard">Plus tard</button></div>';
+
+    var fond = ouvrir(h);
+    fond.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-nxb695]');
+      if (!b) return;
+      var quoi = b.getAttribute('data-nxb695');
+      if (quoi === 'changer' || quoi === 'choisir') { fenetreChoix(ctx); return; }
+      fermer();
+      if (quoi === 'classe') ouvrirClasse(ctx.classe);
+      else if (quoi === 'eleves') ouvrirEspace('eleves');
+      else if (quoi === 'pro') ouvrirEspace('pro');
+      else if (quoi === 'kdo') ouvrirKdo();
+      else if (quoi === 'guide') aller('guide');
+      else if (quoi === 'ecole') { try { window.open(WA_ADAMA, '_blank', 'noopener'); } catch (err) { location.href = WA_ADAMA; } }
+    });
+  }
+
+  /* Fenêtre « Vous êtes… / Votre classe » (pour les comptes sans classe) */
+  function fenetreChoix(ctx) {
+    var profil = ctx.profil || '', cl = ctx.classe || '';
+    function puces(liste, actuel, attr) {
+      return '<div class="nxb695-puces" role="group">' + liste.map(function (x) {
+        return '<button type="button" class="nxb695-puce" ' + attr + '="' + x[0] + '" aria-pressed="' + (x[0] === actuel) + '">' + esc(x[1]) + '</button>';
+      }).join('') + '</div>';
+    }
+    var listeProfils = Object.keys(PROFILS).map(function (k) { return [k, PROFILS[k]]; });
+    var listeClasses = CLASSES.map(function (c) { return [c.code, c.label]; });
+    var h = '<h2 id="nxb695Titre">' + (ctx.prenom ? esc(ctx.prenom) + ', ' : '') + 'aidez-nous à vous guider</h2>' +
+      '<p>Deux réponses et Nexora vous ouvre directement les bonnes leçons.</p>' +
+      '<div class="nxb695-titre-sec">Vous êtes</div>' + puces(listeProfils, profil, 'data-p') +
+      '<div data-zone-classe><div class="nxb695-titre-sec">Votre classe (ou celle de votre enfant)</div>' + puces(listeClasses, cl, 'data-c') + '</div>' +
+      '<div class="nxb695-pied"><button type="button" class="nxb695-lien" data-fin="passer">Passer</button>' +
+      '<button type="button" class="nxb695-ok" data-fin="ok">Continuer</button></div>';
+    var fond = ouvrir(h);
+    var zone = fond.querySelector('[data-zone-classe]');
+    var ok = fond.querySelector('[data-fin="ok"]');
+    function maj() {
+      var besoinClasse = profil === 'eleve' || profil === 'parent';
+      zone.hidden = !besoinClasse;
+      ok.disabled = !profil || (besoinClasse && !cl);
+    }
+    maj();
+    fond.addEventListener('click', function (e) {
+      var p = e.target.closest('[data-p]'), c = e.target.closest('[data-c]'), f = e.target.closest('[data-fin]');
+      if (p) { profil = p.getAttribute('data-p'); fond.querySelectorAll('[data-p]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === p)); }); maj(); }
+      if (c) { cl = c.getAttribute('data-c'); fond.querySelectorAll('[data-c]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === c)); }); maj(); }
+      if (f) {
+        if (f.getAttribute('data-fin') === 'passer') { fermer(); return; }
+        if (ok.disabled) return;
+        if (profil !== 'eleve' && profil !== 'parent') cl = '';
+        ctx.profil = profil; ctx.classe = cl;
+        enregistrer(ctx);
+        fenetreActions(ctx);
+      }
+    });
+  }
+
+  /* ---------- enregistrement du choix ---------- */
+  function enregistrer(ctx) {
+    ecrire(CLE_CHOIX, { profil: ctx.profil || '', classe: ctx.classe || '', t: Date.now(), uid: ctx.userId || '' });
+    var client = ctx.client;
+    if (client && client.auth && typeof client.auth.updateUser === 'function') {
+      client.auth.updateUser({ data: { nexora_profil: ctx.profil || null, nexora_classe: ctx.classe || null } })
+        .catch(function (e) { try { console.warn('Nexora V695 : choix non enregistré dans le compte', e); } catch (_) {} });
+    }
+  }
+
+  /* ---------- formulaire d'inscription ---------- */
+  function brancherFormulaire() {
+    var p = document.querySelector('[data-nx-bienvenue-profil]');
+    var c = document.querySelector('[data-nx-bienvenue-classe]');
+    if (!p || !c || p.__nxb695) return;
+    p.__nxb695 = true;
+    var zone = document.querySelector('[data-nx-bienvenue-zone-classe]');
+    function sauver() {
+      var besoin = p.value === 'eleve' || p.value === 'parent';
+      if (zone) zone.hidden = !besoin;
+      var job = document.querySelector('[data-account-job]');
+      if (job && !job.value.trim() && p.value) {
+        job.value = { eleve: 'Élève', parent: 'Parent d’élève', enseignant: 'Enseignant', pro: '' }[p.value] || '';
+      }
+      if (!p.value) return; /* rien choisi : on ne touche pas au choix déjà enregistré */
+      ecrire(CLE_CHOIX, { profil: p.value, classe: besoin ? (c.value || '') : '', t: Date.now(), inscription: true });
+    }
+    p.addEventListener('change', sauver);
+    c.addEventListener('change', sauver);
+  }
+
+  /* ---------- point d'entrée appelé par finalizeAuthEntry ---------- */
+  function apresConnexion(opts) {
+    opts = opts || {};
+    if (typeof opts.go === 'function') goNexora = opts.go;
+    var cree = !!opts.cree;
+    var client = opts.client || null;
+    var userId = opts.userId || '';
+
+    /* L'écran du dessous : l'Académie (au lieu du fil social / du profil). */
+    aller('academy');
+
+    var getUser = (client && client.auth && typeof client.auth.getUser === 'function')
+      ? client.auth.getUser().then(function (r) { return (r && r.data && r.data.user) || null; }).catch(function () { return null; })
+      : Promise.resolve(null);
+
+    getUser.then(function (user) {
+      var meta = (user && user.user_metadata) || {};
+      var local = lire(CLE_CHOIX) || {};
+      var recent = local.t && (Date.now() - local.t < 2 * 24 * 3600 * 1000);
+      /* Choix local utilisable : celui de ce compte, ou un choix d'inscription récent. */
+      var localOk = local.uid ? (local.uid === userId) : !!recent;
+      var ctx = {
+        cree: cree, client: client, userId: userId, prenom: prenomDe(user),
+        profil: meta.nexora_profil || (localOk ? local.profil : '') || '',
+        classe: meta.nexora_classe || (localOk ? local.classe : '') || ''
+      };
+      /* Choix fait à l'inscription mais pas encore dans le compte : on l'y écrit. */
+      if ((ctx.profil || ctx.classe) && (!meta.nexora_profil && !meta.nexora_classe)) enregistrer(ctx);
+
+      var vu = lire(CLE_VU) || {}, cleVu = userId || '_';
+      if (cree) { vu[cleVu] = Date.now(); ecrire(CLE_VU, vu); fenetreActions(ctx); return; }
+      /* À la connexion : au plus une fenêtre toutes les 20 heures. */
+      if (vu[cleVu] && Date.now() - vu[cleVu] < 20 * 3600 * 1000) return;
+      vu[cleVu] = Date.now(); ecrire(CLE_VU, vu);
+      if (!ctx.profil) fenetreChoix(ctx); else fenetreActions(ctx);
+    });
+    return true;
+  }
+
+  window.NexoraBienvenueV695 = {
+    apresConnexion: apresConnexion,
+    ouvrirClasse: ouvrirClasse,
+    ouvrirKdo: ouvrirKdo,
+    choisir: function (opts) { fenetreChoix(Object.assign({ cree: false }, opts || {})); },
+    _classes: CLASSES
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', brancherFormulaire, { once: true });
+  else brancherFormulaire();
+  /* Le formulaire peut être reconstruit : on rebranche à l'ouverture de la fenêtre de compte. */
+  document.addEventListener('click', function () { setTimeout(brancherFormulaire, 50); }, true);
+})();
+</script>
 </body>
 </html>

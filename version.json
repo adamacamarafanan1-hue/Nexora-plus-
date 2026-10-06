@@ -1,5 +1,5 @@
 {
-  "version": "V694",
-  "message": "Nexora V694 : correction de la Geographie 11eme -- 22 lecons generiques reecrites, ancrees dans le contexte guineen (Fouta-Djalon, Boke, Conakry, CEDEAO). LE CHANTIER EST MAINTENANT REELLEMENT TERMINE : 11eme, 12eme et Terminale comptent chacune 275 lecons, 829 au total, zero generique decele.",
+  "version": "V695",
+  "message": "Nexora V695 : accueil guidé après inscription et connexion — « Vous êtes / Votre classe » à l'inscription, puis ouverture directe des leçons de la classe, du KDO gratuit ou de l'Espace professionnel (au lieu du fil social). Les anciens inscrits indiquent leur classe une fois à la connexion.",
   "critical": true
 }
