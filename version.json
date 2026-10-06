@@ -1,5 +1,5 @@
 {
-  "version": "V696",
-  "message": "Nexora V696 : activation des cartes Nexora par QR code — scanner la carte ouvre Nexora avec le code déjà rempli (après connexion ou création du compte). Inclut l'accueil guidé V695.",
+  "version": "V697",
+  "message": "Nexora V697 : bouton « Installer l'application » toujours visible — dans le menu principal, en haut de l'Académie et dans la fenêtre d'accueil, avec la marche à suivre adaptée au téléphone (Android, iPhone). Inclut V695 et V696.",
   "critical": true
 }

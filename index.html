@@ -23822,7 +23822,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
 
 <script>
 /* =====================================================================
-   NEXORA V695/V696 — ACCUEIL APRÈS INSCRIPTION / CONNEXION + CARTES QR
+   NEXORA V695/V696 — ACCUEIL APRÈS INSCRIPTION / CONNEXION + CARTES QR + INSTALLATION
    But : qu'un nouvel inscrit (ou un ancien qui revient) sache tout de
    suite quoi faire : ouvrir les leçons de SA classe, jouer au KDO
    gratuit, ou entrer dans l'Espace professionnel.
@@ -24013,6 +24013,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     }
     h += action('🎁', 'Jouer au KDO gratuit', '45 bonnes réponses sur 50 et vous gagnez le cadeau', 'kdo', false);
     if (ctx.cree) h += action('🧭', 'Découvrir Nexora en 2 minutes', 'Le guide pour bien démarrer', 'guide', false);
+    if (!estInstallee()) h += action('📲', 'Installer Nexora sur ce téléphone', 'Une icône sur l’écran d’accueil, comme une application', 'installer', false);
     h += '<div class="nxb695-pied">' +
       (c || ctx.profil ? '<button type="button" class="nxb695-lien" data-nxb695="changer">Changer ma classe</button>' : '<span></span>') +
       '<button type="button" class="nxb695-lien" data-nxb695="plustard">Plus tard</button></div>';
@@ -24029,6 +24030,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
       else if (quoi === 'pro') ouvrirEspace('pro');
       else if (quoi === 'kdo') ouvrirKdo();
       else if (quoi === 'guide') aller('guide');
+      else if (quoi === 'installer') installer();
       else if (quoi === 'ecole') { try { window.open(WA_ADAMA, '_blank', 'noopener'); } catch (err) { location.href = WA_ADAMA; } }
     });
   }
@@ -24192,6 +24194,110 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     });
   }
 
+
+  /* ---------- V697 : bouton « Installer Nexora » toujours visible ----------
+     - Une ligne « Installer l'application » dans le menu principal.
+     - Un bandeau discret en haut de l'Académie (masquable 7 jours).
+     - Une action dans la fenêtre « Par où commencer ? ».
+     Rien ne s'affiche si Nexora est déjà ouverte comme application installée. */
+  var CLE_INSTALL = 'nx_install_v697';
+  var invitationInstall = null;
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    try { ev.preventDefault(); } catch (e) {}
+    invitationInstall = ev; majInstall();
+  });
+  window.addEventListener('appinstalled', function () {
+    invitationInstall = null;
+    var e = lire(CLE_INSTALL) || {}; e.installee = Date.now(); ecrire(CLE_INSTALL, e);
+    majInstall();
+    try { window.toast && window.toast('Nexora est installée : ouvrez-la depuis l’icône de votre écran d’accueil.'); } catch (_) {}
+  });
+  function estInstallee() {
+    try {
+      if (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches)) return true;
+      if (window.navigator.standalone === true) return true;
+    } catch (e) {}
+    return false;
+  }
+  function plateforme() {
+    var ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+    if (/Android/i.test(ua)) return /Chrome\//.test(ua) && !/(SamsungBrowser|OPR|Opera|UCBrowser|Firefox|FBAN|FBAV|Instagram|wv\))/i.test(ua) ? 'android-chrome' : 'android-autre';
+    return 'ordinateur';
+  }
+  function etapesInstall() {
+    var pf = plateforme();
+    if (pf === 'ios') return ['Ouvrez Nexora dans <b>Safari</b> (pas dans une autre application).', 'Touchez le bouton <b>Partager</b> (le carré avec une flèche vers le haut).', 'Choisissez <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.'];
+    if (pf === 'android-autre') return ['Ouvrez Nexora dans <b>Google Chrome</b> : nexora-plus-beta.vercel.app', 'Touchez les <b>⋮</b> en haut à droite.', 'Touchez <b>« Installer l’application »</b> ou <b>« Ajouter à l’écran d’accueil »</b>.'];
+    if (pf === 'android-chrome') return ['Touchez les <b>⋮</b> en haut à droite de Chrome.', 'Touchez <b>« Installer l’application »</b> (ou <b>« Ajouter à l’écran d’accueil »</b>).', 'Confirmez avec <b>Installer</b> : l’icône Nexora apparaît sur l’écran d’accueil.'];
+    return ['Dans Chrome ou Edge, cliquez sur l’icône d’installation à droite de la barre d’adresse.', 'Ou ouvrez le menu ⋮ puis « Installer Nexora ».', 'Sur téléphone, ouvrez nexora-plus-beta.vercel.app dans Chrome.'];
+  }
+  function installer() {
+    if (invitationInstall) {
+      var inv = invitationInstall; invitationInstall = null;
+      Promise.resolve().then(function () { return inv.prompt(); })
+        .then(function () { return inv.userChoice; })
+        .then(function (choix) { if (!choix || choix.outcome !== 'accepted') { invitationInstall = inv; } majInstall(); })
+        .catch(function () { invitationInstall = inv; fenetreInstall(); });
+      return;
+    }
+    fenetreInstall();
+  }
+  function fenetreInstall() {
+    var h = '<h2 id="nxb695Titre">Installer Nexora sur ce téléphone</h2>' +
+      '<p>Nexora s’ajoute à votre écran d’accueil et s’ouvre comme une application, en plein écran. Rien à télécharger depuis le Play Store, et les mises à jour arrivent toutes seules.</p>' +
+      '<ol style="margin:0 0 14px;padding-left:20px">' + etapesInstall().map(function (t) { return '<li style="margin:0 0 8px">' + t + '</li>'; }).join('') + '</ol>' +
+      '<div class="nxb695-pied"><span></span><button type="button" class="nxb695-ok" data-nxb697="ok">J’ai compris</button></div>';
+    var fond = ouvrir(h);
+    fond.addEventListener('click', function (e) { if (e.target.closest('[data-nxb697="ok"]')) fermer(); });
+  }
+  function majInstall() {
+    var cacher = estInstallee();
+    var nav = document.querySelector('[data-nxb697-nav]');
+    if (nav) nav.hidden = cacher;
+    var band = document.querySelector('[data-nxb697-bandeau]');
+    if (band) {
+      var e = lire(CLE_INSTALL) || {};
+      band.hidden = cacher || (e.masque && Date.now() - e.masque < 7 * 24 * 3600 * 1000);
+    }
+  }
+  function poserBoutonsInstall() {
+    if (estInstallee()) return;
+    styles();
+    if (!document.getElementById('nxb697Style')) {
+      var st = document.createElement('style'); st.id = 'nxb697Style';
+      st.textContent = '.nxb697-band{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:11px 12px;border-radius:12px;background:var(--nx-ardoise,#16324F);color:#fff;font:14px/1.4 system-ui,-apple-system,Roboto,Arial,sans-serif}' +
+        '.nxb697-band b{display:block;font-size:14.5px}.nxb697-band small{display:block;opacity:.8;font-size:12.5px}' +
+        '.nxb697-band .go{margin-left:auto;flex:0 0 auto;border:0;border-radius:9px;background:var(--nx-ocre,#2F77C9);color:#fff;font:inherit;font-weight:600;padding:9px 13px;cursor:pointer}' +
+        '.nxb697-band .x{flex:0 0 auto;border:0;background:transparent;color:#fff;opacity:.7;font-size:20px;line-height:1;cursor:pointer;padding:2px 4px}' +
+        '.nxb697-band[hidden]{display:none}';
+      document.head.appendChild(st);
+    }
+    /* 1) menu principal */
+    var navList = document.querySelector('nav[data-nav].nx-nav-list-v166') || document.querySelector('nav[data-nav]');
+    if (navList && !navList.querySelector('[data-nxb697-nav]')) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'nav-btn'; b.setAttribute('data-nxb697-nav', '');
+      b.setAttribute('aria-label', 'Installer Nexora sur ce téléphone');
+      b.innerHTML = '<span aria-hidden="true" class="nav-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"></rect><path d="M12 7v7M9 11l3 3 3-3M10 18h4"></path></svg></span><span class="nx-nav-copy-v166"><strong>Installer l’application</strong><small>Nexora sur l’écran d’accueil</small></span>';
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); installer(); });
+      navList.appendChild(b);
+    }
+    /* 2) bandeau en haut de l'Académie */
+    var esp = document.querySelector('[data-nx-espaces-v510="academie"]');
+    if (esp && !document.querySelector('[data-nxb697-bandeau]')) {
+      var d = document.createElement('div');
+      d.className = 'nxb697-band'; d.setAttribute('data-nxb697-bandeau', '');
+      d.innerHTML = '<span aria-hidden="true" style="font-size:22px">📲</span><span><b>Installez Nexora</b><small>Une icône sur votre écran d’accueil, comme une vraie application.</small></span><button type="button" class="go">Installer</button><button type="button" class="x" aria-label="Masquer">×</button>';
+      d.querySelector('.go').addEventListener('click', function (e) { e.preventDefault(); installer(); });
+      d.querySelector('.x').addEventListener('click', function (e) {
+        e.preventDefault(); var st2 = lire(CLE_INSTALL) || {}; st2.masque = Date.now(); ecrire(CLE_INSTALL, st2); d.hidden = true;
+      });
+      esp.insertBefore(d, esp.firstChild);
+    }
+    majInstall();
+  }
+
   /* ---------- point d'entrée appelé par finalizeAuthEntry ---------- */
   function apresConnexion(opts) {
     opts = opts || {};
@@ -24239,9 +24345,27 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     ouvrirKdo: ouvrirKdo,
     choisir: function (opts) { fenetreChoix(Object.assign({ cree: false }, opts || {})); },
     ouvrirActivationCarte: ouvrirActivationCarte,
+    installer: installer,
     _classes: CLASSES
   };
   demarrerCarte();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', poserBoutonsInstall, { once: true });
+  else poserBoutonsInstall();
+  setTimeout(poserBoutonsInstall, 2500);
+  /* L'Académie est chargée à la demande : on pose le bandeau dès qu'elle apparaît. */
+  (function () {
+    if (!window.MutationObserver || estInstallee()) return;
+    var attente = null;
+    var obs = new MutationObserver(function () {
+      if (attente) return;
+      attente = setTimeout(function () {
+        attente = null;
+        if (!document.querySelector('[data-nxb697-bandeau]') && document.querySelector('[data-nx-espaces-v510="academie"]')) poserBoutonsInstall();
+        if (document.querySelector('[data-nxb697-bandeau]') && document.querySelector('[data-nxb697-nav]')) obs.disconnect();
+      }, 300);
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  })();
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', brancherFormulaire, { once: true });
   else brancherFormulaire();
