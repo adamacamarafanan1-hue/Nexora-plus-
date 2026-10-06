@@ -792,7 +792,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     var selected=SELECTED_PLAN&&SELECTED_PLAN.plan_code===plan.plan_code;
     var cls='nx-pay-plan'+(selected?' selected':'')+(plan.featured?' featured':'')+(plan.best?' best':'');
     var badge='';
-    return '<button type="button" class="'+cls+'" data-nx-payment-plan="'+esc(plan.plan_code)+'" aria-label="Activer mon compte avec '+esc(plan.label)+' à '+formatGNF(plan.total)+' — '+(plan.space==="pro"?"espace professionnel":"espace des élèves")+'" aria-pressed="'+(selected?'true':'false')+'"'+(locked?' disabled':'')+'>'+ (badge?'<mark>'+esc(badge)+'</mark>':'') +'<small>'+esc(plan.label)+'</small><b>'+formatGNF(plan.total)+'</b><strong>'+formatGNF(plan.monthly)+' / mois</strong><span>'+(plan.space==="pro"?"Espace professionnel":"Espace des élèves")+'</span><i>'+(selected?'Durée sélectionnée':'Activer mon compte')+'</i></button>';
+    return '<button type="button" class="'+cls+'" data-nx-payment-plan="'+esc(plan.plan_code)+'" aria-label="Activer mon compte avec '+esc(plan.label)+' à '+formatGNF(plan.total)+' — '+'accès complet à Nexora (Élèves + Pro)'+'" aria-pressed="'+(selected?'true':'false')+'"'+(locked?' disabled':'')+'>'+ (badge?'<mark>'+esc(badge)+'</mark>':'') +'<small>'+esc(plan.label)+'</small><b>'+formatGNF(plan.total)+'</b><strong>'+formatGNF(plan.monthly)+' / mois</strong><span>'+(plan.space==="pro"?"Espace professionnel":"Espace des élèves")+'</span><i>'+(selected?'Durée sélectionnée':'Activer mon compte')+'</i></button>';
   }
 
   function plansMarkup(modal){
@@ -836,7 +836,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     if(summary){
       if(SELECTED_PLAN){
         summary.classList.add('ready');
-        summary.innerHTML='<span>Durée sélectionnée · '+(SELECTED_PLAN.space==='pro'?'espace professionnel':'espace des élèves')+'</span><strong>'+esc(SELECTED_PLAN.label)+' · '+formatGNF(SELECTED_PLAN.total)+'</strong>';
+        summary.innerHTML='<span>Durée sélectionnée · '+'accès complet à Nexora (Élèves + Pro)'+'</span><strong>'+esc(SELECTED_PLAN.label)+' · '+formatGNF(SELECTED_PLAN.total)+'</strong>';
       }else{
         summary.classList.remove('ready');
         summary.innerHTML='<span>Aucune formule sélectionnée</span><strong>Choisissez d’abord le nombre de mois.</strong>';
@@ -1132,7 +1132,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     return '<div class="nx-pay-step-intro-v169"><div class="nx-pay-step-kicker-v169"><span>2</span> Étape finale</div><h4>Activer mon accès</h4><p>Payez, entrez le numéro utilisé, puis validez.</p></div>'+ 
       '<div class="nx-pay-simple-flow-v220" aria-label="Trois étapes simples"><span><b>1</b>Payer</span><span><b>2</b>Entrer le numéro</span><span><b>3</b>Valider</span></div>'+ 
       '<div class="nx-pay-validation-banner-v170" data-nx-validation-banner hidden></div>'+ 
-      '<div class="nx-pay-modal-selected"><div><small>Durée choisie · '+(plan.space==='pro'?'espace professionnel':'espace des élèves')+'</small><strong>'+esc(plan.label)+'</strong></div><b>'+formatGNF(plan.total)+'</b></div>'+
+      '<div class="nx-pay-modal-selected"><div><small>Durée choisie · '+'accès complet à Nexora (Élèves + Pro)'+'</small><strong>'+esc(plan.label)+'</strong></div><b>'+formatGNF(plan.total)+'</b></div>'+
       (plan.demo_only?'<div class="nx-pay-status-v168"><b>Tarif de prévisualisation.</b> Au moment de valider, Nexora vérifie obligatoirement la formule réelle dans Supabase. Aucun paiement ne sera enregistré sans plan_id serveur.</div>':'')+ 
       (merchantPhone()?'<div class="nx-orange-money-box-v168"><span class="nx-om-mark-v169" aria-hidden="true">OM</span><div><small>Payez sur ce numéro</small><strong data-nx-merchant-phone>'+esc(formatPhone(merchantPhone()))+'</strong></div><button type="button" class="nx-pay-copy-btn" data-nx-copy-merchant>Copier</button></div>':'<div class="nx-pay-status-v168">Le montant est visible. Le numéro Orange Money officiel et la validation du paiement sont chargés par Supabase dans la version connectée.</div>')+ 
       '<div class="nx-pay-fields"><div class="nx-pay-field"><label>Numéro utilisé pour le paiement</label><input data-nx-payer-phone type="tel" inputmode="numeric" autocomplete="tel" maxlength="15" placeholder="Exemple : 620 00 00 00"></div></div>'+ 
@@ -1265,7 +1265,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     var st=statusData();
     var pro=espaceCourant()==='pro';
     var lowest=sortedPlans().reduce(function(min,p){return !min||p.monthly<min?p.monthly:min;},0);
-    return '<section class="nx-main-access-v163" aria-label="Abonnements Nexora"><div class="nx-main-access-head-v163"><span class="nx-main-access-icon-v163" aria-hidden="true">OM</span><div class="nx-main-access-copy-v163"><small>'+(pro?'Espace professionnel':'Espace des élèves')+' · abonnement séparé</small><div class="nx-main-access-title-v163"><h3>'+(pro?'Accès aux 22 modules professionnels':'Accès aux contenus scolaires Nexora')+'</h3><span class="nx-subscription-status-v93 '+st.className+'">'+esc(st.label)+'</span></div><p>Choisissez la durée disponible pour cet espace, payez par Orange Money puis validez le numéro utilisé.</p></div><button type="button" class="nx-main-access-code-v163" data-nx-open-access-screen>Voir les tarifs</button></div><div class="nx-main-access-flow-v163"><span><i>1</i>Choisir la durée</span><span><i>2</i>Payer Orange Money</span><span><i>3</i>Entrer le numéro</span><span><i>4</i>Valider</span></div><div class="nx-pay-status-v168">'+(lowest?'Tarif : '+formatGNF(lowest)+' par mois.':'Chargement des tarifs Nexora…')+'</div>'+renewalWarningMarkup()+'</section>';
+    return '<section class="nx-main-access-v163" aria-label="Abonnements Nexora"><div class="nx-main-access-head-v163"><span class="nx-main-access-icon-v163" aria-hidden="true">OM</span><div class="nx-main-access-copy-v163"><small>'+'Accès complet · Élèves + Professionnel</small><div class="nx-main-access-title-v163"><h3>'+'Accès à tout Nexora : cours scolaires et 22 modules pro'+'</h3><span class="nx-subscription-status-v93 '+st.className+'">'+esc(st.label)+'</span></div><p>Un seul abonnement ouvre tout Nexora. Choisissez la durée, payez par Orange Money puis validez le numéro utilisé.</p></div><button type="button" class="nx-main-access-code-v163" data-nx-open-access-screen>Voir les tarifs</button></div><div class="nx-main-access-flow-v163"><span><i>1</i>Choisir la durée</span><span><i>2</i>Payer Orange Money</span><span><i>3</i>Entrer le numéro</span><span><i>4</i>Valider</span></div><div class="nx-pay-status-v168">'+(lowest?'Tarif : '+formatGNF(lowest)+' par mois.':'Chargement des tarifs Nexora…')+'</div>'+renewalWarningMarkup()+'</section>';
   };
 
   window.nxRefreshSubscriptionStatus=function(force){
