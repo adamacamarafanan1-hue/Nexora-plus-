@@ -626,7 +626,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
   }
 
   function autonomousCatalogFallback(){
-    var durations=[3,6,9,12],monthly=60000,plans=[];
+    var durations=[1,3,9],prix={1:60000,3:150000,9:360000},plans=[];
     ['eleves','pro'].forEach(function(space){
       durations.forEach(function(months){
         plans.push({
@@ -635,11 +635,11 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
           product_code:space,
           duration_months:months,
           label:months+' mois',
-          total_gnf:monthly*months,
-          monthly_gnf:monthly,
+          total_gnf:prix[months],
+          monthly_gnf:Math.round(prix[months]/months),
           badge:'',
-          is_featured:months===6,
-          is_best_value:false,
+          is_featured:false,
+          is_best_value:months===9,
           demo_only:true
         });
       });
@@ -1265,7 +1265,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     var st=statusData();
     var pro=espaceCourant()==='pro';
     var lowest=sortedPlans().reduce(function(min,p){return !min||p.monthly<min?p.monthly:min;},0);
-    return '<section class="nx-main-access-v163" aria-label="Abonnements Nexora"><div class="nx-main-access-head-v163"><span class="nx-main-access-icon-v163" aria-hidden="true">OM</span><div class="nx-main-access-copy-v163"><small>'+'Accès complet · Élèves + Professionnel</small><div class="nx-main-access-title-v163"><h3>'+'Accès à tout Nexora : cours scolaires et 22 modules pro'+'</h3><span class="nx-subscription-status-v93 '+st.className+'">'+esc(st.label)+'</span></div><p>Un seul abonnement ouvre tout Nexora. Choisissez la durée, payez par Orange Money puis validez le numéro utilisé.</p></div><button type="button" class="nx-main-access-code-v163" data-nx-open-access-screen>Voir les tarifs</button></div><div class="nx-main-access-flow-v163"><span><i>1</i>Choisir la durée</span><span><i>2</i>Payer Orange Money</span><span><i>3</i>Entrer le numéro</span><span><i>4</i>Valider</span></div><div class="nx-pay-status-v168">'+(lowest?'Tarif : '+formatGNF(lowest)+' par mois.':'Chargement des tarifs Nexora…')+'</div>'+renewalWarningMarkup()+'</section>';
+    return '<section class="nx-main-access-v163" aria-label="Abonnements Nexora"><div class="nx-main-access-head-v163"><span class="nx-main-access-icon-v163" aria-hidden="true">OM</span><div class="nx-main-access-copy-v163"><small>'+'Accès complet · Élèves + Professionnel</small><div class="nx-main-access-title-v163"><h3>'+'Accès à tout Nexora : cours scolaires et 22 modules pro'+'</h3><span class="nx-subscription-status-v93 '+st.className+'">'+esc(st.label)+'</span></div><p>Un seul abonnement ouvre tout Nexora. Choisissez la durée, payez par Orange Money puis validez le numéro utilisé.</p></div><button type="button" class="nx-main-access-code-v163" data-nx-open-access-screen>Voir les tarifs</button></div><div class="nx-main-access-flow-v163"><span><i>1</i>Choisir la durée</span><span><i>2</i>Payer Orange Money</span><span><i>3</i>Entrer le numéro</span><span><i>4</i>Valider</span></div><div class="nx-pay-status-v168">'+(lowest?'À partir de '+formatGNF(lowest)+' par mois avec l’année scolaire.':'Chargement des tarifs Nexora…')+'</div>'+renewalWarningMarkup()+'</section>';
   };
 
   window.nxRefreshSubscriptionStatus=function(force){
