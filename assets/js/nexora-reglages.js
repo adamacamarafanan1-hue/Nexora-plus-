@@ -1753,3 +1753,13 @@
   else lancer();
   setTimeout(lancer, 1500);
 })();
+
+/* V704 — Bibliothèque Livria : chargement du module (fichier séparé). */
+(function () {
+  if (window.__nxLivriaChargeurV704) return;
+  window.__nxLivriaChargeurV704 = true;
+  var s = document.createElement('script');
+  s.src = '/assets/js/nexora-livria.js?v=704';
+  s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
