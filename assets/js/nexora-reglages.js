@@ -1763,3 +1763,31 @@
   s.defer = true;
   (document.head || document.documentElement).appendChild(s);
 })();
+
+/* V705 — Nouvel écran d'entrée : chargement du module (fichier séparé).
+   L'ancien contenu de la porte est masqué pendant le chargement ; s'il
+   n'a pas été remplacé au bout de 4 secondes, il réapparaît tel quel. */
+(function () {
+  if (window.__nxEntreeChargeurV705) return;
+  window.__nxEntreeChargeurV705 = true;
+  try {
+    var st = document.createElement('style');
+    st.id = 'nxeMasque';
+    st.textContent = '#welcomeGate .welcome-card>*:not(.nxe-entree){visibility:hidden}';
+    (document.head || document.documentElement).appendChild(st);
+    setTimeout(function () {
+      if (!window.__nxEntreeV705Pret) { var x = document.getElementById('nxeMasque'); if (x) x.remove(); }
+    }, 4000);
+  } catch (_e) {}
+  /* L'invitation d'installation est captée dès maintenant : le module de
+     l'écran d'entrée se charge plus tard et la manquerait. */
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    try { ev.preventDefault(); } catch (_e) {}
+    window.__nxeInvite = ev;
+  });
+  window.addEventListener('appinstalled', function () { window.__nxeInvite = null; });
+  var s = document.createElement('script');
+  s.src = '/assets/js/nexora-entree.js?v=705';
+  s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
