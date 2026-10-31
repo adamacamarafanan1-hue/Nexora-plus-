@@ -24303,6 +24303,66 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     if (etat === 'ok') minuteurInstallB = setTimeout(function () { box.hidden = true; }, 12000);
     if (etat === 'annule') minuteurInstallB = setTimeout(function () { box.hidden = true; }, 4000);
   }
+
+  /* V707 : juste apres l'activation reussie d'une carte, on propose d'installer Nexora.
+     - Rien ne s'affiche si Nexora est deja installee, ou si l'eleve a dit « Plus tard » il y a moins de 7 jours.
+     - « Installer » lance la meme installation que le menu (avec « en cours » puis « terminee »).
+     - Le message disparait seul apres 25 secondes, sans rien memoriser. */
+  var CLE_CARTE_INSTALL = 'nx_install_carte_v707';
+  var minuteurCarteInstall = null;
+  function fermerInstallCarte() {
+    clearTimeout(minuteurCarteInstall);
+    var e = document.getElementById('nxInstallCarteV707'); if (e && e.parentNode) e.parentNode.removeChild(e);
+  }
+  function proposerInstallApresCarte() {
+    try {
+      if (estInstallee()) return;
+      var dejaInstallee = lire(CLE_INSTALL) || {};
+      if (dejaInstallee.installee && Date.now() - dejaInstallee.installee < 30 * 24 * 3600 * 1000) return;
+      var rep = lire(CLE_CARTE_INSTALL) || {};
+      if (rep.plusTard && Date.now() - rep.plusTard < 7 * 24 * 3600 * 1000) return;
+      if (document.getElementById('nxInstallCarteV707')) return;
+      if (!document.getElementById('nxInstallCarteStyleV707')) {
+        var st = document.createElement('style'); st.id = 'nxInstallCarteStyleV707';
+        st.textContent = '.nxic707{position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:1000002;box-sizing:border-box;max-width:480px;margin:0 auto;padding:16px;border-radius:16px;background:#16324F;color:#fff;box-shadow:0 10px 32px rgba(0,0,0,.4);font:14px/1.45 system-ui,-apple-system,Roboto,Arial,sans-serif}' +
+          '.nxic707 b{display:block;font-size:16px;margin-bottom:3px}.nxic707 p{margin:0 0 12px;opacity:.9}' +
+          '.nxic707 .bt{display:flex;gap:10px}.nxic707 button{flex:1;border:0;border-radius:10px;padding:11px 12px;font:inherit;font-weight:700;cursor:pointer}' +
+          '.nxic707 .oui{background:#E3A24C;color:#16212B}.nxic707 .non{background:rgba(255,255,255,.14);color:#fff}';
+        document.head.appendChild(st);
+      }
+      var box = document.createElement('div');
+      box.id = 'nxInstallCarteV707'; box.className = 'nxic707'; box.setAttribute('role', 'region'); box.setAttribute('aria-label', 'Installer Nexora');
+      var t = document.createElement('b'); t.textContent = '🎉 Votre carte est activée !';
+      var m = document.createElement('p'); m.textContent = 'Installez Nexora sur votre téléphone pour l’ouvrir en un clic, comme une application.';
+      var bt = document.createElement('div'); bt.className = 'bt';
+      var oui = document.createElement('button'); oui.type = 'button'; oui.className = 'oui'; oui.textContent = 'Installer';
+      var non = document.createElement('button'); non.type = 'button'; non.className = 'non'; non.textContent = 'Plus tard';
+      oui.addEventListener('click', function () { fermerInstallCarte(); installer(); });
+      non.addEventListener('click', function () { try { ecrire(CLE_CARTE_INSTALL, { plusTard: Date.now() }); } catch (_) {} fermerInstallCarte(); });
+      bt.appendChild(oui); bt.appendChild(non); box.appendChild(t); box.appendChild(m); box.appendChild(bt);
+      document.body.appendChild(box);
+      minuteurCarteInstall = setTimeout(fermerInstallCarte, 25000);
+    } catch (_) {}
+  }
+  /* On « enveloppe » la fonction d'activation, meme si elle est chargee plus tard : des qu'elle reussit, on propose l'installation. */
+  (function () {
+    function envelopper(fn) {
+      if (typeof fn !== 'function' || fn.__nxV707) return fn;
+      var w = function () {
+        var p = fn.apply(this, arguments);
+        try { Promise.resolve(p).then(function (d) { if (d && d.success !== false) setTimeout(proposerInstallApresCarte, 900); }).catch(function () {}); } catch (_) {}
+        return p;
+      };
+      w.__nxV707 = true; return w;
+    }
+    try {
+      var d = Object.getOwnPropertyDescriptor(window, 'nxActivateSubscriptionCode');
+      if (!d || d.configurable) {
+        var val = envelopper(window.nxActivateSubscriptionCode);
+        Object.defineProperty(window, 'nxActivateSubscriptionCode', { configurable: true, enumerable: true, get: function () { return val; }, set: function (f) { val = envelopper(f); } });
+      }
+    } catch (_) {}
+  })();
   function fenetreInstall() {
     var h = '<h2 id="nxb695Titre">Installer Nexora sur ce téléphone</h2>' +
       '<p>Nexora s’ajoute à votre écran d’accueil et s’ouvre comme une application, en plein écran. Rien à télécharger depuis le Play Store, et les mises à jour arrivent toutes seules.</p>' +
