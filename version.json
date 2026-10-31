@@ -1,5 +1,5 @@
 {
-  "version": "V706",
-  "message": "Nexora V706 : le bouton Installer fonctionne a chaque fois, avec un message Installation en cours puis Installation terminee. Nexora se presente partout comme plateforme educative guineenne.",
+  "version": "V707",
+  "message": "Nexora V707 : apres l'activation d'une carte, Nexora propose d'installer l'application sur le telephone, en un clic.",
   "critical": false
 }
