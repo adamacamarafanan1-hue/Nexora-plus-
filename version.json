@@ -1,5 +1,5 @@
 {
-  "version": "V707",
-  "message": "Nexora V707 : apres l'activation d'une carte, Nexora propose d'installer l'application sur le telephone, en un clic.",
+  "version": "V708",
+  "message": "Nexora V708 : meilleure compatibilite avec les anciens telephones (iPhone anciens et Android anciens), sans rien changer sur les telephones recents.",
   "critical": false
 }
