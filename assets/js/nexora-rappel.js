@@ -1,4 +1,5 @@
-/* V709 — Rappel quotidien de 11 h : bandeau dans Nexora + notifications sur le telephone. */
+
+/* V710 (V709 + demande automatique) — Rappel quotidien de 11 h : bandeau dans Nexora + notifications sur le telephone. */
 (function () {
   'use strict';
   if (window.__nxRappelV709) return;
@@ -86,6 +87,16 @@
     }).catch(function () {});
   }
 
+  /* V710 : la fenetre d'autorisation s'affiche toute seule (Android/ordinateur). iPhone : bouton du bandeau. */
+  function demandeAuto(sb) {
+    if (!pushPossible() || Notification.permission !== 'default') return;
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) return;
+    var dernier = parseInt(lire('nx_rappel_auto_v710') || '0', 10);
+    if (dernier && (Date.now() - dernier) < 3 * 24 * 3600 * 1000) return;
+    ecrire('nx_rappel_auto_v710', String(Date.now()));
+    activerPush(sb).catch(function () {});
+  }
+
   function styles() {
     if (document.getElementById('nxRappelStyleV709')) return;
     var s = document.createElement('style');
@@ -148,6 +159,7 @@
     attendreClient(12).then(function (sb) {
       if (!sb) return;
       rafraichirPush(sb);
+      demandeAuto(sb);
       if (new Date().getHours() < HEURE) return;
       if (lire('nx_rappel_ferme_v709') === jourCle()) return;
       sb.rpc('nexora_rappel_du_jour').then(function (r) {
@@ -159,4 +171,3 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(demarrer, 2500); });
   else setTimeout(demarrer, 2500);
 })();
-
