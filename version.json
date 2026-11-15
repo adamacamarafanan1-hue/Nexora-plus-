@@ -1,6 +1,6 @@
+
 {
-  "version": "V709",
-  "message": "Nexora V709 : rappel quotidien a 11 h pour revenir etudier (notification sur le telephone et bandeau dans Nexora).",
+  "version": "V710",
+  "message": "Nexora V710 : la demande de notifications s'affiche automatiquement a l'ouverture.",
   "critical": false
 }
-
