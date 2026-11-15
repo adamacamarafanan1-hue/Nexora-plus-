@@ -1,4 +1,6 @@
-/* Nexora V600 — mise à jour fiable des contenus sans vider le cache manuellement. */
+
+/* Nexora V709 (V600 + rappel quotidien) — mise à jour fiable des contenus sans vider le cache manuellement. */
+/* ancien: Nexora V600 — mise à jour fiable des contenus sans vider le cache manuellement. */
 
 const CACHE_NAME = "nexora-v600-coque-1";
 const CACHE_PREFIX = "nexora-";
@@ -14,7 +16,8 @@ const PUBLIC_ASSETS = [
 
 const TOUJOURS_FRAIS = new Set([
   "/assets/js/nx-v157-primary-school-script.js",
-  "/assets/js/nexora-reglages.js"
+  "/assets/js/nexora-reglages.js",
+  "/assets/js/nexora-rappel.js"
 ]);
 
 self.addEventListener("install", (event) => {
@@ -41,6 +44,7 @@ self.addEventListener("activate", (event) => {
 
 /* index.html reste enrichi à la volée avec le module léger de réglages. */
 const LIGNE_AJOUTEE = '<script src="/assets/js/nexora-reglages.js" defer></' + 'script>';
+const LIGNE_RAPPEL = '<script src="/assets/js/nexora-rappel.js" defer></' + 'script>';
 
 async function enrichir(reponse) {
   try {
@@ -50,11 +54,14 @@ async function enrichir(reponse) {
 
     const texte = await reponse.clone().text();
     if (!texte || texte.length < 10000) return reponse;
-    if (texte.indexOf("nexora-reglages.js") >= 0) return reponse;
+    let ajout = "";
+    if (texte.indexOf("nexora-reglages.js") < 0) ajout += LIGNE_AJOUTEE;
+    if (texte.indexOf("nexora-rappel.js") < 0) ajout += LIGNE_RAPPEL;
+    if (!ajout) return reponse;
     const fin = texte.lastIndexOf("</body>");
     if (fin < 0) return reponse;
 
-    const enrichi = texte.slice(0, fin) + LIGNE_AJOUTEE + texte.slice(fin);
+    const enrichi = texte.slice(0, fin) + ajout + texte.slice(fin);
     if (enrichi.length <= texte.length) return reponse;
 
     const entetes = new Headers(reponse.headers);
@@ -206,4 +213,30 @@ self.addEventListener("fetch", (event) => {
 
   if (!PUBLIC_ASSETS.includes(url.pathname)) return;
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+});
+
+/* Notifications push : rappel quotidien de 11 h. */
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (_e) { d = {}; }
+  event.waitUntil(self.registration.showNotification(d.title || "Nexora", {
+    body: d.body || "Reviens étudier sur Nexora.",
+    icon: "/assets/icons/nexora-192.png",
+    badge: "/assets/icons/nexora-192.png",
+    tag: "rappel-quotidien",
+    renotify: true,
+    data: { url: d.url || "/" }
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const cible = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil((async () => {
+    const pages = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const page of pages) {
+      if (new URL(page.url).origin === self.location.origin && "focus" in page) return page.focus();
+    }
+    return self.clients.openWindow(cible);
+  })());
 });
