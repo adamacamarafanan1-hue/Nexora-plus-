@@ -1,1 +1,334 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Jeu Adams</title>
+<meta name="description" content="Jeu Adams, le jeu éducatif guinéen : 18 jeux de plateau pour apprendre en jouant.">
+<meta name="theme-color" content="#0F1B3D">
+<link rel="manifest" href="/jeu-adams-app/manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F1B3D'/%3E%3Ctext x='32' y='43' font-size='30' font-weight='900' text-anchor='middle' fill='%23F4B63F' font-family='Arial'%3EJA%3C/text%3E%3C/svg%3E">
 
+<link rel="stylesheet" href="/jeu-adams-app/jeu.css">
+<link rel="stylesheet" href="/assets/css/nexora-adams-v518.0.css">
+<style>
+:root{--surface:#F7F9FB;--surface-2:#EEF2F6;--border:#DBDFE4;--nx-z-dialog:930;--nx-z-critical:940;--ink:#0F1B3D;--ink2:#1D2D5E;--gold:#F4B63F;--gold-d:#C98A12;--paper:#F3F5FA;--line:#D9DEEB;--muted:#5A6482;--ok:#12805C;--bad:#B3261E}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 "Avenir Next","Trebuchet MS","Segoe UI",Roboto,system-ui,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer}
+.ja-top{background:var(--ink);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;display:flex;align-items:center;gap:12px}
+.ja-logo{width:42px;height:42px;border-radius:11px;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:19px;letter-spacing:-.04em;flex:none}
+.ja-brand{font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+.ja-brand small{display:block;font-size:12px;font-weight:500;color:#B9C3E4;letter-spacing:0}
+.ja-user{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ja-chip{border:1px solid #3A4C86;background:transparent;color:#fff;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700;min-height:40px}
+.ja-chip.gold{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.ja-wrap{max-width:980px;margin:0 auto;padding:0 16px 40px}
+.ja-hero{padding:22px 0 8px}
+.ja-hero h1{margin:0 0 6px;font-size:27px;line-height:1.15;letter-spacing:-.02em}
+.ja-hero p{margin:0;color:var(--muted);max-width:60ch}
+.ja-status{margin:16px 0 4px;border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line)}
+.ja-status.on{background:#E8F6F0;border-color:#9ED8BF}
+.ja-status b{display:block;font-size:16px}
+.ja-status span{color:var(--muted);font-size:14px}
+.ja-status .ja-cta{margin-left:auto}
+.ja-cta{background:var(--ink);color:#fff;border:0;border-radius:11px;padding:12px 18px;font-weight:800;min-height:46px}
+.ja-cta.gold{background:var(--gold);color:var(--ink)}
+.ja-cta[disabled]{opacity:.55}
+.ja-group{margin:26px 0 0}
+.ja-group h2{font-size:15px;margin:0 0 10px;color:var(--ink2);letter-spacing:0}
+.ja-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.ja-card{position:relative;text-align:left;background:#fff;border:1px solid var(--line);border-left:6px solid var(--a,#2563EB);border-radius:12px;padding:14px 14px 14px 14px;display:block;width:100%;color:inherit}
+.ja-card:active{transform:scale(.99)}
+.ja-card h3{margin:0 0 4px;font-size:16.5px;line-height:1.2}
+.ja-card p{margin:0 0 10px;color:var(--muted);font-size:14px}
+.ja-card .ja-lvl{display:inline-block;font-size:12px;font-weight:800;color:var(--a,#2563EB);background:var(--s,#DBEAFE);padding:3px 9px;border-radius:999px;margin-bottom:8px}
+.ja-card .ja-go{font-weight:800;font-size:14px;color:var(--ink)}
+.ja-card .ja-free{position:absolute;top:12px;right:12px;background:#E8F6F0;color:var(--ok);font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px}
+.ja-foot{margin-top:34px;color:var(--muted);font-size:13px;text-align:center}
+/* feuilles (connexion / paiement) */
+.ja-sheet{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483000;background:rgba(15,27,61,.55);display:none;align-items:flex-end;justify-content:center}
+.ja-sheet.open{display:flex}
+.ja-panel{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 22px);max-height:92vh;overflow:auto}
+@media(min-width:700px){.ja-sheet{align-items:center}.ja-panel{border-radius:18px}}
+.ja-panel h2{margin:0 0 4px;font-size:21px;letter-spacing:-.01em}
+.ja-panel .ja-sub{margin:0 0 14px;color:var(--muted);font-size:14.5px}
+.ja-x{float:right;border:0;background:#EEF1F8;border-radius:999px;width:38px;height:38px;font-size:22px;line-height:1;margin:-4px -4px 0 8px}
+.ja-field{display:block;margin:0 0 12px}
+.ja-field span{display:block;font-size:13px;font-weight:700;margin-bottom:5px}
+.ja-field input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px;font-size:16px;min-height:48px;background:#fff;color:var(--ink)}
+.ja-field input:focus{outline:3px solid #B8C6F0;border-color:var(--ink2)}
+.ja-msg{margin:10px 0 0;font-size:14px;min-height:20px}
+.ja-msg.err{color:var(--bad)}.ja-msg.ok{color:var(--ok)}
+.ja-link{background:none;border:0;color:var(--ink2);text-decoration:underline;padding:8px 0;font-weight:700}
+.ja-price{display:flex;align-items:baseline;gap:8px;margin:4px 0 14px}
+.ja-price b{font-size:36px;letter-spacing:-.03em}
+.ja-price span{color:var(--muted)}
+.ja-steps{margin:0 0 14px;padding:0;list-style:none;counter-reset:s}
+.ja-steps li{counter-increment:s;display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.ja-steps li:before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.ja-num{display:inline-flex;gap:8px;align-items:center;background:#FFF6DF;border:1px solid #F1D48B;border-radius:10px;padding:8px 12px;font-weight:800;font-size:17px;margin-top:4px}
+.ja-num button{border:0;background:var(--gold);border-radius:8px;padding:6px 10px;font-weight:800;font-size:13px}
+.ja-wait{background:#FFF6DF;border:1px solid #F1D48B;border-radius:12px;padding:14px;margin:10px 0}
+</style>
+</head>
+<body>
+<header class="ja-top">
+  <div class="ja-logo" aria-hidden="true">JA</div>
+  <div class="ja-brand">Jeu Adams<small>Apprendre en jouant</small></div>
+  <div class="ja-user" id="jaUser"></div>
+</header>
+
+<main class="ja-wrap">
+  <section class="ja-hero">
+    <h1>Le jeu éducatif guinéen, sur ton téléphone</h1>
+    <p>18 jeux de plateau, de la maternelle à l’université et au monde professionnel. Chaque bonne réponse fait avancer ton pion.</p>
+  </section>
+  <section class="ja-status" id="jaStatus" aria-live="polite"></section>
+  <div id="jaCatalogue"></div>
+  <p class="ja-foot">Jeu Adams — certifié INRAP, créé en 2010. <button type="button" class="ja-link" id="jaInstall" hidden>Installer l’application</button></p>
+</main>
+
+<!-- Connexion -->
+<div class="ja-sheet" id="jaAuth" role="dialog" aria-modal="true" aria-labelledby="jaAuthT">
+  <div class="ja-panel">
+    <button type="button" class="ja-x" data-close aria-label="Fermer">×</button>
+    <h2 id="jaAuthT">Connexion</h2>
+    <p class="ja-sub" id="jaAuthS">Utilise ton compte Nexora ou crée un compte Jeu Adams.</p>
+    <form id="jaAuthForm" novalidate>
+      <label class="ja-field"><span>Adresse e-mail</span><input id="jaMail" type="email" autocomplete="email" inputmode="email" required></label>
+      <label class="ja-field"><span>Mot de passe</span><input id="jaPass" type="password" autocomplete="current-password" minlength="6" required></label>
+      <button class="ja-cta gold" id="jaAuthGo" type="submit" style="width:100%">Se connecter</button>
+    </form>
+    <p class="ja-msg" id="jaAuthMsg" role="status"></p>
+    <button type="button" class="ja-link" id="jaAuthSwitch">Pas de compte ? Créer un compte</button>
+  </div>
+</div>
+
+<!-- Abonnement -->
+<div class="ja-sheet" id="jaPay" role="dialog" aria-modal="true" aria-labelledby="jaPayT">
+  <div class="ja-panel">
+    <button type="button" class="ja-x" data-close aria-label="Fermer">×</button>
+    <h2 id="jaPayT">Abonnement Jeu Adams</h2>
+    <p class="ja-sub">Les 18 jeux, en solo ou à plusieurs, pendant un mois.</p>
+    <div class="ja-price"><b>90 000 GNF</b><span>par mois</span></div>
+    <div id="jaPayBody"></div>
+  </div>
+</div>
+
+<script src="/assets/vendor/supabase-js-2.112.2.js"></script>
+<script>
+/* Jeu Adams — passerelle : fait tourner le moteur de jeux avec un abonnement Jeu Adams indépendant de Nexora. */
+(function(){
+  'use strict';
+  var URL_SB='https://lzypxingcykvgxdifccq.supabase.co';
+  var KEY_SB='sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY';
+  var real=window.supabase.createClient(URL_SB,KEY_SB,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+
+  function ajuster(res){
+    try{
+      if(res&&res.data&&typeof res.data==='object'){
+        var d=res.data,j=Number(d.days_remaining||0);
+        d.version='v702';d.authoritative=true;d.requested_product_code='adams';d.notice_due=!!(d.active&&j>0&&j<=7);
+      }
+    }catch(e){}
+    return res;
+  }
+  /* Le moteur demande l'état de l'abonnement Nexora : ici on répond avec celui de Jeu Adams. */
+  var client=new Proxy(real,{get:function(t,p){
+    if(p==='rpc')return function(name,args,opts){
+      if(name==='nexora_my_subscription_status_v264')return Promise.resolve(t.rpc('jeuadams_mon_acces')).then(ajuster);
+      return t.rpc(name,args,opts);
+    };
+    var v=t[p];return typeof v==='function'?v.bind(t):v;
+  }});
+  window.__jaClient=client;
+
+  window.nxLog=window.nxLog||function(){};
+  window.toast=function(m){
+    try{var el=document.getElementById('jaToast');if(!el){el=document.createElement('div');el.id='jaToast';
+      el.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);max-width:480px;margin:0 auto;background:#0F1B3D;color:#fff;padding:12px 16px;border-radius:12px;z-index:2147483600;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.3)';
+      document.body.appendChild(el);}
+      el.textContent=String(m||'');el.style.display='block';clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none'},4200);}catch(e){}
+  };
+  window.NexoraApp={
+    getSupabaseClient:function(){return client},
+    ensureSupabaseClientReady:function(){return Promise.resolve(client)},
+    go:function(){window.__jaOuvrirAbonnement&&window.__jaOuvrirAbonnement()},
+    render:function(){}
+  };
+})();
+</script>
+<script src="/assets/js/nexora-secure-v522.js"></script>
+<script src="/assets/js/nexora-adams-v521.js"></script>
+<script>
+(function(){
+  'use strict';
+  var sb=window.__jaClient;
+  var GAMES=[
+    ['Maternelle & primaire',[['maternelle','Maternelle','Éveil','Jeu d’éveil coloré : 30 modules, 90 activités et voix guidée.','#F97316','#FFEDD5'],['ecole','École','Primaire','Lecture, calcul, sciences et ECM pour le primaire.','#2563EB','#DBEAFE']]],
+    ['Collège',[['7e','7e année','Collège','Plateau avec QCM pour les bases, la logique et la rapidité.','#0284C7','#E0F2FE'],['8e','8e année','Collège','Plateau scolaire, rotation des tours, progression des pions.','#4F46E5','#E0E7FF'],['9e','9e année','Collège','Questions intégrées, points et parcours éducatif complet.','#0891B2','#CFFAFE'],['10e','10e année','Collège','Renforcer les acquis avec un parcours clair et compétitif.','#0F766E','#CCFBF1']]],
+    ['Lycée',[['11e','11e année','Lycée','Questions et progression par équipes.','#9333EA','#F3E8FF'],['12e','12e année','Lycée','Révisions, défis et compétitions scolaires.','#BE123C','#FFE4E6'],['terminale','Terminale','Terminale','Préparer les défis de fin de cycle.','#B45309','#FEF3C7'],['preuniv','Pré-universitaire','Découverte','Bases scolaires, rapidité, logique et réflexes.','#2563EB','#DBEAFE']]],
+    ['Campus & métiers',[['univ','Université','Campus','Culture générale et raisonnement pour étudiants.','#7C3AED','#EDE9FE'],['pro','Professionnel','Expert','Compétences, carrière et entrepreneuriat.','#0F766E','#CCFBF1']]],
+    ['Culture',[['guinee','Guinée','Gratuit','La Guinée : repères nationaux, patrimoine et connaissances utiles.','#16A34A','#DCFCE7'],['histoire','Histoire','Mémoire','Grandes dates, faits marquants et personnages.','#1D4ED8','#DBEAFE'],['sport','Sport','Action','Champions, disciplines et défis rapides.','#EA580C','#FFEDD5'],['sante','Santé','Essentiel','Prévention, bien-être et bonnes pratiques.','#DC2626','#FEE2E2'],['musique','Musique','Rythme','Artistes, instruments et histoire musicale.','#C026D3','#F5D0FE'],['art','Art','Créatif','Création, patrimoine artistique et culture visuelle.','#D97706','#FEF3C7']]]
+  ];
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function $(s){return document.querySelector(s)}
+
+  var etat={user:null,acces:null,infos:null,demande:null};
+
+  function rendreCatalogue(){
+    var h='';
+    GAMES.forEach(function(g){
+      h+='<section class="ja-group"><h2>'+esc(g[0])+'</h2><div class="ja-grid">';
+      g[1].forEach(function(x){
+        var libre=x[0]==='guinee';
+        var action=libre?'open-adams-game':'open-adams-subscription';
+        h+='<article class="ja-card" role="button" tabindex="0" data-action="'+action+'" data-adams-game="'+esc(x[0])+'" data-adams-game-label="Jeu Adams '+esc(x[1])+'" style="--a:'+x[4]+';--s:'+x[5]+'" aria-label="Jouer à Jeu Adams '+esc(x[1])+'">'+
+          (libre?'<span class="ja-free">Gratuit</span>':'')+
+          '<span class="ja-lvl">'+esc(x[2])+'</span><h3>Jeu Adams '+esc(x[1])+'</h3><p>'+esc(x[3])+'</p><span class="ja-go">Jouer</span></article>';
+      });
+      h+='</div></section>';
+    });
+    $('#jaCatalogue').innerHTML=h;
+  }
+
+  function dateLisible(v){try{var d=new Date(v);return d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}catch(e){return ''}}
+
+  function rendreEntete(){
+    var u=$('#jaUser');
+    if(etat.user){
+      u.innerHTML='<button type="button" class="ja-chip" id="jaOut">Déconnexion</button>';
+      $('#jaOut').onclick=function(){sb.auth.signOut().then(function(){etat.user=null;etat.acces=null;rendreEntete();rendreStatut()})};
+    }else{
+      u.innerHTML='<button type="button" class="ja-chip gold" id="jaIn">Se connecter</button>';
+      $('#jaIn').onclick=function(){ouvrirAuth()};
+    }
+  }
+  function rendreStatut(){
+    var box=$('#jaStatus'),a=etat.acces;
+    if(!etat.user){
+      box.className='ja-status';
+      box.innerHTML='<div><b>Jeu Adams Guinée est gratuit</b><span>Connecte-toi pour jouer aux autres jeux.</span></div><button type="button" class="ja-cta gold" id="jaS1">Se connecter</button>';
+      $('#jaS1').onclick=ouvrirAuth;return;
+    }
+    if(a&&a.active){
+      box.className='ja-status on';
+      box.innerHTML='<div><b>Abonnement actif</b><span>Jusqu’au '+esc(dateLisible(a.ends_at))+' — les 18 jeux sont ouverts.</span></div>';
+      return;
+    }
+    box.className='ja-status';
+    box.innerHTML='<div><b>Abonne-toi pour ouvrir les 18 jeux</b><span>90 000 GNF par mois, paiement Orange Money.</span></div><button type="button" class="ja-cta gold" id="jaS2">S’abonner</button>';
+    $('#jaS2').onclick=ouvrirAbonnement;
+  }
+
+  function charger(){
+    return sb.auth.getSession().then(function(r){
+      etat.user=(r&&r.data&&r.data.session&&r.data.session.user)||null;
+      rendreEntete();
+      if(!etat.user){etat.acces=null;rendreStatut();return null}
+      return sb.rpc('jeuadams_mon_acces').then(function(x){etat.acces=x&&x.data||null;rendreStatut();return etat.acces});
+    }).catch(function(){rendreEntete();rendreStatut()});
+  }
+
+  /* ---- feuilles ---- */
+  function ouvrir(id){var el=$(id);el.classList.add('open');var f=el.querySelector('input,button.ja-cta');}
+  function fermer(id){$(id).classList.remove('open')}
+  document.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest('[data-close]');if(c){var s=c.closest('.ja-sheet');if(s)s.classList.remove('open')}});
+
+  var modeCreation=false;
+  function majAuthTexte(){
+    $('#jaAuthT').textContent=modeCreation?'Créer un compte':'Connexion';
+    $('#jaAuthGo').textContent=modeCreation?'Créer mon compte':'Se connecter';
+    $('#jaAuthSwitch').textContent=modeCreation?'J’ai déjà un compte : me connecter':'Pas de compte ? Créer un compte';
+    $('#jaPass').setAttribute('autocomplete',modeCreation?'new-password':'current-password');
+    $('#jaAuthMsg').textContent='';$('#jaAuthMsg').className='ja-msg';
+  }
+  function ouvrirAuth(){modeCreation=false;majAuthTexte();ouvrir('#jaAuth')}
+  $('#jaAuthSwitch').onclick=function(){modeCreation=!modeCreation;majAuthTexte()};
+  $('#jaAuthForm').addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var mail=$('#jaMail').value.trim(),pass=$('#jaPass').value,msg=$('#jaAuthMsg'),go=$('#jaAuthGo');
+    if(!/^\S+@\S+\.\S+$/.test(mail)){msg.className='ja-msg err';msg.textContent='Entre une adresse e-mail valide.';return}
+    if(pass.length<6){msg.className='ja-msg err';msg.textContent='Le mot de passe doit avoir au moins 6 caractères.';return}
+    go.disabled=true;msg.className='ja-msg';msg.textContent='Un instant…';
+    var p=modeCreation?sb.auth.signUp({email:mail,password:pass}):sb.auth.signInWithPassword({email:mail,password:pass});
+    Promise.resolve(p).then(function(r){
+      go.disabled=false;
+      if(r&&r.error){msg.className='ja-msg err';msg.textContent=/invalid login/i.test(r.error.message||'')?'E-mail ou mot de passe incorrect.':(r.error.message||'Connexion impossible.');return}
+      if(modeCreation&&r.data&&!r.data.session){msg.className='ja-msg ok';msg.textContent='Compte créé. Ouvre le message reçu par e-mail pour le confirmer, puis connecte-toi.';return}
+      fermer('#jaAuth');charger().then(function(){if(window.__jaApres){var f=window.__jaApres;window.__jaApres=null;window.nxRequireSubscriptionAccess('adams',f)}});
+    }).catch(function(){go.disabled=false;msg.className='ja-msg err';msg.textContent='Connexion impossible. Vérifie ton réseau.'});
+  });
+
+  function formatTel(t){t=String(t||'').replace(/\D/g,'');return t.replace(/(\d{3})(\d{2})(\d{2})(\d{2})$/,'$1 $2 $3 $4')}
+  function rendrePaiement(){
+    var body=$('#jaPayBody'),i=etat.infos||{},d=etat.demande||{},tel=formatTel(i.merchant_phone);
+    if(d.status==='payment_declared'||d.status==='under_review'){
+      body.innerHTML='<div class="ja-wait"><b>Paiement reçu, vérification en cours</b><br><span style="color:#5A6482;font-size:14px">Dès que ton paiement est confirmé, les 18 jeux s’ouvrent sur ce compte. Cela prend en général quelques minutes.</span></div><button type="button" class="ja-cta" id="jaRef" style="width:100%">Actualiser</button><p class="ja-msg" id="jaPayMsg"></p>';
+      $('#jaRef').onclick=function(){chargerPaiement().then(function(){return charger()}).then(function(){if(etat.acces&&etat.acces.active){fermer('#jaPay')}else rendrePaiement()})};
+      return;
+    }
+    if(d.status==='rejected'){
+      body.innerHTML='<div class="ja-wait"><b>Paiement non confirmé</b><br><span style="font-size:14px;color:#5A6482">'+esc(d.admin_note||'Vérifie le numéro et le montant, puis réessaie.')+'</span></div>';
+    }else body.innerHTML='';
+    body.innerHTML+='<ol class="ja-steps"><li><div>Envoie <b>90 000 GNF</b> par Orange Money au numéro :<br><span class="ja-num">'+esc(tel||'…')+' <button type="button" id="jaCopy">Copier</button></span></div></li>'+
+      '<li><div>Entre ci-dessous <b>ton</b> numéro Orange Money (celui qui a payé).</div></li>'+
+      '<li><div>Appuie sur « J’ai payé » : ton accès s’ouvre dès la confirmation.</div></li></ol>'+
+      '<label class="ja-field"><span>Ton numéro Orange Money</span><input id="jaTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="6XX XX XX XX"></label>'+
+      '<button type="button" class="ja-cta gold" id="jaPaid" style="width:100%">J’ai payé</button><p class="ja-msg" id="jaPayMsg" role="status"></p>';
+    $('#jaCopy').onclick=function(){try{navigator.clipboard.writeText(String(i.merchant_phone||'').replace(/\D/g,''));window.toast('Numéro copié.')}catch(e){window.toast('Numéro : '+tel)}};
+    $('#jaPaid').onclick=function(){
+      var btn=this,m=$('#jaPayMsg'),t=$('#jaTel').value;
+      m.className='ja-msg';m.textContent='Un instant…';btn.disabled=true;
+      sb.rpc('jeuadams_declarer_paiement',{p_phone:t}).then(function(r){
+        btn.disabled=false;
+        if(r&&r.error){m.className='ja-msg err';m.textContent=r.error.message||'Envoi impossible.';return}
+        return chargerPaiement().then(rendrePaiement);
+      }).catch(function(){btn.disabled=false;m.className='ja-msg err';m.textContent='Envoi impossible. Vérifie ton réseau.'});
+    };
+  }
+  function chargerPaiement(){
+    return Promise.all([sb.rpc('jeuadams_infos_paiement'),sb.rpc('jeuadams_ma_demande')]).then(function(r){
+      etat.infos=r[0]&&r[0].data||{};etat.demande=r[1]&&r[1].data||{};
+    }).catch(function(){});
+  }
+  function ouvrirAbonnement(){
+    if(!etat.user){ouvrirAuth();return}
+    ouvrir('#jaPay');
+    $('#jaPayBody').innerHTML='<p class="ja-sub">Chargement…</p>';
+    chargerPaiement().then(rendrePaiement);
+  }
+  window.__jaOuvrirAbonnement=ouvrirAbonnement;
+
+  /* Le moteur de jeux demande l'accès : on répond avec l'abonnement Jeu Adams. */
+  function installerGarde(){
+    window.nxRequireSubscriptionAccess=function(contexte,rappel){
+      window.__jaApres=rappel||null;
+      return sb.auth.getSession().then(function(r){
+        var u=r&&r.data&&r.data.session;
+        if(!u){ouvrirAuth();return false}
+        return sb.rpc('jeuadams_mon_acces').then(function(x){
+          etat.acces=x&&x.data||null;rendreStatut();
+          if(etat.acces&&etat.acces.active){window.__jaApres=null;if(typeof rappel==='function')rappel();return true}
+          ouvrirAbonnement();return false;
+        });
+      }).catch(function(){window.toast('Connexion Internet nécessaire pour ouvrir les jeux.');return false});
+    };
+  }
+  installerGarde();window.addEventListener('load',installerGarde);
+
+  /* Installation */
+  var diffre=null;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();diffre=e;$('#jaInstall').hidden=false});
+  $('#jaInstall').onclick=function(){if(!diffre)return;diffre.prompt();diffre=null;$('#jaInstall').hidden=true};
+  if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/jeu-adams-app/sw.js',{scope:'/'}).catch(function(){})})}
+
+  rendreCatalogue();rendreEntete();rendreStatut();
+  sb.auth.onAuthStateChange(function(){setTimeout(charger,0)});
+  charger();
+})();
+</script>
+</body>
+</html>
