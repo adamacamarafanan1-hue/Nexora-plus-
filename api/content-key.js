@@ -123,14 +123,16 @@ function consumeRateLimit(request, token) {
 }
 
 async function activeSubscription(url, publishableKey, token, productCode) {
-  const response = await fetchWithTimeout(url + "/rest/v1/rpc/nexora_my_subscription_status_v264", {
+  /* Jeu Adams est une application à part : son accès est jugé par jeuadams_mon_acces. */
+  const jeuAdams = productCode === "adams";
+  const response = await fetchWithTimeout(url + "/rest/v1/rpc/" + (jeuAdams ? "jeuadams_mon_acces" : "nexora_my_subscription_status_v264"), {
     method: "POST",
     headers: {
       apikey: publishableKey,
       Authorization: "Bearer " + token,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ p_product_code: productCode })
+    body: jeuAdams ? "{}" : JSON.stringify({ p_product_code: productCode })
   });
   if (!response.ok) throw new Error("SUBSCRIPTION_CHECK_FAILED");
   const data = decodeResult(await readJson(response));
