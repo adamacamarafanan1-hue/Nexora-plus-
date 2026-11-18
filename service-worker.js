@@ -1,4 +1,3 @@
-
 /* Nexora V709 (V600 + rappel quotidien) — mise à jour fiable des contenus sans vider le cache manuellement. */
 /* ancien: Nexora V600 — mise à jour fiable des contenus sans vider le cache manuellement. */
 
@@ -163,6 +162,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
   if (url.pathname === "/version.json") return;
+  /* Jeu Adams est une application à part : le service worker de Nexora ne touche pas à ses pages. */
+  if (url.hostname === "jeu-adams.vercel.app" || url.pathname.startsWith("/jeu-adams-app/")) return;
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/protected/") || url.pathname.startsWith("/modules/jeu-adams/")) return;
 
   /* Ces fichiers portent un nom stable mais leur contenu change. On vérifie donc
