@@ -169,6 +169,8 @@ button{font:inherit;cursor:pointer}
 (function(){
   'use strict';
   var sb=window.__jaClient;
+  /* Diagnostic : affiche la cause technique sous le message « Jeu Adams indisponible ». */
+  (function(){var o=console.error;console.error=function(){try{var a=[].slice.call(arguments).map(function(x){return x&&x.message?x.message:String(x)}).join(' ');if(/Chargement Jeu Adams/.test(a)){setTimeout(function(){var c=document.querySelector('.nx-adams-game-loading span');if(c&&!c.querySelector('em')){var e=document.createElement('em');e.style.cssText='display:block;margin-top:8px;font-size:11px;opacity:.8;font-style:normal';e.textContent='Détail : '+a.slice(0,200);c.appendChild(e)}},60)}}catch(_){}return o.apply(console,arguments)}})();
   var GAMES=[
     ['Maternelle & primaire',[['maternelle','Maternelle','Éveil','Jeu d’éveil coloré : 30 modules, 90 activités et voix guidée.','#F97316','#FFEDD5'],['ecole','École','Primaire','Lecture, calcul, sciences et ECM pour le primaire.','#2563EB','#DBEAFE']]],
     ['Collège',[['7e','7e année','Collège','Plateau avec QCM pour les bases, la logique et la rapidité.','#0284C7','#E0F2FE'],['8e','8e année','Collège','Plateau scolaire, rotation des tours, progression des pions.','#4F46E5','#E0E7FF'],['9e','9e année','Collège','Questions intégrées, points et parcours éducatif complet.','#0891B2','#CFFAFE'],['10e','10e année','Collège','Renforcer les acquis avec un parcours clair et compétitif.','#0F766E','#CCFBF1']]],
