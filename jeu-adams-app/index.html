@@ -42,6 +42,8 @@ button{font:inherit;cursor:pointer}
 .ja-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .ja-card{position:relative;text-align:left;background:#fff;border:1px solid var(--line);border-left:6px solid var(--a,#2563EB);border-radius:12px;padding:14px 14px 14px 14px;display:block;width:100%;color:inherit}
 .ja-card:active{transform:scale(.99)}
+.ja-img{margin:-14px -14px 12px -14px;aspect-ratio:600/260;background-color:#0B1F9E;background-repeat:no-repeat;background-size:200% 300%;border-radius:6px 10px 0 0}
+.ja-card .ja-free{z-index:2}
 .ja-card h3{margin:0 0 4px;font-size:16.5px;line-height:1.2}
 .ja-card p{margin:0 0 10px;color:var(--muted);font-size:14px}
 .ja-card .ja-lvl{display:inline-block;font-size:12px;font-weight:800;color:var(--a,#2563EB);background:var(--s,#DBEAFE);padding:3px 9px;border-radius:999px;margin-bottom:8px}
@@ -174,6 +176,8 @@ button{font:inherit;cursor:pointer}
     ['Campus & métiers',[['univ','Université','Campus','Culture générale et raisonnement pour étudiants.','#7C3AED','#EDE9FE'],['pro','Professionnel','Expert','Compétences, carrière et entrepreneuriat.','#0F766E','#CCFBF1']]],
     ['Culture',[['guinee','Guinée','Gratuit','La Guinée : repères nationaux, patrimoine et connaissances utiles.','#16A34A','#DCFCE7'],['histoire','Histoire','Mémoire','Grandes dates, faits marquants et personnages.','#1D4ED8','#DBEAFE'],['sport','Sport','Action','Champions, disciplines et défis rapides.','#EA580C','#FFEDD5'],['sante','Santé','Essentiel','Prévention, bien-être et bonnes pratiques.','#DC2626','#FEE2E2'],['musique','Musique','Rythme','Artistes, instruments et histoire musicale.','#C026D3','#F5D0FE'],['art','Art','Créatif','Création, patrimoine artistique et culture visuelle.','#D97706','#FEF3C7']]]
   ];
+  var IMG={maternelle:['A',0],ecole:['A',1],'7e':['A',2],'8e':['A',3],'9e':['A',4],'10e':['A',5],'11e':['B',0],'12e':['B',1],terminale:['B',2],preuniv:['B',3],univ:['B',4],pro:['B',5],guinee:['C',0],histoire:['C',1],sport:['C',2],sante:['C',3],musique:['C',4],art:['C',5]};
+  function imageJeu(id){var t=IMG[id];if(!t)return '';var i=t[1],x=i%2?'100%':'0%',y=(Math.floor(i/2)*50)+'%';return '<div class="ja-img" role="img" aria-label="" style="background-image:url(/jeu-adams-app/sprite-'+t[0]+'.jpg);background-position:'+x+' '+y+'"></div>'}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function $(s){return document.querySelector(s)}
 
@@ -187,7 +191,7 @@ button{font:inherit;cursor:pointer}
         var libre=x[0]==='guinee';
         var action=libre?'open-adams-game':'open-adams-subscription';
         h+='<article class="ja-card" role="button" tabindex="0" data-action="'+action+'" data-adams-game="'+esc(x[0])+'" data-adams-game-label="Jeu Adams '+esc(x[1])+'" style="--a:'+x[4]+';--s:'+x[5]+'" aria-label="Jouer à Jeu Adams '+esc(x[1])+'">'+
-          (libre?'<span class="ja-free">Gratuit</span>':'')+
+          imageJeu(x[0])+(libre?'<span class="ja-free">Gratuit</span>':'')+
           '<span class="ja-lvl">'+esc(x[2])+'</span><h3>Jeu Adams '+esc(x[1])+'</h3><p>'+esc(x[3])+'</p><span class="ja-go">Jouer</span></article>';
       });
       h+='</div></section>';
