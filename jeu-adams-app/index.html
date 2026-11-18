@@ -316,7 +316,12 @@ button{font:inherit;cursor:pointer}
         if(!u){ouvrirAuth();return false}
         return sb.rpc('jeuadams_mon_acces').then(function(x){
           etat.acces=x&&x.data||null;rendreStatut();
-          if(etat.acces&&etat.acces.active){window.__jaApres=null;if(typeof rappel==='function')rappel();return true}
+          if(etat.acces&&etat.acces.active){
+            /* Le moteur demande sa clé de contenu : on lui dit que c'est l'abonnement Jeu Adams. */
+            var snap={product_code:'adams',plan_code:'adams',active:true,status:'active',ends_at:etat.acces.ends_at,starts_at:etat.acces.starts_at||null,server_now:etat.acces.server_now||null};
+            var sc=window.NexoraSecureContent,pre=(sc&&typeof sc.activate==='function')?Promise.resolve().then(function(){return sc.activate(snap)}).catch(function(e){window.nxLog&&window.nxLog(e)}):Promise.resolve();
+            return pre.then(function(){window.__jaApres=null;if(typeof rappel==='function')rappel();return true});
+          }
           ouvrirAbonnement();return false;
         });
       }).catch(function(){window.toast('Connexion Internet nécessaire pour ouvrir les jeux.');return false});
