@@ -24876,5 +24876,141 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
 #welcomeGate .nxo-login-main-v379{margin-top:12px;background:transparent;color:#16324F;border:2px solid #16324F}
 @media (prefers-color-scheme:dark){#welcomeGate .nxo-login-main-v379{color:#e8eef6;border-color:#8fb4e3}}
 </style>
+<style id="nxInstStyleV721">
+.nxb697-band{display:none!important}
+.nx-ibar-v721{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:9000;display:none;align-items:center;gap:6px;max-width:520px;margin:0 auto}
+.nx-ibar-v721.on{display:flex;animation:nxUpV721 .4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes nxUpV721{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.nx-ibtn-v721{flex:1;display:flex;align-items:center;gap:12px;border:0;border-radius:18px;padding:12px 14px;text-align:left;cursor:pointer;color:#fff;background:linear-gradient(135deg,#16324F 0%,#1E5FA9 100%);box-shadow:0 14px 30px rgba(22,50,79,.45);font-family:system-ui,sans-serif}
+.nx-ibtn-v721 .ic{flex:none;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:22px;animation:nxPulseV721 2.2s ease-in-out infinite}
+@keyframes nxPulseV721{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.nx-ibtn-v721 b{display:block;font-size:15px;line-height:1.2}
+.nx-ibtn-v721 small{display:block;font-size:12px;opacity:.85;margin-top:2px}
+.nx-ibtn-v721 .go{margin-left:auto;font-size:20px}
+.nx-ix-v721{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:rgba(10,20,35,.75);color:#fff;font-size:18px;line-height:1;cursor:pointer}
+.nx-isheet-v721{position:fixed;inset:0;z-index:2147483200;background:rgba(8,18,32,.72);display:flex;align-items:flex-end;justify-content:center}
+.nx-icard-v721{width:100%;max-width:460px;background:var(--surface,#fff);color:var(--text,#16243a);border-radius:24px 24px 0 0;padding:26px 22px calc(24px + env(safe-area-inset-bottom,0px));text-align:center;animation:nxUpV721 .35s cubic-bezier(.2,.8,.2,1) both;font-family:system-ui,sans-serif}
+.nx-iphone-v721{width:74px;height:74px;margin:0 auto 12px;border-radius:20px;background:linear-gradient(135deg,#0F2744,#1E5FA9);display:grid;place-items:center;color:#fff;font:700 30px Georgia,serif;box-shadow:0 12px 26px rgba(22,50,79,.4)}
+.nx-icard-v721 h3{margin:0 0 4px;font:400 22px/1.2 Georgia,serif}
+.nx-ilabel-v721{margin:0 0 16px;font-size:14px;opacity:.8;min-height:20px}
+.nx-ipct-v721{font:800 52px/1 system-ui,sans-serif;letter-spacing:-.02em;color:#1E5FA9}
+.nx-itrack-v721{height:14px;border-radius:99px;background:var(--border,#e1e5ea);overflow:hidden;margin:14px 0 10px}
+.nx-ifill-v721{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#1E5FA9,#3b8bea);position:relative;transition:width .35s ease-out}
+.nx-ifill-v721:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);background-size:200% 100%;animation:nxShineV721 1.4s linear infinite}
+@keyframes nxShineV721{from{background-position:200% 0}to{background-position:-200% 0}}
+.nx-iok-v721 .nx-ifill-v721{background:#2f8f5b}.nx-iok-v721 .nx-ifill-v721:after{display:none}.nx-iok-v721 .nx-ipct-v721{color:#2f8f5b}
+.nx-isteps-v721{text-align:left;margin:14px 0 0;padding:0 0 0 20px;font-size:14px;line-height:1.55}
+.nx-ibtn2-v721{display:block;width:100%;margin-top:16px;border:0;border-radius:14px;padding:15px;font:800 16px/1 system-ui,sans-serif;color:#fff;background:linear-gradient(135deg,#16324F,#1E5FA9);cursor:pointer}
+.nx-ibtn2-v721.sec{background:transparent;color:inherit;border:1.5px solid currentColor;opacity:.8}
+@media (min-width:900px){.nx-ibar-v721{bottom:calc(18px + env(safe-area-inset-bottom,0px))}}
+@media (prefers-reduced-motion:reduce){.nx-ifill-v721:after,.nx-ibtn-v721 .ic{animation:none}}
+</style>
+<script id="nxInstScriptV721">
+(function(){
+  var CLE='nx_inst_v721',EV=null,busy=false;
+  function $(s,r){return (r||document).querySelector(s)}
+  function lire(){try{return JSON.parse(localStorage.getItem(CLE)||'{}')}catch(e){return {}}}
+  function ecrire(o){try{localStorage.setItem(CLE,JSON.stringify(o))}catch(e){}}
+  function standalone(){try{return (window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches))||navigator.standalone===true}catch(e){return false}}
+  function pf(){var u=navigator.userAgent||'';if(/iPhone|iPad|iPod/i.test(u))return 'ios';if(/Android/i.test(u))return 'android';return 'autre'}
+  window.addEventListener('beforeinstallprompt',function(e){EV=e;try{e.preventDefault()}catch(x){}});
+  window.addEventListener('appinstalled',function(){var o=lire();o.installee=Date.now();ecrire(o);EV=null;gagne.fait=true;majBarre()});
+  var gagne={fait:false};
+  /* ---------- barre du bas ---------- */
+  var barre=null;
+  function creerBarre(){
+    barre=document.createElement('div');barre.className='nx-ibar-v721';barre.id='nxIbarV721';
+    barre.innerHTML='<button type="button" class="nx-ibtn-v721" id="nxIgoV721"><span class="ic" aria-hidden="true">📲</span><span><b>Cliquer ici pour installer Nexora</b><small>sur votre téléphone, gratuit et rapide</small></span><span class="go" aria-hidden="true">→</span></button><button type="button" class="nx-ix-v721" id="nxIxV721" aria-label="Plus tard">×</button>';
+    document.body.appendChild(barre);
+    $('#nxIgoV721').addEventListener('click',demarrer);
+    $('#nxIxV721').addEventListener('click',function(){var o=lire();o.masque=Date.now();ecrire(o);majBarre()});
+  }
+  function doitMontrer(){
+    if(standalone())return false;
+    var o=lire();if(o.installee)return false;
+    if(o.masque&&Date.now()-o.masque<3*864e5)return false;
+    var g=document.getElementById('welcomeGate');if(!g||!g.hidden)return false;
+    var m=$('#accountModal');if(m&&m.classList.contains('open'))return false;
+    if($('.nx-ov-v716')||$('.nx-isheet-v721'))return false;
+    if(document.body.classList.contains('welcome-active'))return false;
+    return true;
+  }
+  function majBarre(){
+    if(!barre){if(!document.body)return;creerBarre()}
+    barre.classList.toggle('on',doitMontrer());
+  }
+  setInterval(majBarre,1200);
+  /* ---------- préchargement réel avec progression ---------- */
+  var LISTE=[['/',1900000],['/manifest.json',2000],['/assets/icons/nexora-192.png',15000],['/assets/icons/nexora-512.png',60000],['/nexora-secure-v522.js',99000],['/assets/js/nx-v157-primary-school-script.js',313000],['/assets/js/nexora-reglages.js',20000],['/assets/js/nexora-rappel.js',15000]];
+  function precharger(onP){
+    var tot=LISTE.reduce(function(a,x){return a+x[1]},0),acq=LISTE.map(function(){return 0});
+    function emettre(){var s=0;for(var i=0;i<acq.length;i++)s+=acq[i];onP(Math.min(1,s/tot))}
+    return Promise.all(LISTE.map(function(it,i){
+      var url=it[0],est=it[1];
+      return fetch(url,{cache:'reload',credentials:'same-origin'}).then(function(r){
+        if(!r.ok||!r.body||!r.body.getReader){acq[i]=est;emettre();return r.arrayBuffer?r.arrayBuffer().catch(function(){}):0}
+        var rd=r.body.getReader(),lu=0,tl=parseInt(r.headers.get('content-length')||'0',10)||est;
+        return (function boucle(){return rd.read().then(function(x){
+          if(x.done){acq[i]=est;emettre();return}
+          lu+=x.value.length;acq[i]=est*Math.min(.97,lu/Math.max(tl,lu+1));emettre();return boucle()})})();
+      }).catch(function(){acq[i]=est;emettre()});
+    }));
+  }
+  /* ---------- fenêtre de progression ---------- */
+  var ETAPES=[[0,'Préparation de Nexora…'],[25,'Téléchargement de l’application…'],[55,'Mise en place du mode rapide…'],[85,'Finalisation…'],[100,'Nexora est installée sur votre téléphone']];
+  function libelle(p){var t=ETAPES[0][1];for(var i=0;i<ETAPES.length;i++)if(p>=ETAPES[i][0])t=ETAPES[i][1];return t}
+  function fenetre(){
+    var o=document.createElement('div');o.className='nx-isheet-v721';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
+    o.innerHTML='<div class="nx-icard-v721" id="nxIcardV721"><div class="nx-iphone-v721">NX</div><h3 id="nxItitreV721">Installation de Nexora</h3><p class="nx-ilabel-v721" id="nxIlabV721">Préparation de Nexora…</p><div class="nx-ipct-v721" id="nxIpctV721">0%</div><div class="nx-itrack-v721" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="nxItrackV721"><div class="nx-ifill-v721" id="nxIfillV721"></div></div><div id="nxIextraV721"></div></div>';
+    document.body.appendChild(o);return o;
+  }
+  var affiche=0;
+  function maj(o,p){
+    p=Math.max(affiche,Math.round(p));if(p>100)p=100;affiche=p;
+    $('#nxIpctV721',o).textContent=p+'%';$('#nxIfillV721',o).style.width=p+'%';
+    $('#nxItrackV721',o).setAttribute('aria-valuenow',p);$('#nxIlabV721',o).textContent=libelle(p);
+  }
+  function etapesManuelles(){
+    var p=pf();
+    if(p==='ios')return ['Ouvrez Nexora dans <b>Safari</b>.','Touchez le bouton <b>Partager</b> (carré avec une flèche vers le haut).','Choisissez <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.'];
+    return ['Dans <b>Google Chrome</b>, touchez les <b>⋮</b> en haut à droite.','Touchez <b>« Installer l’application »</b> (ou « Ajouter à l’écran d’accueil »).','Confirmez avec <b>Installer</b>. L’icône Nexora apparaît sur votre écran.'];
+  }
+  function fin(o,installee){
+    var card=$('#nxIcardV721',o);card.classList.add('nx-iok-v721');
+    maj(o,100);$('#nxItitreV721',o).textContent=installee?'C’est installé ✓':'Nexora est prête ✓';
+    var ex=$('#nxIextraV721',o);
+    if(installee){ex.innerHTML='<p style="margin:14px 0 0;font-size:14px;line-height:1.5">Cherchez l’icône <b>Nexora</b> sur votre écran d’accueil et ouvrez-la comme une application.</p><button type="button" class="nx-ibtn2-v721" id="nxIfermerV721">Terminer</button>'}
+    else{ex.innerHTML='<p style="margin:14px 0 0;font-size:14px"><b>Dernière étape :</b> ajoutez Nexora à votre écran d’accueil.</p><ol class="nx-isteps-v721">'+etapesManuelles().map(function(s){return '<li>'+s+'</li>'}).join('')+'</ol><button type="button" class="nx-ibtn2-v721" id="nxIfermerV721">J’ai compris</button>'}
+    $('#nxIfermerV721',o).addEventListener('click',function(){o.remove();majBarre()});
+  }
+  function demarrer(){
+    if(busy)return;busy=true;affiche=0;gagne.fait=false;
+    var o=fenetre(),nat=null,accepte=false,pret=false,cible=0;
+    function suite(){
+      /* progression : vrai préchargement (0 à 90 %), puis attente de la confirmation du système */
+      var fini=false;
+      precharger(function(f){cible=f*90}).then(function(){pret=true;cible=Math.max(cible,90)});
+      var iv=setInterval(function(){
+        var p=affiche;
+        if(p<cible)p=Math.min(cible,p+Math.max(1,Math.round((cible-p)/6)));
+        else if(p<94&&!pret)p+=0;
+        maj(o,p);
+        if(pret&&p>=90&&!fini){
+          if(accepte){ if(gagne.fait||Date.now()-accepte>3500){fini=true;clearInterval(iv);setTimeout(function(){fin(o,true);busy=false},350)} else if(affiche<98)maj(o,affiche+1) }
+          else if(nat==='autre'){fini=true;clearInterval(iv);setTimeout(function(){fin(o,false);busy=false},350)}
+        }
+      },160);
+    }
+    if(EV){
+      var ev=EV;EV=null;
+      try{ev.prompt();(ev.userChoice||Promise.resolve({outcome:'dismissed'})).then(function(c){
+        if(c&&c.outcome==='accepted'){accepte=Date.now();var oo=lire();oo.accepte=accepte;ecrire(oo);suite()}
+        else{EV=ev;o.remove();busy=false}
+      }).catch(function(){EV=ev;o.remove();busy=false})}catch(e){nat='autre';suite()}
+    }else{nat='autre';suite()}
+  }
+  window.__nxInstallerV721=demarrer;
+})();
+</script>
 </body>
 </html>
