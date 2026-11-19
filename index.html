@@ -24581,7 +24581,8 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',poser,{once:true}); else poser();
 })();
 </script>
-<style id="nxTelStyleV713">#accountModal[data-account-mode="create"] .nx-bienvenue-champs-v695,#accountModal[data-account-mode="create"] .nx-account-optional-v379{display:none!important}
+<style id="nxTelStyleV713">#accountModal:not([data-account-mode="create"]) .nx-pin2-v715{display:none}
+#accountModal[data-account-mode="create"] .nx-bienvenue-champs-v695,#accountModal[data-account-mode="create"] .nx-account-optional-v379{display:none!important}
 .nx-pin-eye-v714{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:0;font:600 13px system-ui,sans-serif;color:inherit;opacity:.75;padding:8px;cursor:pointer}
 #nxPinWrapV714{position:relative}
 
@@ -24611,19 +24612,22 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     var b=document.createElement('div');b.id='nxTelBlockV713';
     b.innerHTML='<div class="field"><label class="label" for="nxTelV713">Numéro de téléphone *</label><input class="input" id="nxTelV713" type="tel" inputmode="tel" enterkeyhint="next" autocomplete="tel" placeholder="Ex : 620 00 00 00"/></div>'
       +'<div class="field"><label class="label" for="nxPinV713">Code secret à 4 chiffres *</label><div id="nxPinWrapV714"><input class="input nx-pin-v713" id="nxPinV713" type="password" inputmode="numeric" enterkeyhint="go" maxlength="4" autocomplete="off" placeholder="••••"/><button type="button" class="nx-pin-eye-v714" id="nxPinEyeV714">Afficher</button></div>'
-      +'<small class="nx-pin-help-create-v713">Choisissez 4 chiffres faciles à retenir : ils vous permettront de vous reconnecter.</small>'
+      +'<div class="nx-pin2-v715"><label class="label" for="nxPin2V715" style="margin-top:10px;display:block">Confirmez le code secret *</label><input class="input nx-pin-v713" id="nxPin2V715" type="password" inputmode="numeric" enterkeyhint="go" maxlength="4" autocomplete="off" placeholder="••••"/></div>'
+      +'<small class="nx-pin-help-create-v713">Tapez le même code deux fois. Choisissez 4 chiffres faciles à retenir : ils vous permettront de vous reconnecter.</small>'
       +'<small class="nx-pin-help-login-v713">Code oublié ? <a href="https://wa.me/224620417383" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>.</small></div>'
       +'<p id="nxTelErrV713" role="alert"></p>';
     ref.parentNode.insertBefore(b,ref);
     var l=document.createElement('button');l.type='button';l.className='nx-mode-link-v713';l.id='nxModeLinkV713';l.textContent='J’ai un compte créé avec un email';
     ref.parentNode.insertBefore(l,ref.nextSibling);
     var nom=$('#nxAccountNameV379');if(nom){var lb=$('label[for="nxAccountNameV379"]');if(lb)lb.textContent='Prénom et nom *'}
-    var pin=$('#nxPinV713');pin.addEventListener('input',function(){pin.value=pin.value.replace(/\D/g,'').slice(0,4);erreur('')});
+    var pin=$('#nxPinV713'),pin2=$('#nxPin2V715');pin.addEventListener('input',function(){pin.value=pin.value.replace(/\D/g,'').slice(0,4);erreur('')});
+    pin2.addEventListener('input',function(){pin2.value=pin2.value.replace(/\D/g,'').slice(0,4);erreur('');if(pin2.value.length===4)pin2.blur()});
     $('#nxTelV713').addEventListener('input',function(){erreur('')});
-    var eye=$('#nxPinEyeV714');if(eye)eye.addEventListener('click',function(){var h=pin.type==='password';pin.type=h?'text':'password';eye.textContent=h?'Masquer':'Afficher'});
+    var eye=$('#nxPinEyeV714');if(eye)eye.addEventListener('click',function(){var h=pin.type==='password';pin.type=h?'text':'password';pin2.type=pin.type;eye.textContent=h?'Masquer':'Afficher'});
     if(nom)nom.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();$('#nxTelV713').focus()}});
     $('#nxTelV713').addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();pin.focus()}});
-    [pin].forEach(function(i){i.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();var a=mode()==='create'?'create-account':'login-account';var bt=$('[data-action="'+a+'"]');if(bt)bt.click()}})});
+    pin.addEventListener('keydown',function(ev){if(ev.key==='Enter'&&mode()==='create'){ev.preventDefault();pin2.focus()}});
+    [pin,pin2].forEach(function(i){i.addEventListener('keydown',function(ev){if(ev.key==='Enter'){if(mode()==='create'&&i===pin)return;ev.preventDefault();var a=mode()==='create'?'create-account':'login-account';var bt=$('[data-action="'+a+'"]');if(bt)bt.click()}})});
     l.addEventListener('click',function(){var on=m.classList.toggle('nx-email-mode-v713');l.textContent=on?'Me connecter avec mon numéro':'J’ai un compte créé avec un email'});
   }
   function remplir(){
@@ -24631,6 +24635,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     var d=chiffres(tel.value);
     if(d.length<8||d.length>15)return 'Entrez un numéro de téléphone valide.';
     if(!/^\d{4}$/.test(pin.value))return 'Le code secret doit avoir exactement 4 chiffres.';
+    if(mode()==='create'){var p2=$('#nxPin2V715');if(!p2||p2.value!==pin.value)return 'Les deux codes ne sont pas identiques. Retapez-les.'}
     var em=$('[data-auth-email]'),pw=$('[data-auth-password]'),ph=$('[data-account-phone]');
     if(em)em.value='p'+d+'@'+DOM;
     if(pw)pw.value='Nx'+pin.value+'-'+d;
