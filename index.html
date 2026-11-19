@@ -24762,7 +24762,14 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   };
 })();
 </script>
-<style id="nxDesignStyleV717">
+<style id="nxDesignStyleV717">#welcomeGate{display:none!important}
+.nx-chips-v717{display:none!important}
+.nx-tabs-v718{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:16px;padding:4px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);position:relative;z-index:1}
+.nx-tabs-v718 button{border:0;border-radius:10px;padding:12px 6px;background:transparent;color:rgba(255,255,255,.85);font:700 14px/1.2 system-ui,sans-serif;cursor:pointer;transition:background .2s,color .2s}
+#accountModal[data-account-mode="create"] #nxTabCreateV718,#accountModal[data-account-mode="login"] #nxTabLoginV718{background:#fff;color:#16324F;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+#accountModal:is([data-account-mode="create"],[data-account-mode="login"]) .account-actions-premium .account-link-btn{display:none!important}
+#accountModal.nx-auto-v718 .close-btn{display:none!important}
+
 #accountModal .account-modal{position:relative;overflow:hidden;border-radius:22px;max-width:440px;padding:0;background:var(--surface,#fff);box-shadow:0 30px 80px rgba(8,18,32,.45);animation:nxSheetV717 .32s cubic-bezier(.2,.8,.2,1) both}
 @keyframes nxSheetV717{from{opacity:0;transform:translateY(28px) scale(.98)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#accountModal .account-modal{animation:none}}
@@ -24830,7 +24837,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     if(tick){w.insertAdjacentHTML('beforeend','<span class="nx-tick-v717" aria-hidden="true">✓</span>')}
     return w;
   }
-  var TITRES={create:['Créez votre compte','Cours, évaluations et défis de la maternelle à la terminale. Prêt en 30 secondes.'],login:['Bon retour parmi nous','Entrez votre numéro et votre code pour reprendre là où vous vous êtes arrêté.']};
+  var TITRES={create:['Bienvenue sur Nexora','Le programme guinéen, de la maternelle à la terminale. Créez votre compte en 30 secondes.'],login:['Bon retour sur Nexora','Entrez votre numéro et votre code pour reprendre là où vous vous êtes arrêté.']};
   function titre(){
     var m=$('#accountModal');if(!m)return;var md=m.getAttribute('data-account-mode');
     var t=TITRES[md];if(!t)return;
@@ -24848,7 +24855,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function monter(){
     var m=$('#accountModal'),box=m&&$('.modal.account-modal',m);if(!box||$('#nxHeroV717'))return;
     var hero=document.createElement('div');hero.id='nxHeroV717';hero.className='nx-hero-v717';
-    hero.innerHTML='<div class="nx-hero-top"><span class="nx-logo-v717">NX</span><span class="nx-brand-v717">NEXORA · ACADÉMIE</span></div><h2 id="nxHeroTitleV717"></h2><p id="nxHeroSubV717"></p><div class="nx-chips-v717"><span>✓ 30 secondes</span><span>✓ Sans email</span><span>✓ Gratuit</span></div>';
+    hero.innerHTML='<div class="nx-hero-top"><span class="nx-logo-v717">NX</span><span class="nx-brand-v717">NEXORA · ACADÉMIE</span></div><h2 id="nxHeroTitleV717"></h2><p id="nxHeroSubV717"></p><div class="nx-tabs-v718" role="tablist"><button type="button" role="tab" data-action="set-account-mode" data-account-mode-target="create" id="nxTabCreateV718">Créer mon compte</button><button type="button" role="tab" data-action="set-account-mode" data-account-mode-target="login" id="nxTabLoginV718">J’ai déjà un compte</button></div>';
     var corps=$('.modal-body',box)||box;corps.insertBefore(hero,corps.firstChild);
     var nomF=$('#nxAccountNameV379');
     var prog=document.createElement('div');prog.className='nx-prog-v717';prog.innerHTML='<div class="nx-prog-bar-v717"><i></i><i></i><i></i><i></i></div><span class="nx-prog-txt-v717" id="nxProgTxtV717"></span>';
@@ -24866,6 +24873,19 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function essai(){if($('#nxTelBlockV713')&&$('#nxPin2V715'))monter()}
   document.addEventListener('click',function(){setTimeout(essai,120)},true);
   var n=0,iv=setInterval(function(){essai();if($('#nxHeroV717')||++n>40)clearInterval(iv)},400);
+  (function(){
+    var gate=document.getElementById('welcomeGate');if(!gate)return;
+    function auto(){
+      if(gate.hidden)return;
+      var b=gate.querySelector('[data-action="welcome-create"]');if(!b)return;
+      b.click();
+      var m=$('#accountModal');if(m)m.classList.add('nx-auto-v718');
+    }
+    new MutationObserver(auto).observe(gate,{attributes:true,attributeFilter:['hidden']});
+    var m=$('#accountModal');
+    if(m)new MutationObserver(function(){if(!m.classList.contains('open'))m.classList.remove('nx-auto-v718')}).observe(m,{attributes:true,attributeFilter:['class']});
+    auto();
+  })();
 })();
 </script>
 </body>
