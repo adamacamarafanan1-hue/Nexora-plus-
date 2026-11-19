@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="manifest" href="/manifest.json"/>
+
 <!-- Nexora V508 : deux espaces — élèves (maternelle, primaire, collège, lycée, sujets, romans)
      et professionnel (les 22 modules). Aucune règle d’accès ni de contenu modifiée. -->
 <meta charset="utf-8"/>
@@ -25009,9 +25011,10 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function terminer(installee){
     var act=$('#nxIactV721',ouvert);if(!act)return;
     maj(100);act.classList.remove('run');act.classList.add('done');
-    var b=$('#nxIbigV721',ouvert);b.textContent=installee?'Installée ✓':'Terminer';b.classList.add('ok');
+    var b=$('#nxIbigV721',ouvert);b.textContent=installee?'Installée ✓':'J’ai compris';b.classList.add('ok');
+    if(!installee){$('#nxIlabV721',ouvert).textContent='Prêt à installer';$('#nxIpctV721',ouvert).textContent='✓'}
     var n=$('#nxInoteV721',ouvert);n.style.display='block';
-    n.innerHTML=installee?'Cherchez l’icône <b>Nexora</b> sur votre écran d’accueil et ouvrez-la comme une application.':'<b>Dernière étape :</b> ajoutez Nexora à votre écran d’accueil.<ol>'+etapesManuelles().map(function(s){return '<li>'+s+'</li>'}).join('')+'</ol>';
+    n.innerHTML=installee?'Cherchez l’icône <b>Nexora</b> sur votre écran d’accueil et ouvrez-la comme une application.':'<b>L’installation automatique n’est pas disponible ici.</b> Faites-la en 3 gestes :<ol>'+etapesManuelles().map(function(s){return '<li>'+s+'</li>'}).join('')+'</ol><p style="margin:10px 0 0;font-size:13px;opacity:.8">Si vous êtes en <b>navigation privée</b>, ouvrez Nexora dans un onglet normal de Chrome : l’installation y est bloquée.</p>';
     busy=false;
   }
   function demarrer(){
