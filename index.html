@@ -24581,5 +24581,73 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',poser,{once:true}); else poser();
 })();
 </script>
+<style id="nxTelStyleV713">
+#nxTelBlockV713{display:none;margin:0 0 6px}
+#accountModal[data-account-mode="create"] #nxTelBlockV713,#accountModal[data-account-mode="login"]:not(.nx-email-mode-v713) #nxTelBlockV713{display:block}
+#accountModal[data-account-mode="create"] .account-email-field,#accountModal[data-account-mode="create"] .account-password-field,#accountModal[data-account-mode="create"] .nx-password-help-v379,
+#accountModal[data-account-mode="login"]:not(.nx-email-mode-v713) .account-email-field,#accountModal[data-account-mode="login"]:not(.nx-email-mode-v713) .account-password-field,#accountModal[data-account-mode="login"]:not(.nx-email-mode-v713) [data-action="forgot-password"]{display:none!important}
+#nxTelBlockV713 .nx-pin-v713{letter-spacing:.5em;font-size:20px;font-weight:700;text-align:center}
+#nxTelBlockV713 small{display:block;margin-top:6px;opacity:.8;line-height:1.45}
+#nxTelErrV713{display:none;color:#b3261e;font-weight:600;font-size:13px;margin:6px 0 0}
+.nx-mode-link-v713{display:none;background:none;border:0;padding:8px 0;color:inherit;text-decoration:underline;font-size:13px;opacity:.85;cursor:pointer;width:100%;text-align:center}
+#accountModal[data-account-mode="login"] .nx-mode-link-v713{display:block}
+#accountModal[data-account-mode="login"] .nx-pin-help-create-v713,#accountModal[data-account-mode="create"] .nx-pin-help-login-v713{display:none}
+</style>
+<script id="nxTelScriptV713">
+(function(){
+  var DOM='tel.nexora-plus.com';
+  function $(s,r){return (r||document).querySelector(s)}
+  function modal(){return $('#accountModal')}
+  function mode(){var m=modal();return m&&m.getAttribute('data-account-mode')}
+  function emailMode(){var m=modal();return !!(m&&m.classList.contains('nx-email-mode-v713'))}
+  function chiffres(t){var d=String(t||'').replace(/\D/g,'');if(d.indexOf('00')===0)d=d.slice(2);if(d.length===9)d='224'+d;return d}
+  function erreur(t){var e=$('#nxTelErrV713');if(!e)return;e.textContent=t||'';e.style.display=t?'block':'none'}
+  function poser(){
+    var m=modal();if(!m||$('#nxTelBlockV713'))return;
+    var ref=$('.account-email-field',m);if(!ref||!ref.parentNode)return;
+    var b=document.createElement('div');b.id='nxTelBlockV713';
+    b.innerHTML='<div class="field"><label class="label" for="nxTelV713">Numéro de téléphone *</label><input class="input" id="nxTelV713" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ex : 620 00 00 00"/></div>'
+      +'<div class="field"><label class="label" for="nxPinV713">Code secret à 4 chiffres *</label><input class="input nx-pin-v713" id="nxPinV713" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"/>'
+      +'<small class="nx-pin-help-create-v713">Choisissez 4 chiffres faciles à retenir : ils vous permettront de vous reconnecter.</small>'
+      +'<small class="nx-pin-help-login-v713">Code oublié ? <a href="https://wa.me/224620417383" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>.</small></div>'
+      +'<p id="nxTelErrV713" role="alert"></p>';
+    ref.parentNode.insertBefore(b,ref);
+    var l=document.createElement('button');l.type='button';l.className='nx-mode-link-v713';l.id='nxModeLinkV713';l.textContent='J’ai un compte créé avec un email';
+    ref.parentNode.insertBefore(l,ref.nextSibling);
+    var nom=$('#nxAccountNameV379');if(nom){var lb=$('label[for="nxAccountNameV379"]');if(lb)lb.textContent='Prénom et nom *'}
+    var pin=$('#nxPinV713');pin.addEventListener('input',function(){pin.value=pin.value.replace(/\D/g,'').slice(0,4);erreur('')});
+    $('#nxTelV713').addEventListener('input',function(){erreur('')});
+    [$('#nxTelV713'),pin].forEach(function(i){i.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();var a=mode()==='create'?'create-account':'login-account';var bt=$('[data-action="'+a+'"]');if(bt)bt.click()}})});
+    l.addEventListener('click',function(){var on=m.classList.toggle('nx-email-mode-v713');l.textContent=on?'Me connecter avec mon numéro':'J’ai un compte créé avec un email'});
+  }
+  function remplir(){
+    var tel=$('#nxTelV713'),pin=$('#nxPinV713');if(!tel||!pin)return 'Formulaire indisponible.';
+    var d=chiffres(tel.value);
+    if(d.length<8||d.length>15)return 'Entrez un numéro de téléphone valide.';
+    if(!/^\d{4}$/.test(pin.value))return 'Le code secret doit avoir exactement 4 chiffres.';
+    var em=$('[data-auth-email]'),pw=$('[data-auth-password]'),ph=$('[data-account-phone]');
+    if(em)em.value='p'+d+'@'+DOM;
+    if(pw)pw.value='Nx'+pin.value+'-'+d;
+    if(ph&&mode()==='create')ph.value=d;
+    return '';
+  }
+  document.addEventListener('click',function(ev){
+    var bt=ev.target&&ev.target.closest&&ev.target.closest('[data-action="create-account"],[data-action="login-account"]');
+    if(!bt)return;
+    var c=bt.getAttribute('data-action')==='create-account';
+    if(!c&&emailMode())return;
+    if(!c&&mode()!=='login')return;
+    if(c&&mode()!=='create')return;
+    var nom=$('#nxAccountNameV379');
+    if(c&&nom&&!nom.value.trim()){erreur('Entrez votre prénom et nom.');ev.preventDefault();ev.stopImmediatePropagation();return}
+    var e=remplir();
+    if(e){erreur(e);ev.preventDefault();ev.stopImmediatePropagation();return}
+    erreur('');
+  },true);
+  document.addEventListener('click',function(){setTimeout(poser,60)},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',poser,{once:true});else poser();
+  setTimeout(poser,1500);
+})();
+</script>
 </body>
 </html>

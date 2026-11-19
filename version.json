@@ -1,5 +1,1 @@
-{
-  "version": "V712",
-  "message": "Nexora V712 : inscription simplifiée, accès direct à sa classe après la création du compte.",
-  "critical": false
-}
+{"version":"V713","message":"Nexora V713 : inscription avec nom, numéro de téléphone et code secret à 4 chiffres.","critical":false}
