@@ -24751,7 +24751,14 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#nxForgotV716');if(b){e.preventDefault();retrouver()}},true);
   /* ---- C. Écoute de la réponse d'inscription par numéro ---- */
   window.fetch=function(i,o){
-    var u=typeof i==='string'?i:((i&&i.url)||''),p=oF.apply(this,arguments);
+    var u=typeof i==='string'?i:((i&&i.url)||'');
+    try{
+      var rf=window.__nxRefV724&&window.__nxRefV724();
+      if(rf&&typeof i==='string'&&/\/auth\/v1\/signup/.test(u)&&o&&typeof o.body==='string'&&/"email":"p\d+@tel\.nexora-plus\.com"/.test(o.body)){
+        var jb=JSON.parse(o.body);jb.data=jb.data||{};jb.data.ref=rf;o=Object.assign({},o,{body:JSON.stringify(jb)});
+      }
+    }catch(e){}
+    var p=oF.call(this,i,o);
     try{
       if(/\/auth\/v1\/signup/.test(u)){
         var corps=(o&&typeof o.body==='string')?o.body:'';
@@ -24836,6 +24843,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function titre(){
     var m=$('#accountModal');if(!m)return;var md=m.getAttribute('data-account-mode');
     var t=TITRES[md];if(!t)return;
+    if(md==='create'&&window.__nxRefV724&&window.__nxRefV724())t=[t[0],'Un ami vous invite à rejoindre Nexora. Créez votre compte en 30 secondes.'];
     var h=$('#nxHeroTitleV717'),s=$('#nxHeroSubV717');if(h)h.textContent=t[0];if(s)s.textContent=t[1];
   }
   function progres(){
@@ -25015,6 +25023,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     if(!installee){$('#nxIlabV721',ouvert).textContent='Prêt à installer';$('#nxIpctV721',ouvert).textContent='✓'}
     var n=$('#nxInoteV721',ouvert);n.style.display='block';
     n.innerHTML=installee?'Cherchez l’icône <b>Nexora</b> sur votre écran d’accueil et ouvrez-la comme une application.':'<b>L’installation automatique n’est pas disponible ici.</b> Faites-la en 3 gestes :<ol>'+etapesManuelles().map(function(s){return '<li>'+s+'</li>'}).join('')+'</ol><p style="margin:10px 0 0;font-size:13px;opacity:.8">Si vous êtes en <b>navigation privée</b>, ouvrez Nexora dans un onglet normal de Chrome : l’installation y est bloquée.</p>';
+    if(window.__nxPartageBlocV724){var ps=$('.nx-share-v724',ouvert);if(!ps)n.insertAdjacentHTML('afterend',window.__nxPartageBlocV724())}
     busy=false;
   }
   function demarrer(){
@@ -25042,6 +25051,75 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     }else suite();
   }
   window.__nxInstallerV721=ouvrir;
+})();
+</script>
+<style id="nxShareStyleV724">
+.nx-sbar-v724{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:9000;display:none;max-width:520px;margin:0 auto}
+@media (min-width:900px){.nx-sbar-v724{bottom:calc(18px + env(safe-area-inset-bottom,0px))}}
+.nx-sbar-v724.on{display:block;animation:nxUpV721 .4s cubic-bezier(.2,.8,.2,1) both}
+.nx-wa-ic-v724{flex:none;width:52px;height:52px;border-radius:14px;background:#25D366;display:grid;place-items:center;box-shadow:0 3px 10px rgba(37,211,102,.45)}
+.nx-wa-btn-v724{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:999px;padding:15px;font:800 16px/1 system-ui,sans-serif;color:#fff;background:#25D366;box-shadow:0 10px 22px rgba(37,211,102,.38);cursor:pointer;margin-top:12px}
+.nx-copy-btn-v724{display:block;width:100%;margin-top:10px;border:1.5px solid rgba(120,130,145,.5);border-radius:999px;padding:13px;font:700 14.5px/1 system-ui,sans-serif;color:inherit;background:transparent;cursor:pointer}
+.nx-share-v724{margin-top:16px;padding-top:14px;border-top:1px solid rgba(120,130,145,.25)}
+.nx-share-v724 p{margin:0;font-size:14px;line-height:1.5}
+</style>
+<script id="nxShareScriptV724">
+(function(){
+  var SITE='https://nexora-plus-beta.vercel.app/';
+  var K_REF='nx_ref_v724',K_MOI='nx_myref_v724',K_MASQ='nx_sbar_v724';
+  function $(s,r){return (r||document).querySelector(s)}
+  function get(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+  function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  /* 1. Parrain arrivé par un lien d'invitation */
+  try{var q=new URLSearchParams(location.search).get('ref');if(q&&/^[a-f0-9]{8}$/i.test(q))set(K_REF,q.toLowerCase())}catch(e){}
+  /* 2. Mon propre code (8 premiers caractères de mon identifiant, rien de personnel) */
+  function monCode(){
+    var c=get(K_MOI);if(/^[a-f0-9]{8}$/.test(c))return c;
+    try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);
+      if(/^sb-.*-auth-token$/.test(k)){var j=JSON.parse(localStorage.getItem(k)||'{}');var id=(j.user&&j.user.id)||(j.currentSession&&j.currentSession.user&&j.currentSession.user.id);
+        if(id&&/^[0-9a-f-]{36}$/i.test(id)){c=id.replace(/-/g,'').slice(0,8).toLowerCase();set(K_MOI,c);return c}}}}catch(e){}
+    return '';
+  }
+  function lien(){var c=monCode();return SITE+(c?'?ref='+c:'')}
+  function message(){return 'Je te recommande Nexora Académie 📚 : le programme scolaire guinéen de la maternelle au BAC, des cours, des évaluations et des formations professionnelles. Inscription en 30 secondes avec ton numéro de téléphone 👉 '+lien()}
+  function partagerWA(){var t=message();var u='https://wa.me/?text='+encodeURIComponent(t);var w=window.open(u,'_blank');if(!w){location.href=u}}
+  function copier(btn){
+    var l=lien();
+    function ok(){btn.textContent='Lien copié ✓'}
+    try{navigator.clipboard.writeText(l).then(ok,function(){btn.textContent=l})}catch(e){btn.textContent=l}
+  }
+  window.__nxPartageBlocV724=function(){
+    return '<div class="nx-share-v724"><p><b>Faites-en profiter vos proches.</b> Envoyez Nexora à vos amis, votre famille ou votre classe.</p><button type="button" class="nx-wa-btn-v724" data-nxshare="wa">'+WA(20)+' Partager sur WhatsApp</button><button type="button" class="nx-copy-btn-v724" data-nxshare="copy">Copier le lien d’invitation</button></div>';
+  };
+  function WA(t){return '<svg width="'+t+'" height="'+t+'" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a9.9 9.9 0 0 0-8.5 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.200Zm4.500-6.100c-.2-.1-1.500-.7-1.700-.8-.2-.1-.4-.1-.6.100l-.8 1c-.1.200-.3.200-.5.100-.7-.3-1.500-.8-2.100-1.400-.5-.5-1-1.200-1.100-1.400-.1-.2 0-.3.100-.4l.4-.4c.1-.1.100-.2.200-.4.100-.1 0-.3 0-.4l-.8-1.800c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.100-.6.300-.6.600-.9 1.300-.9 2.100.1 1 .5 1.900 1.100 2.700 1.100 1.600 2.500 2.800 4.200 3.500.6.300 1.100.4 1.500.5.600.2 1.200.1 1.700-.1.500-.3 1.100-.9 1.200-1.500.1-.4.1-.8 0-.9-.1-.1-.2-.2-.4-.3Z"/></svg>'}
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('[data-nxshare]');if(!b)return;
+    e.preventDefault();if(b.getAttribute('data-nxshare')==='wa')partagerWA();else copier(b);
+  },true);
+  /* 3. Carte « Partager » pour ceux qui ont déjà installé l'application */
+  var barre=null;
+  function standalone(){try{return (window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches))||navigator.standalone===true}catch(e){return false}}
+  function installee(){try{return !!(JSON.parse(localStorage.getItem('nx_inst_v721')||'{}').installee)}catch(e){return false}}
+  function doit(){
+    if(!(standalone()||installee()))return false;
+    var m=get(K_MASQ);if(m&&Date.now()-parseInt(m,10)<7*864e5)return false;
+    var g=document.getElementById('welcomeGate');if(!g||!g.hidden)return false;
+    var a=$('#accountModal');if(a&&a.classList.contains('open'))return false;
+    if($('.nx-ov-v716')||$('.nx-isheet-v721')||document.body.classList.contains('welcome-active'))return false;
+    return true;
+  }
+  function maj(){
+    if(!barre){if(!document.body)return;
+      barre=document.createElement('div');barre.className='nx-sbar-v724';
+      barre.innerHTML='<div class="nx-icardmini-v721" role="button" tabindex="0" data-nxshare="wa"><span class="nx-wa-ic-v724">'+WA(30)+'</span><div class="nx-imeta-v721"><b>Invitez vos amis sur Nexora</b><span>Partagez le lien en un clic sur WhatsApp</span></div><button type="button" class="nx-ipill-v721" style="background:#25D366;box-shadow:0 6px 14px rgba(37,211,102,.4)" data-nxshare="wa">Partager</button></div><button type="button" class="nx-ix-v721" id="nxSxV724" aria-label="Plus tard">×</button>';
+      document.body.appendChild(barre);
+      $('#nxSxV724').addEventListener('click',function(e){e.stopPropagation();set(K_MASQ,String(Date.now()));maj()});
+    }
+    barre.classList.toggle('on',doit());
+  }
+  setInterval(maj,1500);
+  /* 4. Accueil adapté si la personne vient d'un lien d'invitation */
+  window.__nxRefV724=function(){return get(K_REF)};
 })();
 </script>
 </body>
