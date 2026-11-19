@@ -24614,7 +24614,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
       +'<div class="field"><label class="label" for="nxPinV713">Code secret à 4 chiffres *</label><div id="nxPinWrapV714"><input class="input nx-pin-v713" id="nxPinV713" type="password" inputmode="numeric" enterkeyhint="go" maxlength="4" autocomplete="off" placeholder="••••"/><button type="button" class="nx-pin-eye-v714" id="nxPinEyeV714">Afficher</button></div>'
       +'<div class="nx-pin2-v715"><label class="label" for="nxPin2V715" style="margin-top:10px;display:block">Confirmez le code secret *</label><input class="input nx-pin-v713" id="nxPin2V715" type="password" inputmode="numeric" enterkeyhint="go" maxlength="4" autocomplete="off" placeholder="••••"/></div>'
       +'<small class="nx-pin-help-create-v713">Tapez le même code deux fois. Choisissez 4 chiffres faciles à retenir : ils vous permettront de vous reconnecter.</small>'
-      +'<small class="nx-pin-help-login-v713">Code oublié ? <a href="https://wa.me/224620417383" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>.</small></div>'
+      +'<small class="nx-pin-help-login-v713">Code oublié ? <button type="button" class="nx-link-v716" id="nxForgotV716" style="background:none;border:0;padding:0;color:inherit;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer">Retrouver mon compte</button></small></div>'
       +'<p id="nxTelErrV713" role="alert"></p>';
     ref.parentNode.insertBefore(b,ref);
     var l=document.createElement('button');l.type='button';l.className='nx-mode-link-v713';l.id='nxModeLinkV713';l.textContent='J’ai un compte créé avec un email';
@@ -24658,6 +24658,108 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   document.addEventListener('click',function(){setTimeout(poser,60)},true);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',poser,{once:true});else poser();
   setTimeout(poser,1500);
+})();
+</script>
+<style id="nxRecoStyleV716">
+.nx-ov-v716{position:fixed;inset:0;z-index:2147483300;background:rgba(10,20,35,.72);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.nx-card-v716{width:100%;max-width:400px;background:var(--surface,#fff);color:var(--text,#16243a);border-radius:16px;padding:22px 18px;box-shadow:0 20px 60px rgba(0,0,0,.4);font-family:inherit}
+.nx-card-v716 h2{margin:0 0 6px;font-size:20px;line-height:1.25}
+.nx-card-v716 p{margin:0 0 12px;font-size:14px;line-height:1.5;opacity:.9}
+.nx-code-v716{font:800 28px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;text-align:center;padding:18px 8px;border:2px dashed #2d74c9;border-radius:12px;background:rgba(45,116,201,.08);margin:6px 0 12px;user-select:all}
+.nx-btn-v716{display:block;width:100%;border:0;border-radius:12px;padding:14px;font:800 16px/1 inherit;font-family:inherit;cursor:pointer;background:#2d74c9;color:#fff;margin-top:10px}
+.nx-btn-v716[disabled]{opacity:.45;cursor:not-allowed}
+.nx-btn2-v716{background:transparent;color:inherit;border:1.5px solid currentColor;opacity:.85}
+.nx-chk-v716{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600;margin:10px 0 0;line-height:1.4}
+.nx-chk-v716 input{width:20px;height:20px;margin-top:1px;flex:none}
+.nx-err-v716{color:#b3261e;font-weight:700;font-size:13px;margin:8px 0 0;display:none}
+.nx-link-v716{background:none;border:0;padding:0;color:#2d74c9;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+</style>
+<script id="nxRecoScriptV716">
+(function(){
+  var SB='https://lzypxingcykvgxdifccq.supabase.co',KEY='sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY';
+  var oF=window.fetch;
+  function $(s,r){return (r||document).querySelector(s)}
+  function rpc(nom,corps,token){
+    var h={'apikey':KEY,'Content-Type':'application/json'};if(token)h.Authorization='Bearer '+token;
+    return oF.call(window,SB+'/rest/v1/rpc/'+nom,{method:'POST',headers:h,body:JSON.stringify(corps)}).then(function(r){return r.json().catch(function(){return null}).then(function(j){if(!r.ok)throw new Error((j&&j.message)||('HTTP '+r.status));return j})});
+  }
+  function genCode(){
+    var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789',b=new Uint8Array(8),o='';
+    (window.crypto||window.msCrypto).getRandomValues(b);
+    for(var i=0;i<8;i++){o+=A.charAt(b[i]%A.length);if(i===3)o+='-'}
+    return o;
+  }
+  function ov(html){
+    var o=document.createElement('div');o.className='nx-ov-v716';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
+    o.innerHTML='<div class="nx-card-v716">'+html+'</div>';document.body.appendChild(o);return o;
+  }
+  /* ---- A. Code de récupération juste après la création ---- */
+  function afficherCode(token){
+    var code=genCode();
+    var o=ov('<h2>🔐 Votre code de récupération</h2><p>Si vous oubliez votre code à 4 chiffres, ce code vous permettra de retrouver votre compte. <b>Notez-le ou prenez une capture d’écran maintenant.</b> Il ne sera plus affiché.</p><div class="nx-code-v716" id="nxRcV716">…</div><button type="button" class="nx-btn-v716 nx-btn2-v716" id="nxRcCopyV716" disabled>Copier le code</button><label class="nx-chk-v716"><input type="checkbox" id="nxRcChkV716" disabled/> <span>J’ai noté mon code de récupération</span></label><p class="nx-err-v716" id="nxRcErrV716" role="alert"></p><button type="button" class="nx-btn-v716" id="nxRcOkV716" disabled>Continuer</button>');
+    var box=$('#nxRcV716',o),chk=$('#nxRcChkV716',o),ok=$('#nxRcOkV716',o),cp=$('#nxRcCopyV716',o),er=$('#nxRcErrV716',o);
+    function enreg(){
+      er.style.display='none';box.textContent='…';
+      rpc('nexora_enregistrer_recuperation',{p_code:code},token).then(function(){
+        box.textContent=code;chk.disabled=false;cp.disabled=false;
+      }).catch(function(){
+        er.textContent='Impossible d’enregistrer le code pour le moment. Vérifiez votre connexion.';er.style.display='block';
+        ok.textContent='Réessayer';ok.disabled=false;ok.onclick=function(){ok.textContent='Continuer';ok.disabled=true;ok.onclick=fin;enreg()};
+      });
+    }
+    function fin(){if(chk.checked)o.remove()}
+    chk.addEventListener('change',function(){ok.disabled=!chk.checked});
+    ok.onclick=fin;
+    cp.addEventListener('click',function(){try{navigator.clipboard.writeText(code).then(function(){cp.textContent='Code copié ✓'},function(){cp.textContent='Notez-le à la main'})}catch(e){cp.textContent='Notez-le à la main'}});
+    enreg();
+  }
+  /* ---- B. Retrouver son compte avec le code de récupération ---- */
+  function retrouver(){
+    var tel0=($('#nxTelV713')||{}).value||'';
+    var o=ov('<h2>Retrouver mon compte</h2><p>Entrez votre numéro, le code de récupération reçu à l’inscription, puis choisissez un nouveau code à 4 chiffres.</p>'
+      +'<div class="field"><label class="label" for="nxRtTelV716">Numéro de téléphone</label><input class="input" id="nxRtTelV716" type="tel" inputmode="tel" autocomplete="tel"/></div>'
+      +'<div class="field"><label class="label" for="nxRtCodeV716">Code de récupération</label><input class="input" id="nxRtCodeV716" type="text" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX" style="text-transform:uppercase;letter-spacing:.1em"/></div>'
+      +'<div class="field"><label class="label" for="nxRtPinV716">Nouveau code à 4 chiffres</label><input class="input" id="nxRtPinV716" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"/></div>'
+      +'<div class="field"><label class="label" for="nxRtPin2V716">Confirmez le nouveau code</label><input class="input" id="nxRtPin2V716" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"/></div>'
+      +'<p class="nx-err-v716" id="nxRtErrV716" role="alert"></p><button type="button" class="nx-btn-v716" id="nxRtOkV716">Retrouver mon compte</button><button type="button" class="nx-btn-v716 nx-btn2-v716" id="nxRtNoV716">Annuler</button>'
+      +'<p style="margin-top:12px;font-size:13px">Pas de code de récupération ? <a href="https://wa.me/224620417383" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>.</p>');
+    var tel=$('#nxRtTelV716',o),code=$('#nxRtCodeV716',o),p1=$('#nxRtPinV716',o),p2=$('#nxRtPin2V716',o),er=$('#nxRtErrV716',o),ok=$('#nxRtOkV716',o);
+    tel.value=tel0;
+    [p1,p2].forEach(function(i){i.addEventListener('input',function(){i.value=i.value.replace(/\D/g,'').slice(0,4);er.style.display='none'})});
+    function err(t){er.textContent=t;er.style.display='block'}
+    $('#nxRtNoV716',o).onclick=function(){o.remove()};
+    ok.onclick=function(){
+      if(tel.value.replace(/\D/g,'').length<8)return err('Entrez votre numéro de téléphone.');
+      if(code.value.replace(/[^A-Za-z0-9]/g,'').length<8)return err('Entrez le code de récupération (8 caractères).');
+      if(!/^\d{4}$/.test(p1.value))return err('Le nouveau code doit avoir 4 chiffres.');
+      if(p1.value!==p2.value)return err('Les deux codes ne sont pas identiques.');
+      ok.disabled=true;ok.textContent='Vérification…';
+      rpc('nexora_recuperer_code',{p_telephone:tel.value,p_code:code.value,p_nouveau_pin:p1.value}).then(function(r){
+        if(r==='ok'){
+          o.remove();
+          var t=$('#nxTelV713'),p=$('#nxPinV713');
+          if(t&&p){t.value=tel.value;p.value=p1.value;var b=$('[data-action="login-account"]');if(b)b.click()}
+          return;
+        }
+        ok.disabled=false;ok.textContent='Retrouver mon compte';
+        err(r==='bloque'?'Trop d’essais. Réessayez dans 1 heure ou écrivez-nous sur WhatsApp.':(r==='refuse'?'Numéro ou code de récupération incorrect.':'Vérifiez les informations saisies.'));
+      }).catch(function(){ok.disabled=false;ok.textContent='Retrouver mon compte';err('Connexion impossible. Réessayez.')});
+    };
+  }
+  document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#nxForgotV716');if(b){e.preventDefault();retrouver()}},true);
+  /* ---- C. Écoute de la réponse d'inscription par numéro ---- */
+  window.fetch=function(i,o){
+    var u=typeof i==='string'?i:((i&&i.url)||''),p=oF.apply(this,arguments);
+    try{
+      if(/\/auth\/v1\/signup/.test(u)){
+        var corps=(o&&typeof o.body==='string')?o.body:'';
+        if(/"email":"p\d+@tel\.nexora-plus\.com"/.test(corps)){
+          p.then(function(r){return r.clone().json()}).then(function(j){if(j&&j.access_token)afficherCode(j.access_token)}).catch(function(){});
+        }
+      }
+    }catch(e){}
+    return p;
+  };
 })();
 </script>
 </body>
