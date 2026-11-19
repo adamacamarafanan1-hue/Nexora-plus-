@@ -8806,7 +8806,7 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 <p class="account-recovery-copy account-recover-only">Choisis maintenant un nouveau mot de passe pour protéger ton compte.</p>
 <div class="field account-create-only"><label class="label" for="nxAccountNameV379">Nom complet *</label><input autocomplete="name" class="input" data-account-name="" id="nxAccountNameV379" placeholder="Ex : Mariama Camara" required="" type="text"/></div>
 <div class="field account-email-field"><label class="label" for="nxAuthEmailV379">Adresse email *</label><input autocomplete="email" class="input" data-auth-email="" id="nxAuthEmailV379" inputmode="email" placeholder="exemple@email.com" required="" type="email"/></div>
-<div class="field account-password-field"><label class="label" for="nxAuthPasswordV379">Mot de passe *</label><input autocomplete="current-password" class="input" data-auth-password="" id="nxAuthPasswordV379" minlength="10" placeholder="10 caractères minimum, avec lettre et chiffre" required="" type="password"/></div>
+<div class="field account-password-field nx-pw-wrap-v712"><label class="label" for="nxAuthPasswordV379">Mot de passe *</label><input autocomplete="current-password" class="input" data-auth-password="" id="nxAuthPasswordV379" minlength="10" placeholder="10 caractères minimum, avec lettre et chiffre" required="" type="password"/></div>
 <small class="nx-password-help-v379 account-create-only">10 caractères minimum, avec une lettre et un chiffre.</small>
 <div class="account-recover-only">
 <div class="field"><label class="label" for="nxNewPasswordV379">Nouveau mot de passe</label><input autocomplete="new-password" class="input" data-auth-new-password="" id="nxNewPasswordV379" minlength="10" placeholder="Au moins 10 caractères, avec lettre et chiffre" type="password"/></div>
@@ -8824,7 +8824,7 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 <div class="form-grid"><div class="field"><label class="label" for="nxAccountJobV379">Métier ou activité</label><input class="input" data-account-job="" id="nxAccountJobV379" placeholder="Ex : Élève, étudiant, enseignant" type="text"/></div><div class="field"><label class="label" for="nxAccountLocationV379">Pays / ville</label><input autocomplete="address-level2" class="input" data-account-location="" id="nxAccountLocationV379" placeholder="Ex : Guinée, Conakry" type="text"/></div></div>
 </div>
 </details>
-<div class="account-create-only nx-bienvenue-champs-v695" style="margin:4px 0 12px"><div class="field"><label class="label" for="nxBienvenueProfilV695">Vous êtes</label><select class="input" data-nx-bienvenue-profil="" id="nxBienvenueProfilV695"><option value="">Choisir (facultatif)</option><option value="eleve">Élève</option><option value="parent">Parent d’élève</option><option value="enseignant">Enseignant ou école</option><option value="pro">Adulte / professionnel</option></select></div><div class="field" data-nx-bienvenue-zone-classe="" hidden><label class="label" for="nxBienvenueClasseV695">Votre classe (ou celle de votre enfant)</label><select class="input" data-nx-bienvenue-classe="" id="nxBienvenueClasseV695"><option value="">Choisir la classe</option><option value="maternelle">Maternelle</option><option value="cp1">1ère année (CP1)</option><option value="cp2">2ème année (CP2)</option><option value="ce1">3ème année (CE1)</option><option value="ce2">4ème année (CE2)</option><option value="cm1">5ème année (CM1)</option><option value="cm2">6ème année (CM2)</option><option value="7eme">7ème année</option><option value="8eme">8ème année</option><option value="9eme">9ème année</option><option value="10eme">10ème année (Brevet)</option><option value="11eme">11ème année</option><option value="12eme">12ème année</option><option value="terminale">Terminale (BAC)</option></select></div></div><div class="account-legal-consent account-create-only"><input data-account-legal-accept="" id="nxAccountLegalAcceptV504" type="checkbox"/><span><label for="nxAccountLegalAcceptV504">J’accepte les</label> <button class="legal-inline-link" data-action="open-rules" data-legal-tab="terms" type="button">CGU</button>, la <button class="legal-inline-link" data-action="open-rules" data-legal-tab="privacy" type="button">Politique de confidentialité</button> et les <button class="legal-inline-link" data-action="open-rules" data-legal-tab="community" type="button">Règles de communauté</button> de Nexora.</span></div>
+<div class="account-create-only nx-bienvenue-champs-v695" style="margin:4px 0 12px"><div class="field"><label class="label" for="nxBienvenueProfilV695">Vous êtes</label><select class="input" data-nx-bienvenue-profil="" id="nxBienvenueProfilV695"><option value="">Choisir (facultatif)</option><option value="eleve">Élève</option><option value="parent">Parent d’élève</option><option value="enseignant">Enseignant ou école</option><option value="pro">Adulte / professionnel</option></select></div><div class="field" data-nx-bienvenue-zone-classe="" hidden><label class="label" for="nxBienvenueClasseV695">Votre classe (ou celle de votre enfant)</label><select class="input" data-nx-bienvenue-classe="" id="nxBienvenueClasseV695"><option value="">Choisir la classe</option><option value="maternelle">Maternelle</option><option value="cp1">1ère année (CP1)</option><option value="cp2">2ème année (CP2)</option><option value="ce1">3ème année (CE1)</option><option value="ce2">4ème année (CE2)</option><option value="cm1">5ème année (CM1)</option><option value="cm2">6ème année (CM2)</option><option value="7eme">7ème année</option><option value="8eme">8ème année</option><option value="9eme">9ème année</option><option value="10eme">10ème année (Brevet)</option><option value="11eme">11ème année</option><option value="12eme">12ème année</option><option value="terminale">Terminale (BAC)</option></select></div></div><div class="account-legal-consent account-create-only"><input checked="" data-account-legal-accept="" hidden="" id="nxAccountLegalAcceptV504" type="checkbox"/><span>En créant mon compte, j’accepte les <button class="legal-inline-link" data-action="open-rules" data-legal-tab="terms" type="button">CGU</button>, la <button class="legal-inline-link" data-action="open-rules" data-legal-tab="privacy" type="button">Politique de confidentialité</button> et les <button class="legal-inline-link" data-action="open-rules" data-legal-tab="community" type="button">Règles de communauté</button> de Nexora.</span></div>
 <div class="account-actions-premium">
 <button class="btn btn-primary account-create-only" data-action="create-account" type="button">Créer mon compte</button>
 <button class="btn btn-primary account-login-only" data-action="login-account" type="button">Se connecter</button>
@@ -22583,7 +22583,7 @@ function renderTeacherRequestCenter(db){
       if(!res.data||!res.data.user) throw new Error('Compte non créé');
       return resolveAuthSessionAfterSignUp(activeClient,res,email,password,meta)
     }).then(function(profile){
-      ['[data-account-name]','[data-account-job]','[data-account-location]','[data-account-phone]'].forEach(function(sel){var el=$(sel); if(el) el.value=''}); var legalAcceptedEl=$('[data-account-legal-accept]'); if(legalAcceptedEl) legalAcceptedEl.checked=false;
+      ['[data-account-name]','[data-account-job]','[data-account-location]','[data-account-phone]'].forEach(function(sel){var el=$(sel); if(el) el.value=''}); var legalAcceptedEl=$('[data-account-legal-accept]'); if(legalAcceptedEl) legalAcceptedEl.checked=true;
       if(profile&&profile.authPendingConfirmation){
         if(accountAvatar) storePendingAccountAvatar(email,accountAvatar);
         resetAccountCreationAvatar();
@@ -24029,6 +24029,20 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   }
 
   /* Fenêtre « Par où commencer ? » */
+  /* V712 : après l'inscription, on ouvre directement SA classe (ou l'Espace professionnel), sans fenêtre de choix. */
+  function allerDirect(ctx) {
+    var ou = null, msg = 'Bienvenue sur Nexora' + (ctx.prenom ? ', ' + ctx.prenom : '') + ' !';
+    if (ctx.profil === 'pro') ou = function () { return ouvrirEspace('pro'); };
+    else if ((ctx.profil === 'eleve' || ctx.profil === 'parent' || !ctx.profil) && ctx.classe && classe(ctx.classe)) ou = function () { return ouvrirClasse(ctx.classe); };
+    if (!ou) return false;
+    try {
+      var t = document.createElement('div'); t.setAttribute('role', 'status');
+      t.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);max-width:460px;margin:0 auto;background:#16324F;color:#fff;padding:12px 16px;border-radius:12px;z-index:2147483200;font:600 15px/1.4 system-ui,-apple-system,Roboto,Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.28)';
+      t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 4200);
+    } catch (e) {}
+    ou(); return true;
+  }
+
   function fenetreActions(ctx) {
     var c = classe(ctx.classe);
     var titre = ctx.cree
@@ -24106,6 +24120,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
         if (profil !== 'eleve' && profil !== 'parent') cl = '';
         ctx.profil = profil; ctx.classe = cl;
         enregistrer(ctx);
+        if (ctx.cree) { fermer(); if (allerDirect(ctx)) return; }
         fenetreActions(ctx);
       }
     });
@@ -24490,7 +24505,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
       if ((ctx.profil || ctx.classe) && (!meta.nexora_profil && !meta.nexora_classe)) enregistrer(ctx);
 
       var vu = lire(CLE_VU) || {}, cleVu = userId || '_';
-      if (cree) { vu[cleVu] = Date.now(); ecrire(CLE_VU, vu); fenetreActions(ctx); return; }
+      if (cree) { vu[cleVu] = Date.now(); ecrire(CLE_VU, vu); if (allerDirect(ctx)) return; if (!ctx.profil) fenetreChoix(ctx); else fenetreActions(ctx); return; }
       /* À la connexion : au plus une fenêtre toutes les 20 heures. */
       if (vu[cleVu] && Date.now() - vu[cleVu] < 20 * 3600 * 1000) return;
       vu[cleVu] = Date.now(); ecrire(CLE_VU, vu);
@@ -24531,6 +24546,39 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   else brancherFormulaire();
   /* Le formulaire peut être reconstruit : on rebranche à l'ouverture de la fenêtre de compte. */
   document.addEventListener('click', function () { setTimeout(brancherFormulaire, 50); }, true);
+})();
+</script>
+<style id="nxPwStyleV712">.account-legal-consent.account-create-only{display:block!important;background:none!important;border:0!important;box-shadow:none!important;padding:2px 6px!important;margin:6px 0 4px!important;font-size:12px!important;line-height:1.5!important;text-align:center!important;font-weight:500!important;opacity:.85}.account-legal-consent.account-create-only span{display:inline!important}.account-legal-consent.account-create-only .legal-inline-link{display:inline!important;min-height:0!important;margin:0!important;line-height:1.4!important;padding:0!important;font-size:inherit!important}
+.nx-pw-wrap-v712{position:relative}
+.nx-pw-wrap-v712 .input{padding-right:52px}
+.nx-eye-v712{position:absolute;right:6px;bottom:6px;width:42px;height:42px;border:0;border-radius:10px;background:transparent;font-size:20px;line-height:1;cursor:pointer;color:inherit}
+.nx-eye-v712:focus-visible{outline:3px solid #8FB5E8}
+.nx-pw-help-ok-v712{color:#0A7A3E!important;font-weight:700}
+.account-legal-consent{font-size:13px;color:#5A6482;margin:2px 0 10px}
+</style>
+<script id="nxPwScriptV712">
+(function(){
+  'use strict';
+  function champ(){return document.querySelector('[data-auth-password]')}
+  function poser(){
+    var inp=champ(); if(!inp||inp.__nxEye712) return;
+    inp.__nxEye712=true;
+    var wrap=inp.closest('.nx-pw-wrap-v712'); if(!wrap) return;
+    var b=document.createElement('button'); b.type='button'; b.className='nx-eye-v712'; b.setAttribute('aria-label','Afficher le mot de passe'); b.textContent='👁';
+    b.addEventListener('click',function(){var vis=inp.type==='text'; inp.type=vis?'password':'text'; b.setAttribute('aria-label',vis?'Afficher le mot de passe':'Masquer le mot de passe'); b.style.opacity=vis?'1':'.55'});
+    wrap.appendChild(b);
+    var aide=document.querySelector('.nx-password-help-v379');
+    function maj(){
+      if(!aide) return;
+      var v=inp.value||'', ok=v.length>=10&&/[A-Za-z]/.test(v)&&/\d/.test(v);
+      aide.classList.toggle('nx-pw-help-ok-v712',ok);
+      aide.textContent=ok?'✓ Mot de passe valide.':(v.length<10?'Encore '+(10-v.length)+' caractère(s), avec une lettre et un chiffre.':'Ajoute au moins une lettre et un chiffre.');
+      if(!v) aide.textContent='10 caractères minimum, avec une lettre et un chiffre.';
+    }
+    inp.addEventListener('input',maj);
+  }
+  document.addEventListener('click',function(){setTimeout(poser,60)},true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',poser,{once:true}); else poser();
 })();
 </script>
 </body>
