@@ -4,3 +4,6 @@ Disallow: /api/
 Disallow: /protected/
 
 Sitemap: https://nexora-plus-beta.vercel.app/sitemap.xml
+
+User-agent: *
+Disallow: /tableau-de-bord.html

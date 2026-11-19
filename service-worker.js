@@ -162,6 +162,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
   if (url.pathname === "/version.json") return;
+  if (url.pathname.startsWith("/tableau-de-bord")) return;
   /* Jeu Adams est une application à part : le service worker de Nexora ne touche pas à ses pages. */
   if (url.hostname === "jeu-adams.vercel.app" || url.pathname.startsWith("/jeu-adams-app/")) return;
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/protected/") || url.pathname.startsWith("/modules/jeu-adams/")) return;

@@ -24948,7 +24948,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function pf(){var u=navigator.userAgent||'';if(/iPhone|iPad|iPod/i.test(u))return 'ios';if(/Android/i.test(u))return 'android';return 'autre'}
   var gagne={fait:false};
   window.addEventListener('beforeinstallprompt',function(e){EV=e;try{e.preventDefault()}catch(x){}});
-  window.addEventListener('appinstalled',function(){var o=lire();o.installee=Date.now();ecrire(o);EV=null;gagne.fait=true;majBarre()});
+  window.addEventListener('appinstalled',function(){window.__nxEvt&&window.__nxEvt('installee');var o=lire();o.installee=Date.now();ecrire(o);EV=null;gagne.fait=true;majBarre()});
   function icone(t){return '<img class="nx-icon-v721" src="'+ICON+'" alt="Logo Nexora" width="'+t+'" height="'+t+'" style="width:'+t+'px;height:'+t+'px"/>'}
   var barre=null;
   function creerBarre(){
@@ -25045,7 +25045,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     if(ev){
       EV=null;
       try{ev.prompt();(ev.userChoice||Promise.resolve({outcome:'dismissed'})).then(function(c){
-        if(c&&c.outcome==='accepted'){mode='natif';accepte=Date.now();var oo=lire();oo.accepte=accepte;ecrire(oo);suite()}
+        if(c&&c.outcome==='accepted'){window.__nxEvt&&window.__nxEvt('install_acceptee');mode='natif';accepte=Date.now();var oo=lire();oo.accepte=accepte;ecrire(oo);suite()}
         else{EV=ev;busy=false}
       }).catch(function(){EV=ev;busy=false})}catch(e){suite()}
     }else suite();
@@ -25094,7 +25094,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function WA(t){return '<svg width="'+t+'" height="'+t+'" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a9.9 9.9 0 0 0-8.5 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.200Zm4.500-6.100c-.2-.1-1.500-.7-1.700-.8-.2-.1-.4-.1-.6.100l-.8 1c-.1.200-.3.200-.5.100-.7-.3-1.500-.8-2.100-1.400-.5-.5-1-1.200-1.100-1.400-.1-.2 0-.3.100-.4l.4-.4c.1-.1.100-.2.200-.4.100-.1 0-.3 0-.4l-.8-1.800c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.100-.6.300-.6.600-.9 1.300-.9 2.100.1 1 .5 1.900 1.100 2.700 1.100 1.600 2.500 2.800 4.200 3.500.6.300 1.100.4 1.500.5.600.2 1.200.1 1.700-.1.500-.3 1.100-.9 1.200-1.500.1-.4.1-.8 0-.9-.1-.1-.2-.2-.4-.3Z"/></svg>'}
   document.addEventListener('click',function(e){
     var b=e.target&&e.target.closest&&e.target.closest('[data-nxshare]');if(!b)return;
-    e.preventDefault();if(b.getAttribute('data-nxshare')==='wa')partagerWA();else copier(b);
+    e.preventDefault();if(b.getAttribute('data-nxshare')==='wa'){window.__nxEvt&&window.__nxEvt('partage');partagerWA()}else copier(b);
   },true);
   /* 3. Carte « Partager » pour ceux qui ont déjà installé l'application */
   var barre=null;
@@ -25120,6 +25120,31 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   setInterval(maj,1500);
   /* 4. Accueil adapté si la personne vient d'un lien d'invitation */
   window.__nxRefV724=function(){return get(K_REF)};
+})();
+</script>
+<script id="nxStatsScriptV725">
+(function(){
+  var SB='https://lzypxingcykvgxdifccq.supabase.co',KEY='sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY';
+  var vus={};
+  function dev(){
+    try{var d=localStorage.getItem('nx_dev_v725');if(d&&/^[A-Za-z0-9-]{8,40}$/.test(d))return d;
+      var b=new Uint8Array(12);(window.crypto||window.msCrypto).getRandomValues(b);d='';for(var i=0;i<b.length;i++)d+=('0'+b[i].toString(16)).slice(-2);
+      localStorage.setItem('nx_dev_v725',d);return d}catch(e){return ''}
+  }
+  function noter(type){
+    if(vus[type])return;vus[type]=1;
+    var d=dev();if(!d)return;
+    var ref=(window.__nxRefV724&&window.__nxRefV724())||null;
+    try{fetch(SB+'/rest/v1/rpc/nexora_noter_evenement',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({p_type:type,p_appareil:d,p_ref:ref}),keepalive:true}).catch(function(){})}catch(e){}
+  }
+  window.__nxEvt=noter;
+  setTimeout(function(){noter('visite')},2500);
+  setInterval(function(){
+    var m=document.getElementById('accountModal');
+    if(m&&m.classList.contains('open')&&m.getAttribute('data-account-mode')==='create')noter('formulaire_ouvert');
+    var b=document.getElementById('nxIbarV721');
+    if((b&&b.classList.contains('on'))||document.querySelector('.nx-isheet-v721'))noter('install_proposee');
+  },1500);
 })();
 </script>
 </body>
