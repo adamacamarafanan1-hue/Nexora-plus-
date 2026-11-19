@@ -22278,7 +22278,9 @@ function renderTeacherRequestCenter(db){
     var raw=collectErrorText(err);
     var low=raw.toLowerCase();
     if(!raw||raw==='{}'||low==='[object object]') return 'Création impossible pour le moment. Vérifie la connexion puis réessaie.';
-    if(low.indexOf('already registered')>-1||low.indexOf('already exists')>-1||low.indexOf('user already')>-1||low.indexOf('registered')>-1) return 'Cet email existe déjà. Clique sur “J’ai déjà un compte”, puis connecte-toi.';
+    if(low.indexOf('already registered')>-1||low.indexOf('already exists')>-1||low.indexOf('user already')>-1||low.indexOf('registered')>-1) { var tel=null; try{ tel=document.getElementById('nxTelV713'); }catch(_){}
+      if(tel&&String(tel.value||'').replace(/\D/g,'').length>=8) return 'Ce numéro a déjà un compte. Appuie sur “J’ai déjà un compte” et entre ton numéro avec ton code secret. Code oublié ? Utilise “Code oublié”.';
+      return 'Cet email existe déjà. Clique sur “J’ai déjà un compte”, puis connecte-toi.'; }
     if(low.indexOf('signup')>-1&&low.indexOf('disabled')>-1) return 'Les nouvelles inscriptions sont temporairement indisponibles.';
     if(low.indexOf('signups not allowed')>-1||low.indexOf('not allowed')>-1) return 'Les nouvelles inscriptions sont temporairement indisponibles.';
     if(low.indexOf('email not confirmed')>-1||low.indexOf('not confirmed')>-1||low.indexOf('confirm')>-1) return 'Compte créé, mais l’email doit être confirmé. Vérifie ta boîte mail.';
@@ -24749,6 +24751,15 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     };
   }
   document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#nxForgotV716');if(b){e.preventDefault();retrouver()}},true);
+  /* ---- Numéro déjà inscrit : message clair + bouton de connexion ---- */
+  function doublon(){
+    var e=$('#nxTelErrV713');if(!e)return;
+    e.innerHTML='Ce numéro a déjà un compte. Connecte-toi avec ton numéro et ton code secret. <button type="button" id="nxDejaV726" style="display:block;margin:8px 0 0;padding:9px 14px;border:0;border-radius:10px;background:#1E5FA9;color:#fff;font:700 14px system-ui,sans-serif">Me connecter</button>';
+    e.style.display='block';
+    try{e.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}
+    var b=document.getElementById('nxDejaV726');
+    if(b)b.addEventListener('click',function(){var t=document.getElementById('nxTabLoginV718')||document.querySelector('#accountModal [data-account-mode-target="login"]');if(t)t.click()});
+  }
   /* ---- C. Écoute de la réponse d'inscription par numéro ---- */
   window.fetch=function(i,o){
     var u=typeof i==='string'?i:((i&&i.url)||'');
@@ -24763,7 +24774,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
       if(/\/auth\/v1\/signup/.test(u)){
         var corps=(o&&typeof o.body==='string')?o.body:'';
         if(/"email":"p\d+@tel\.nexora-plus\.com"/.test(corps)){
-          p.then(function(r){return r.clone().json()}).then(function(j){if(j&&j.access_token)afficherCode(j.access_token)}).catch(function(){});
+          p.then(function(r){return r.clone().json()}).then(function(j){if(j&&j.access_token)afficherCode(j.access_token);else if(j&&(j.error_code==='user_already_exists'||/already registered|already exists/i.test(String(j.msg||j.message||j.error_description||'')))){doublon()}}).catch(function(){});
         }
       }
     }catch(e){}
