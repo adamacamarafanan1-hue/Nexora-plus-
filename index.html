@@ -24762,5 +24762,111 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   };
 })();
 </script>
+<style id="nxDesignStyleV717">
+#accountModal .account-modal{position:relative;overflow:hidden;border-radius:22px;max-width:440px;padding:0;background:var(--surface,#fff);box-shadow:0 30px 80px rgba(8,18,32,.45);animation:nxSheetV717 .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes nxSheetV717{from{opacity:0;transform:translateY(28px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#accountModal .account-modal{animation:none}}
+#accountModal .modal-body{padding:18px 18px 20px}
+.nx-hero-v717{display:none;position:relative;margin:-18px -18px 18px;padding:22px 20px 18px;color:#fff;background:radial-gradient(120% 90% at 100% 0%,rgba(79,160,255,.35),transparent 55%),linear-gradient(155deg,#0F2744 0%,#16324F 45%,#1E5FA9 130%)}
+.nx-hero-v717:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 14px);pointer-events:none}
+#accountModal:is([data-account-mode="create"],[data-account-mode="login"]) .nx-hero-v717{display:block}
+.nx-hero-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;position:relative;z-index:1}
+.nx-logo-v717{display:inline-grid;place-items:center;width:38px;height:38px;border:1.5px solid rgba(255,255,255,.75);border-radius:6px;font:700 17px/1 Georgia,"Times New Roman",serif;letter-spacing:.02em}
+.nx-brand-v717{font:700 11px/1 system-ui,sans-serif;letter-spacing:.22em;color:rgba(255,255,255,.78)}
+.nx-hero-v717 h2{margin:0 0 6px;font:400 26px/1.15 Georgia,"Times New Roman",serif;position:relative;z-index:1;letter-spacing:-.005em}
+.nx-hero-v717 p{margin:0;font-size:14px;line-height:1.5;color:rgba(255,255,255,.82);position:relative;z-index:1;max-width:32ch}
+.nx-chips-v717{display:flex;flex-wrap:nowrap;gap:5px;margin-top:12px;position:relative;z-index:1}
+.nx-chips-v717 span{white-space:nowrap;font:600 10.5px/1 system-ui,sans-serif;padding:6px 7px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;backdrop-filter:blur(4px)}
+#accountModal:is([data-account-mode="create"],[data-account-mode="login"]) .modal-head{position:absolute;top:10px;right:10px;z-index:5;background:none;border:0;padding:0;min-height:0}
+#accountModal:is([data-account-mode="create"],[data-account-mode="login"]) .modal-head .modal-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#accountModal:is([data-account-mode="create"],[data-account-mode="login"]) .close-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:22px;line-height:1}
+.nx-prog-v717{display:none;margin:2px 0 16px}
+#accountModal[data-account-mode="create"] .nx-prog-v717{display:block}
+.nx-prog-bar-v717{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.nx-prog-bar-v717 i{height:5px;border-radius:99px;background:var(--border,#dbdfe4);transition:background .25s,transform .25s}
+.nx-prog-bar-v717 i.on{background:linear-gradient(90deg,#1E5FA9,#3b8bea);transform:scaleY(1.2)}
+.nx-prog-txt-v717{display:block;margin-top:8px;font:600 12.5px/1.3 system-ui,sans-serif;opacity:.75}
+#accountModal .field{margin-bottom:14px}
+#accountModal .label{font:700 11.5px/1.2 system-ui,sans-serif;letter-spacing:.09em;text-transform:uppercase;opacity:.8;margin-bottom:7px;display:block}
+.nx-iw-v717{position:relative;display:block}
+.nx-iw-v717 .nx-ico-v717{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:20px;height:20px;opacity:.55;pointer-events:none;transition:opacity .2s,color .2s}
+.nx-iw-v717:focus-within .nx-ico-v717{opacity:1;color:#1E5FA9}
+#accountModal .nx-iw-v717 .input,#accountModal #nxPinWrapV714 .input{height:54px;padding-left:48px;border-radius:14px;font-size:16px;border:1.5px solid var(--border-strong,#c6cbd2);background:var(--surface-2,#f6f8fa);transition:border-color .2s,box-shadow .2s,background .2s}
+#accountModal .nx-iw-v717 .input:focus,#accountModal #nxPinWrapV714 .input:focus{outline:0;border-color:#1E5FA9;background:var(--surface,#fff);box-shadow:0 0 0 4px rgba(30,95,169,.18)}
+#nxPinWrapV714 .nx-ico-v717{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:20px;height:20px;opacity:.55;pointer-events:none}
+#nxTelBlockV713 .nx-pin-v713{letter-spacing:.6em;padding-left:48px;text-align:left;font-size:22px}
+.nx-ok-v717 .input{border-color:#2f8f5b!important}
+.nx-ok-v717 .nx-iw-v717:after,.nx-ok-v717 #nxPinWrapV714:before{content:none}
+.nx-tick-v717{position:absolute;right:14px;top:50%;transform:translateY(-50%) scale(.6);width:22px;height:22px;border-radius:50%;background:#2f8f5b;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
+.nx-ok-v717 .nx-tick-v717{opacity:1;transform:translateY(-50%) scale(1)}
+#nxPinEyeV714{right:12px}
+#accountModal .account-actions-premium .btn-primary{height:58px;border-radius:16px;border:0;font:800 17px/1 system-ui,sans-serif;letter-spacing:.01em;color:#fff;background:linear-gradient(135deg,#16324F 0%,#1E5FA9 100%);box-shadow:0 12px 26px rgba(22,50,79,.35);transition:transform .15s,box-shadow .15s,filter .2s;display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
+#accountModal .account-actions-premium .btn-primary:active{transform:translateY(1px) scale(.99);box-shadow:0 6px 14px rgba(22,50,79,.3)}
+#accountModal .account-actions-premium .btn-primary:hover{filter:brightness(1.08)}
+#accountModal .account-actions-premium .btn-primary.account-create-only:after{content:"→";font-size:20px}
+#accountModal .account-link-btn{display:block;margin:12px auto 0;font:700 14px/1.2 system-ui,sans-serif;color:#1E5FA9;background:none;border:0;padding:10px}
+.nx-secure-v717{display:none;align-items:center;justify-content:center;gap:8px;margin-top:6px;font:600 12px/1.3 system-ui,sans-serif;opacity:.7}
+#accountModal:is([data-account-mode="create"],[data-account-mode="login"]) .nx-secure-v717{display:flex}
+#accountModal .account-actions-premium{background:linear-gradient(to top,var(--surface,#fff) 82%,rgba(255,255,255,0));padding-top:18px;padding-bottom:6px}
+#nxTelErrV713{background:rgba(179,38,30,.08);border:1px solid rgba(179,38,30,.3);border-radius:12px;padding:10px 12px}
+@media (max-width:480px){#accountModal .account-modal{max-width:none;border-radius:22px 22px 0 0;align-self:flex-end;width:100%}}
+#accountModal[data-account-mode="login"] .nx-chips-v717{display:none}
+#accountModal[data-account-mode="login"]:not(.nx-email-mode-v713) .account-auth-title.account-login-only{display:none}
+</style>
+<script id="nxDesignScriptV717">
+(function(){
+  function $(s,r){return (r||document).querySelector(s)}
+  var ICO={user:'<svg class="nx-ico-v717" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"/></svg>',
+    tel:'<svg class="nx-ico-v717" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M11 18.2h2"/></svg>',
+    lock:'<svg class="nx-ico-v717" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5"/></svg>',
+    shield:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.4-2.9 8.1-7 9.5-4.1-1.4-7-5.1-7-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg>'};
+  function enrober(inp,ico,tick){
+    if(!inp||inp.getAttribute('data-nx717'))return null;
+    inp.setAttribute('data-nx717','1');
+    var par=inp.parentNode;
+    if(par&&par.id==='nxPinWrapV714'){par.insertAdjacentHTML('afterbegin',ICO[ico]);return par}
+    var w=document.createElement('span');w.className='nx-iw-v717';par.insertBefore(w,inp);w.appendChild(inp);
+    w.insertAdjacentHTML('afterbegin',ICO[ico]);
+    if(tick){w.insertAdjacentHTML('beforeend','<span class="nx-tick-v717" aria-hidden="true">✓</span>')}
+    return w;
+  }
+  var TITRES={create:['Créez votre compte','Cours, évaluations et défis de la maternelle à la terminale. Prêt en 30 secondes.'],login:['Bon retour parmi nous','Entrez votre numéro et votre code pour reprendre là où vous vous êtes arrêté.']};
+  function titre(){
+    var m=$('#accountModal');if(!m)return;var md=m.getAttribute('data-account-mode');
+    var t=TITRES[md];if(!t)return;
+    var h=$('#nxHeroTitleV717'),s=$('#nxHeroSubV717');if(h)h.textContent=t[0];if(s)s.textContent=t[1];
+  }
+  function progres(){
+    var nom=$('#nxAccountNameV379'),tel=$('#nxTelV713'),p=$('#nxPinV713'),p2=$('#nxPin2V715');if(!nom||!tel||!p||!p2)return;
+    var d=tel.value.replace(/\D/g,'');
+    var ok=[nom.value.trim().length>=3,d.length>=8&&d.length<=15,/^\d{4}$/.test(p.value),/^\d{4}$/.test(p2.value)&&p2.value===p.value];
+    var is=document.querySelectorAll('.nx-prog-bar-v717 i');ok.forEach(function(v,i){if(is[i])is[i].classList.toggle('on',v)});
+    [[nom,0],[tel,1],[p,2],[p2,3]].forEach(function(a){var f=a[0].closest('.field');if(f)f.classList.toggle('nx-ok-v717',ok[a[1]])});
+    var r=ok.filter(function(v){return !v}).length,t=$('#nxProgTxtV717');
+    if(t)t.textContent=r===0?'Tout est prêt, vous pouvez créer votre compte ✓':(r===4?'4 champs à remplir, moins d’une minute':'Plus que '+r+' champ'+(r>1?'s':''));
+  }
+  function monter(){
+    var m=$('#accountModal'),box=m&&$('.modal.account-modal',m);if(!box||$('#nxHeroV717'))return;
+    var hero=document.createElement('div');hero.id='nxHeroV717';hero.className='nx-hero-v717';
+    hero.innerHTML='<div class="nx-hero-top"><span class="nx-logo-v717">NX</span><span class="nx-brand-v717">NEXORA · ACADÉMIE</span></div><h2 id="nxHeroTitleV717"></h2><p id="nxHeroSubV717"></p><div class="nx-chips-v717"><span>✓ 30 secondes</span><span>✓ Sans email</span><span>✓ Gratuit</span></div>';
+    var corps=$('.modal-body',box)||box;corps.insertBefore(hero,corps.firstChild);
+    var nomF=$('#nxAccountNameV379');
+    var prog=document.createElement('div');prog.className='nx-prog-v717';prog.innerHTML='<div class="nx-prog-bar-v717"><i></i><i></i><i></i><i></i></div><span class="nx-prog-txt-v717" id="nxProgTxtV717"></span>';
+    var f=nomF&&nomF.closest('.field');if(f&&f.parentNode)f.parentNode.insertBefore(prog,f);
+    enrober(nomF,'user',true);enrober($('#nxTelV713'),'tel',true);
+    var p=$('#nxPinV713'),p2=$('#nxPin2V715');
+    enrober(p,'lock');enrober(p2,'lock',true);
+    var nom=$('#nxAccountNameV379');if(nom){nom.setAttribute('autocomplete','name');nom.setAttribute('enterkeyhint','next');nom.placeholder='Ex : Mariama Camara'}
+    var sec=document.createElement('div');sec.className='nx-secure-v717';sec.innerHTML=ICO.shield+'<span>Vos informations restent privées et sécurisées.</span>';
+    var act=$('.account-actions-premium',m);if(act&&act.parentNode)act.parentNode.insertBefore(sec,act.nextSibling);
+    ['input','change'].forEach(function(ev){m.addEventListener(ev,progres,true)});
+    new MutationObserver(titre).observe(m,{attributes:true,attributeFilter:['data-account-mode']});
+    titre();progres();
+  }
+  function essai(){if($('#nxTelBlockV713')&&$('#nxPin2V715'))monter()}
+  document.addEventListener('click',function(){setTimeout(essai,120)},true);
+  var n=0,iv=setInterval(function(){essai();if($('#nxHeroV717')||++n>40)clearInterval(iv)},400);
+})();
+</script>
 </body>
 </html>
