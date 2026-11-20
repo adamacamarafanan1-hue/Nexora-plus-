@@ -1762,7 +1762,7 @@
     function requireSubscription(callback){if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('adams',callback);return false;}
     var requestedGame=target.getAttribute('data-adams-game')||'',requestedLabel=target.getAttribute('data-adams-game-label')||'Jeu Adams';
     if(action==='open-adams-subscription'){window.__NEXORA_ADAMS_PLAY_CONTEXT_V246={type:'subscription',game_key:requestedGame,official:false};requireSubscription(function(){openGame(requestedGame,requestedLabel);});}
-    else if(action==='open-adams-game'||action==='open-adams-solo')requireGameAccess(requestedGame,function(){openGame(requestedGame,requestedLabel);});
+    else if(action==='open-adams-game'||action==='open-adams-solo')requireGameAccess(requestedGame,function(){choisirJoueurs(requestedGame,requestedLabel,function(){openGame(requestedGame,requestedLabel)});});
     else if(action==='open-adams-computer')requireGameAccess(requestedGame,function(){openComputerGame(requestedGame,target.getAttribute('data-adams-game-label'));});
     else if(action==='open-adams-multiplayer')requireGameAccess(requestedGame,function(){openMultiplayerSetup(requestedGame,target.getAttribute('data-adams-game-label'));});
     else if(action==='join-adams-room')openJoinRoom('');
@@ -1808,19 +1808,17 @@
     var d=document.createElement('div');d.id='nxNbJoueurs';
     d.style.cssText='position:fixed;inset:0;z-index:2147483630;background:rgba(15,27,61,.85);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,sans-serif';
     var btn='style="display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:15px;border:2px solid #D9DEEB;border-radius:14px;background:#fff;color:#0F1B3D;font-size:18px;font-weight:800;text-align:left"';
-    d.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;color:#0F1B3D;border-radius:20px;padding:20px;max-width:400px;width:100%;max-height:92vh;overflow:auto"><h2 style="margin:0 0 4px;font-size:22px">Combien de joueurs ?</h2><p style="margin:0 0 14px;color:#5A6482;font-size:15px">'+esc(label||'Jeu Adams')+' : choisis avant de commencer.</p>'
+    d.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;color:#0F1B3D;border-radius:20px;padding:20px;max-width:400px;width:100%;max-height:92vh;overflow:auto"><h2 style="margin:0 0 4px;font-size:22px">Combien de joueurs ?</h2><p style="margin:0 0 14px;color:#5A6482;font-size:15px">'+esc(label||'Jeu Adams')+' : combien allez-vous jouer ?</p>'
       +'<button type="button" data-n="1" '+btn+'>🧑 1 joueur (solo)</button>'
       +'<button type="button" data-n="2" '+btn+'>👥 2 joueurs <small style="font-weight:500;color:#5A6482">sur ce téléphone</small></button>'
       +'<button type="button" data-n="3" '+btn+'>👥 3 joueurs <small style="font-weight:500;color:#5A6482">sur ce téléphone</small></button>'
       +'<button type="button" data-n="4" '+btn+'>👥 4 joueurs <small style="font-weight:500;color:#5A6482">sur ce téléphone</small></button>'
-      +'<button type="button" data-n="pc" '+btn+'>🤖 Contre l’ordinateur</button>'
       +'<button type="button" data-n="0" style="width:100%;background:none;border:0;color:#5A6482;padding:10px;font-size:15px">Annuler</button></div>';
     document.body.appendChild(d);
     d.addEventListener('click',function(e){
       var b=e.target.closest('button[data-n]');if(!b)return;var v=b.getAttribute('data-n');d.remove();
       if(v==='0')return;
       if(v==='1')return callback(1);
-      if(v==='pc')return openComputerGame(key,label);
       var n=Number(v),names=[];for(var i=1;i<=n;i++)names.push('Joueur '+i);
       openLocalGame(key,label,n,names);
     });
