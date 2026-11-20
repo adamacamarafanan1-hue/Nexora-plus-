@@ -1764,6 +1764,16 @@
   (document.head || document.documentElement).appendChild(s);
 })();
 
+/* V740 — Cadeaux de la semaine : chargement du module (fichier séparé). */
+(function () {
+  if (window.__nxCadeauxChargeurV740) return;
+  window.__nxCadeauxChargeurV740 = true;
+  var s = document.createElement('script');
+  s.src = '/assets/js/nexora-cadeaux.js?v=740';
+  s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
+
 /* V705 — Nouvel écran d'entrée : chargement du module (fichier séparé).
    L'ancien contenu de la porte est masqué pendant le chargement ; s'il
    n'a pas été remplacé au bout de 4 secondes, il réapparaît tel quel. */
