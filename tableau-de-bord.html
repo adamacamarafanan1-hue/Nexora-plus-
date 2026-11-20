@@ -75,6 +75,7 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     <div class="sp"></div><span class="sub" id="maj"></span><button class="btn" id="rf">Actualiser</button>
   </div>
   <section class="card" id="payCard"><h2>Paiements à valider <span id="payN"></span></h2><div id="pay"></div><p class="note">Vérifiez toujours le SMS Orange Money avant de valider : montant exact et numéro payeur.</p></section>
+  <section class="card" id="kdoCard"><h2>Cadeaux de la semaine <span id="kdoN"></span></h2><div id="kdo"></div><div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="kdoClot">Désigner les gagnants de la semaine passée</button></div><p class="note">1er = un livre IA, 2e = une formation. Valide, puis marque « remis » quand le cadeau est donné.</p></section>
   <section class="card" id="msgCard"><h2>Messages du jour</h2><div id="msgs"></div><div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="msgPrev">← Jour précédent</button><button class="btn" id="msgNext">Jour suivant →</button></div><p class="note">Envoie le message du matin vers 7 h et celui du soir vers 18 h, à tes groupes et à ta liste de diffusion WhatsApp.</p>
     <h2 style="margin-top:18px">Alertes sur les téléphones</h2>
     <p class="note" id="alInfo" style="margin:0 0 10px">Chargement…</p>
@@ -117,10 +118,28 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     .then(function(x){
       if(x.s===401){sortir('Session expirée. Reconnectez-vous.');return}
       if(x.s>=400){sortir((x.j&&x.j.message&&/administrateur/.test(x.j.message))?'Ce compte n’est pas administrateur Nexora.':'Erreur de chargement.');return}
-      ecran(true);rendre(x.j);chargerPaiements();chargerAlertes();
+      ecran(true);rendre(x.j);chargerPaiements();chargerKdo();chargerAlertes();
     }).catch(function(){$('#maj').textContent='Hors connexion'});
   }
 
+
+  var KDO_L={a_valider:'à valider',valide:'validé',remis:'remis',refuse:'refusé'};
+  function rpcK(n,b){return fetch(SB+'/rest/v1/rpc/'+n,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(function(r){return r.json().then(function(j){return {s:r.status,j:j}})})}
+  function chargerKdo(){
+    rpcK('nx_cadeaux_admin_liste').then(function(x){
+      if(x.s>=400||!Array.isArray(x.j)){$('#kdo').innerHTML='<p class="note">Liste indisponible.</p>';return}
+      var att=x.j.filter(function(g){return g.statut==='a_valider'}).length;
+      $('#kdoN').innerHTML=att?'<span class="tag w">'+att+' à valider</span>':'';
+      $('#kdo').innerHTML=x.j.length?x.j.map(function(g){
+        var b=g.statut==='a_valider'?'<button class="ok-b" data-k="'+g.id+'" data-s="valide">Valider</button><button class="no-b" data-k="'+g.id+'" data-s="refuse">Refuser</button>':(g.statut==='valide'?'<button class="ok-b" data-k="'+g.id+'" data-s="remis">Marquer remis</button>':'');
+        return '<div class="pay"><h3>'+esc(g.nom||'')+'</h3><div class="l">Semaine du '+esc(g.semaine)+' · rang '+g.rang+' · score <b>'+g.score+'</b> en '+g.duree_s+' s<br>Cadeau : <b>'+esc(g.cadeau||'—')+'</b> ('+g.type+') · <span class="tag">'+KDO_L[g.statut]+'</span></div>'+(b?'<div class="row">'+b+'</div>':'')+'</div>';
+      }).join(''):'<p class="note" style="margin:0">Aucun gagnant pour le moment.</p>';
+    }).catch(function(){$('#kdo').innerHTML='<p class="note">Hors connexion.</p>'});
+  }
+  $('#kdo').addEventListener('click',function(e){var b=e.target.closest('button[data-k]');if(!b)return;b.disabled=true;
+    rpcK('nx_cadeaux_admin_statut',{p_id:b.getAttribute('data-k'),p_statut:b.getAttribute('data-s')}).then(chargerKdo)});
+  $('#kdoClot').addEventListener('click',function(){var b=this;b.disabled=true;
+    rpcK('nx_cadeaux_admin_cloturer',{}).then(function(x){b.disabled=false;if(x.s>=400){$('#kdo').insertAdjacentHTML('afterbegin','<p class="err">Échec, réessayez.</p>');return}chargerKdo()})});
   var payOuvert=null;
   function depuis(d){var h=Math.floor((Date.now()-new Date(d).getTime())/3600000);if(h<1)return 'à l’instant';if(h<24)return 'il y a '+h+' h';var j=Math.floor(h/24);return 'il y a '+j+' jour'+(j>1?'s':'')}
   function fmt(n){return String(n||0).replace(/\B(?=(\d{3})+(?!\d))/g,' ')}
