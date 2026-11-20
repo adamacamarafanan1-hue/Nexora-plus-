@@ -910,6 +910,7 @@
           return;
         }
 
+        if(ctx.showSetup){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('jeuadams_save_')===0)localStorage.removeItem(k)})}catch(_s){}}
         if(typeof window.launchGame==='function'&&/^(preuniv|univ|pro|sport|guinee|sante|musique|art|histoire)$/.test(key)){
           try{window.launchGame(key)}catch(_launchError){window.nxLog&&window.nxLog(_launchError)}
         }else if(screenId&&typeof window.showScreen==='function')window.showScreen(screenId);
