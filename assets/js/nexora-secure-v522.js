@@ -472,7 +472,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
       var gameModal=document.querySelector('[data-nx-adams-game-modal].open');
       var gameFrame=gameModal&&gameModal.querySelector('[data-nx-adams-game-frame]');
       var gameSrc=String(gameFrame&&gameFrame.getAttribute('src')||'').toLowerCase();
-      if(gameModal&&gameSrc.indexOf('/guinee/')===-1&&window.NexoraAdamsGames&&typeof window.NexoraAdamsGames.close==='function')window.NexoraAdamsGames.close();
+      if(gameModal&&gameSrc.indexOf('/guinee/')===-1&&gameModal.getAttribute('data-nx-game-key')!=='guinee'&&window.NexoraAdamsGames&&typeof window.NexoraAdamsGames.close==='function')window.NexoraAdamsGames.close();
       document.querySelectorAll('iframe[data-nx-protected-frame],#nxAcademyViewer iframe,#nxBacViewer iframe,#nxOrientationViewer iframe').forEach(function(frame){
         var src=String(frame.getAttribute('src')||'').toLowerCase();
         if(src.indexOf('/guinee/')===-1){try{frame.src='about:blank';}catch(_frameError){window.nxLog&&window.nxLog(_frameError)}}

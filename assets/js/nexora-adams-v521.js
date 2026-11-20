@@ -187,8 +187,9 @@
     modal.innerHTML='<div class="nx-adams-game-modal-head">'+
       '<div class="nx-adams-game-modal-title"><strong data-nx-adams-game-title>Jeu Adams</strong><span data-nx-adams-game-subtitle>Préparation du plateau</span></div>'+
       '<div class="nx-adams-kdo-live-v213" data-nx-adams-kdo-live hidden><strong data-nx-adams-kdo-name>Joueur KDO</strong><span><b data-nx-adams-kdo-points>0</b> points KDO en direct</span></div>'+
-      '<div class="nx-adams-game-modal-head-actions"><span class="nx-adams-room-status" data-nx-adams-room-status hidden></span><button type="button" class="nx-adams-game-head-btn" data-action="finish-adams-game" hidden>Fin de partie</button><button type="button" class="nx-adams-game-close" data-action="close-adams-game" aria-label="Fermer le jeu">×</button></div>'+
-      '</div><div class="nx-adams-game-stage-v203"><div class="nx-adams-game-frame-wrap" data-nx-adams-game-frame-wrap></div><aside class="nx-adams-rules-v203" aria-label="Règles du Jeu Adams"><details open><summary><span>Règles du jeu</span><small>À lire avant de jouer</small></summary><div class="nx-adams-rules-body-v203"><div class="nx-adams-rule-v203"><b>1</b><p><strong>Choisis le mode.</strong> Solo affiche 1 pion, Ordinateur 2 pions et Multijoueur le nombre de joueurs sélectionné.</p></div><div class="nx-adams-rule-v203"><b>2</b><p><strong>Réponds à la question</strong> proposée sur la case ou dans la matière choisie.</p></div><div class="nx-adams-rule-v203"><b>3</b><p><strong>Une bonne réponse = 1 point.</strong> Aucun bonus automatique ou point fictif n’est ajouté.</p></div><div class="nx-adams-rule-v203"><b>4</b><p><strong>Une mauvaise réponse = 0 point.</strong> Le jeu continue selon le mode sélectionné.</p></div><div class="nx-adams-rule-v203"><b>5</b><p><strong>Le gagnant</strong> est déterminé par la règle affichée sur le plateau.</p></div><div class="nx-adams-rule-note-v203">Le compteur Nexora enregistre uniquement les réponses réellement vérifiées.</div></div></details></aside></div>';
+      '<div class="nx-adams-game-modal-head-actions"><span class="nx-adams-room-status" data-nx-adams-room-status hidden></span><button type="button" class="nx-adams-game-head-btn" data-action="adams-players" hidden style="background:#F4B63F;color:#0F1B3D;border:0;border-radius:999px;padding:9px 14px;font-weight:900;font-size:14px;min-height:40px;white-space:nowrap;box-shadow:0 0 0 0 rgba(244,182,63,.7);animation:nxPulseJ 1.8s ease-out 3">👥 Joueurs</button><button type="button" class="nx-adams-game-head-btn" data-action="finish-adams-game" hidden>Fin de partie</button><button type="button" class="nx-adams-game-close" data-action="close-adams-game" aria-label="Fermer le jeu">×</button></div>'+
+      '</div><div class="nx-adams-game-stage-v203"><div class="nx-adams-game-frame-wrap" data-nx-adams-game-frame-wrap></div><aside class="nx-adams-rules-v203" aria-label="Règles du Jeu Adams"><details open><summary><span>Règles du jeu</span><small>À lire avant de jouer</small></summary><div class="nx-adams-rules-body-v203"><div class="nx-adams-rule-v203"><b>1</b><p><strong>Choisis le nombre de joueurs.</strong> Touche le bouton « 👥 Joueurs » en haut : 1, 2, 3 ou 4 joueurs, avec leurs prénoms.</p></div><div class="nx-adams-rule-v203"><b>2</b><p><strong>Réponds à la question</strong> proposée sur la case ou dans la matière choisie.</p></div><div class="nx-adams-rule-v203"><b>3</b><p><strong>Une bonne réponse = 1 point.</strong> Aucun bonus automatique ou point fictif n’est ajouté.</p></div><div class="nx-adams-rule-v203"><b>4</b><p><strong>Une mauvaise réponse = 0 point.</strong> Le jeu continue selon le mode sélectionné.</p></div><div class="nx-adams-rule-v203"><b>5</b><p><strong>Le gagnant</strong> est déterminé par la règle affichée sur le plateau.</p></div><div class="nx-adams-rule-note-v203">Le compteur Nexora enregistre uniquement les réponses réellement vérifiées.</div></div></details></aside></div>';
+    if(!document.getElementById('nxPulseJStyle')){var st=document.createElement('style');st.id='nxPulseJStyle';st.textContent='@keyframes nxPulseJ{0%{box-shadow:0 0 0 0 rgba(244,182,63,.8)}100%{box-shadow:0 0 0 14px rgba(244,182,63,0)}}';document.head.appendChild(st)}
     document.body.appendChild(modal);
     modal.addEventListener('click',function(ev){if(ev.target===modal)closeGame()});
     return modal;
@@ -200,7 +201,7 @@
     if(s)s.textContent=safeText(subtitle||'Préparation du plateau');
     if(r){r.hidden=!roomText;r.textContent=safeText(roomText||'')}
     if(f)f.hidden=!gameActive;
-    updateKdoGameBadge();
+    updateKdoGameBadge();majOngletJoueurs();
   }
   function openModal(){
     var modal=ensureModal(),wasOpen=modal.classList.contains('open');
@@ -671,6 +672,7 @@
       try{
         var inputs=Array.prototype.slice.call(document.querySelectorAll('input[type="text"]')).filter(function(input){
           var hint=clean((input.id||'')+' '+(input.name||'')+' '+(input.placeholder||'')).toLowerCase();
+          if(ctx.prefix&&input.id&&input.id.indexOf(ctx.prefix+'-')!==0)return false;
           return /joueur|player|nom|équipe|equipe/.test(hint);
         });
         inputs.slice(0,names.length).forEach(function(input,i){input.value=names[i];input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}))});
@@ -910,12 +912,10 @@
           return;
         }
 
-        if(ctx.showSetup){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('jeuadams_save_')===0)localStorage.removeItem(k)})}catch(_s){}}
         if(typeof window.launchGame==='function'&&/^(preuniv|univ|pro|sport|guinee|sante|musique|art|histoire)$/.test(key)){
           try{window.launchGame(key)}catch(_launchError){window.nxLog&&window.nxLog(_launchError)}
         }else if(screenId&&typeof window.showScreen==='function')window.showScreen(screenId);
 
-        if(ctx.showSetup){var mn=document.getElementById('menu');if(mn){mn.classList.remove('active');mn.style.display='none'}window.scrollTo(0,0);document.addEventListener('click',function(){[150,500,1200,2500].forEach(function(t){setTimeout(fitBoard,t)})},true);setInterval(fitBoard,1500);parentPost('nx-adams-ready',{multiplayer:false});return}
         var selectFn=window[pfx+'SelectCount'],startFn=window[pfx+'StartGame'],gameObj=window[pfx+'Game'];
         if(typeof selectFn==='function')selectFn(count);
         else if(gameObj&&typeof gameObj.selectCount==='function')gameObj.selectCount(count);
@@ -1473,6 +1473,7 @@
   function launchGameSource(key,label,context){
     context=context||{};key=String(key||'').trim().replace(/[^a-z0-9_-]/gi,'');
     var modal=openModal(),wrap=qs('[data-nx-adams-game-frame-wrap]',modal);
+    try{modal.setAttribute('data-nx-game-key',key)}catch(_k){}
     var choosingLevel=key==='maternelle'||key==='ecole';
     setHeader(label||titleFromKey(key),choosingLevel?'Choisis le niveau':(context.multiplayer?'Mise à jour du plateau':(context.playMode==='computer'?'Ordinateur Adams joue automatiquement':(context.playMode==='solo'?'Démarrage solo automatique':'Préparation du plateau'))),context.multiplayer&&state.room?('Code '+state.room.code):'',false);
     showLoading(wrap,label||titleFromKey(key),choosingLevel?'Ouverture de l’interface des niveaux.':(context.multiplayer?'Chargement du même plateau sur tous les téléphones.':(context.playMode==='solo'?'Ouverture immédiate avec un seul joueur.':'Préparation du plateau et des questions.')));
@@ -1753,7 +1754,7 @@
   });
 
   var handledActions={
-    'open-adams-game':1,'open-adams-subscription':1,'open-adams-solo':1,'open-adams-computer':1,'open-adams-multiplayer':1,'join-adams-room':1,'close-adams-game':1,'set-adams-room-size':1,'create-adams-room':1,
+    'open-adams-game':1,'open-adams-subscription':1,'open-adams-solo':1,'open-adams-computer':1,'open-adams-multiplayer':1,'join-adams-room':1,'close-adams-game':1,'adams-players':1,'set-adams-room-size':1,'create-adams-room':1,
     'submit-join-adams-room':1,'copy-adams-room-code':1,'share-adams-room':1,'start-adams-room':1,'finish-adams-game':1,
     'dismiss-adams-result':1
   };
@@ -1765,11 +1766,12 @@
     function requireSubscription(callback){if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('adams',callback);return false;}
     var requestedGame=target.getAttribute('data-adams-game')||'',requestedLabel=target.getAttribute('data-adams-game-label')||'Jeu Adams';
     if(action==='open-adams-subscription'){window.__NEXORA_ADAMS_PLAY_CONTEXT_V246={type:'subscription',game_key:requestedGame,official:false};requireSubscription(function(){openGame(requestedGame,requestedLabel);});}
-    else if(action==='open-adams-game'||action==='open-adams-solo')requireGameAccess(requestedGame,function(){choisirJoueurs(requestedGame,requestedLabel,function(){openGame(requestedGame,requestedLabel)});});
+    else if(action==='open-adams-game'||action==='open-adams-solo')requireGameAccess(requestedGame,function(){openGame(requestedGame,requestedLabel);});
     else if(action==='open-adams-computer')requireGameAccess(requestedGame,function(){openComputerGame(requestedGame,target.getAttribute('data-adams-game-label'));});
     else if(action==='open-adams-multiplayer')requireGameAccess(requestedGame,function(){openMultiplayerSetup(requestedGame,target.getAttribute('data-adams-game-label'));});
     else if(action==='join-adams-room')openJoinRoom('');
     else if(action==='close-adams-game')closeGame();
+    else if(action==='adams-players')ouvrirChoixJoueurs();
     else if(action==='set-adams-room-size'){
       state.selectedRoomSize=Math.max(2,Math.min(4,toNumber(target.getAttribute('data-size'),2)));
       qsa('.nx-adams-room-size').forEach(function(btn){btn.classList.toggle('active',toNumber(btn.getAttribute('data-size'))===state.selectedRoomSize)});
@@ -1799,43 +1801,67 @@
   else{refreshStats();openRoomFromUrl()}
   setInterval(function(){if(document.visibilityState!=='hidden'&&qs('[data-adams-center]'))refreshStats()},12000);
 
-  /* Choix du nombre de joueurs avant le lancement (1 = solo, 2 à 4 sur le même téléphone, ou contre l'ordinateur). */
   function openLocalGame(key,label,n,names){
     resetSession(false);state.mode='local';state.gameKey=canonicalGameKey(key);state.gameTitle=label||titleFromKey(state.gameKey);state.gameInstanceId=randomId();
     var seed=Math.floor(Math.random()*2147483000)+1;
     return launchGameSource(state.gameKey,state.gameTitle,{multiplayer:false,playMode:'local',autoStart:true,playerCount:n,playerNames:names,seed:seed,gameInstanceId:state.gameInstanceId});
   }
-  function openSetupGame(key,label){
+  /* Onglet « Joueurs » toujours visible dans l'en-tête du jeu : le joueur y choisit 1, 2, 3 ou 4 joueurs. */
+  function effacerSauvegardes(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('jeuadams_save_')===0)localStorage.removeItem(k)})}catch(_e){}}
+  function lancerAvecJoueurs(n,names){
+    var key=state.gameKey,label=state.gameTitle;if(!key)return;
+    effacerSauvegardes();
+    if(n===1)return openGame(key,label);
     resetSession(false);state.mode='local';state.gameKey=canonicalGameKey(key);state.gameTitle=label||titleFromKey(state.gameKey);state.gameInstanceId=randomId();
     var seed=Math.floor(Math.random()*2147483000)+1;
-    return launchGameSource(state.gameKey,state.gameTitle,{multiplayer:false,playMode:'local',showSetup:true,autoStart:true,seed:seed,gameInstanceId:state.gameInstanceId});
+    return launchGameSource(state.gameKey,state.gameTitle,{multiplayer:false,playMode:'local',autoStart:true,playerCount:n,playerNames:names,seed:seed,gameInstanceId:state.gameInstanceId});
   }
-  function choisirJoueurs(key,label,callback){
-    var k0=String(key||'').toLowerCase();
-    if(window.__NEXORA_ADAMS_PLAY_CONTEXT||/^(maternelle|ecole)$/.test(k0))return callback(1);
-    /* Jeux dont le moteur a son propre écran « Nombre de joueurs » (Solo, 2, 3, 4 + prénoms) : on l'affiche. */
-    if(/^(preuniv|univ|pro|sport|guinee|sante|musique|art|histoire)$/.test(k0))return openSetupGame(key,label);
+  function ouvrirChoixJoueurs(){
     var vieux=document.getElementById('nxNbJoueurs');if(vieux)vieux.remove();
     var d=document.createElement('div');d.id='nxNbJoueurs';
     d.style.cssText='position:fixed;inset:0;z-index:2147483630;background:rgba(15,27,61,.85);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,sans-serif';
     var btn='style="display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:15px;border:2px solid #D9DEEB;border-radius:14px;background:#fff;color:#0F1B3D;font-size:18px;font-weight:800;text-align:left"';
-    d.innerHTML='<div role="dialog" aria-modal="true" style="background:#fff;color:#0F1B3D;border-radius:20px;padding:20px;max-width:400px;width:100%;max-height:92vh;overflow:auto"><h2 style="margin:0 0 4px;font-size:22px">Combien de joueurs ?</h2><p style="margin:0 0 14px;color:#5A6482;font-size:15px">'+esc(label||'Jeu Adams')+' : combien allez-vous jouer ?</p>'
-      +'<button type="button" data-n="1" '+btn+'>🧑 1 joueur (solo)</button>'
-      +'<button type="button" data-n="2" '+btn+'>👥 2 joueurs <small style="font-weight:500;color:#5A6482">sur ce téléphone</small></button>'
-      +'<button type="button" data-n="3" '+btn+'>👥 3 joueurs <small style="font-weight:500;color:#5A6482">sur ce téléphone</small></button>'
-      +'<button type="button" data-n="4" '+btn+'>👥 4 joueurs <small style="font-weight:500;color:#5A6482">sur ce téléphone</small></button>'
-      +'<button type="button" data-n="0" style="width:100%;background:none;border:0;color:#5A6482;padding:10px;font-size:15px">Annuler</button></div>';
-    document.body.appendChild(d);
+    var box=document.createElement('div');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');
+    box.style.cssText='background:#fff;color:#0F1B3D;border-radius:20px;padding:20px;max-width:400px;width:100%;max-height:92vh;overflow:auto';
+    d.appendChild(box);
+    function etape1(){
+      box.innerHTML='<h2 style="margin:0 0 4px;font-size:22px">Combien de joueurs ?</h2><p style="margin:0 0 14px;color:#5A6482;font-size:15px">'+esc(state.gameTitle||'Jeu Adams')+'. Une nouvelle partie va commencer.</p>'
+        +'<button type="button" data-n="1" '+btn+'>🧑 1 joueur (solo)</button>'
+        +'<button type="button" data-n="2" '+btn+'>👥 2 joueurs</button>'
+        +'<button type="button" data-n="3" '+btn+'>👥 3 joueurs</button>'
+        +'<button type="button" data-n="4" '+btn+'>👥 4 joueurs</button>'
+        +'<button type="button" data-n="0" style="width:100%;background:none;border:0;color:#5A6482;padding:10px;font-size:15px">Annuler</button>';
+    }
+    function etape2(n){
+      var cols=['#EF4444','#22C55E','#3B82F6','#F59E0B'],h='<h2 style="margin:0 0 4px;font-size:22px">Prénoms des joueurs</h2><p style="margin:0 0 14px;color:#5A6482;font-size:15px">'+n+' joueurs sur ce téléphone. Tu peux laisser les noms par défaut.</p>';
+      for(var i=0;i<n;i++)h+='<input data-nom="'+i+'" maxlength="20" placeholder="Joueur '+(i+1)+'" style="display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:14px;border:2px solid #D9DEEB;border-left:6px solid '+cols[i]+';border-radius:12px;font-size:17px">';
+      h+='<button type="button" data-go="1" style="display:block;width:100%;margin-top:4px;padding:15px;border:0;border-radius:14px;background:#F4B63F;color:#0F1B3D;font-weight:900;font-size:18px">▶ Commencer</button><button type="button" data-n="back" style="width:100%;background:none;border:0;color:#5A6482;padding:10px;font-size:15px">Retour</button>';
+      box.innerHTML=h;box.setAttribute('data-n',n);var f=box.querySelector('input');if(f)f.focus();
+    }
+    etape1();document.body.appendChild(d);
     d.addEventListener('click',function(e){
-      var b=e.target.closest('button[data-n]');if(!b)return;var v=b.getAttribute('data-n');d.remove();
-      if(v==='0')return;
-      if(v==='1')return callback(1);
-      var n=Number(v),names=[];for(var i=1;i<=n;i++)names.push('Joueur '+i);
-      openLocalGame(key,label,n,names);
+      var b=e.target.closest('button');if(!b)return;
+      if(b.hasAttribute('data-go')){
+        var n=Number(box.getAttribute('data-n')),names=[];
+        box.querySelectorAll('input[data-nom]').forEach(function(inp,i){names.push(inp.value.trim()||('Joueur '+(i+1)))});
+        d.remove();lancerAvecJoueurs(n,names);return;
+      }
+      var v=b.getAttribute('data-n');if(v===null)return;
+      if(v==='0'){d.remove();return}
+      if(v==='back'){etape1();return}
+      if(v==='1'){d.remove();lancerAvecJoueurs(1,[]);return}
+      etape2(Number(v));
     });
   }
+  function majOngletJoueurs(){
+    var modal=document.querySelector('.nx-adams-game-modal');if(!modal)return;
+    var b=modal.querySelector('[data-action="adams-players"]');if(!b)return;
+    var k=String(state.gameKey||'').toLowerCase();
+    var ok=!!k&&!/^(maternelle|ecole)$/.test(k)&&!window.__NEXORA_ADAMS_PLAY_CONTEXT&&!state.room&&(state.mode==='solo'||state.mode==='local');
+    b.hidden=!ok;
+  }
   function openWithPolicy(k,callback){k=String(k||'').toLowerCase();try{var kdo=window.NexoraKDO,access=kdo&&typeof kdo.getAccess==='function'?kdo.getAccess():null,official=kdo&&typeof kdo.getOfficialGame==='function'?kdo.getOfficialGame():null;if(access&&access.can_play&&official&&String(official.key||'').toLowerCase()===k){if(typeof callback==='function')callback();return true}}catch(_kdoAccessError){window.nxLog&&window.nxLog(_kdoAccessError)}if(k==='guinee'){if(typeof callback==='function')callback();return true;}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('adams',callback);return false;}
-  window.NexoraAdamsGames={open:function(k,l){return openWithPolicy(k,function(){return choisirJoueurs(k,l,function(){return openGame(k,l)});});},openSolo:function(k,l){return openWithPolicy(k,function(){return choisirJoueurs(k,l,function(){return openGame(k,l)});});},openCompetition:function(k,l){return openGame(k,l);},openTraining:function(k,l){return openGame(k,l);},openChallenge:function(k,l){return openGame(k,l);},confirmChallengeStart:function(attemptId){if(!state.frame||!state.frame.contentWindow)return false;state.startedAt=Date.now();state.frame.contentWindow.postMessage({type:'nx-adams-confirm-start',attemptId:String(attemptId||'')},window.location.protocol==='file:'?'*':window.location.origin);return true;},replayActions:function(actions){actions=Array.isArray(actions)?actions:[];return new Promise(function(resolve){var i=0;function next(){if(i>=actions.length)return resolve(true);sendToFrame(actions[i++]);setTimeout(next,90)}setTimeout(next,350)});},openComputer:function(k,l){return openWithPolicy(k,function(){return openComputerGame(k,l);});},openMultiplayer:function(k,l){return openWithPolicy(k,function(){return openMultiplayerSetup(k,l);});},join:function(c){openJoinRoom(c||'');return true;},isFreeGameOpen:function(){var modal=qs('[data-nx-adams-game-modal]');return state.gameKey==='guinee'&&!!(modal&&modal.classList.contains('open'));},currentGame:function(){return state.gameKey||'';},close:closeGame,finish:requestFinish,refreshStats:refreshStats};
+  window.NexoraAdamsGames={open:function(k,l){return openWithPolicy(k,function(){return openGame(k,l);});},openSolo:function(k,l){return openWithPolicy(k,function(){return openGame(k,l);});},openCompetition:function(k,l){return openGame(k,l);},openTraining:function(k,l){return openGame(k,l);},openChallenge:function(k,l){return openGame(k,l);},confirmChallengeStart:function(attemptId){if(!state.frame||!state.frame.contentWindow)return false;state.startedAt=Date.now();state.frame.contentWindow.postMessage({type:'nx-adams-confirm-start',attemptId:String(attemptId||'')},window.location.protocol==='file:'?'*':window.location.origin);return true;},replayActions:function(actions){actions=Array.isArray(actions)?actions:[];return new Promise(function(resolve){var i=0;function next(){if(i>=actions.length)return resolve(true);sendToFrame(actions[i++]);setTimeout(next,90)}setTimeout(next,350)});},openComputer:function(k,l){return openWithPolicy(k,function(){return openComputerGame(k,l);});},openMultiplayer:function(k,l){return openWithPolicy(k,function(){return openMultiplayerSetup(k,l);});},join:function(c){openJoinRoom(c||'');return true;},isFreeGameOpen:function(){var modal=qs('[data-nx-adams-game-modal]');return state.gameKey==='guinee'&&!!(modal&&modal.classList.contains('open'));},currentGame:function(){return state.gameKey||'';},close:closeGame,finish:requestFinish,refreshStats:refreshStats};
 })();
 
 //# sourceURL=assets/js/nexora-adams-games.js
