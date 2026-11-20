@@ -87,84 +87,111 @@
     }).catch(function () {});
   }
 
-  /* V710 : la fenetre d'autorisation s'affiche toute seule (Android/ordinateur). iPhone : bouton du bandeau. */
-  function demandeAuto(sb) {
-    if (!pushPossible() || Notification.permission !== 'default') return;
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) return;
-    var dernier = parseInt(lire('nx_rappel_auto_v710') || '0', 10);
-    if (dernier && (Date.now() - dernier) < 3 * 24 * 3600 * 1000) return;
-    ecrire('nx_rappel_auto_v710', String(Date.now()));
-    activerPush(sb).catch(function () {});
+  /* V731 : carte d'invitation aux alertes (matin 7 h et soir 18 h), avec le logo, au bon moment. */
+  var CLE_CARTE = 'nx_alertes_carte_v731';
+  function etatCarte() {
+    try { return JSON.parse(lire(CLE_CARTE) || '{}') || {}; } catch (_e) { return {}; }
   }
+  function noterCarte(o) { ecrire(CLE_CARTE, JSON.stringify(o)); }
 
   function styles() {
-    if (document.getElementById('nxRappelStyleV709')) return;
+    if (document.getElementById('nxAlertesStyleV731')) return;
     var s = document.createElement('style');
-    s.id = 'nxRappelStyleV709';
+    s.id = 'nxAlertesStyleV731';
     s.textContent =
-      '#nxRappelV709{position:fixed;left:8px;right:8px;top:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:2147483000;' +
-      'background:#16324F;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 6px 22px rgba(0,0,0,.28);' +
-      'font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto}' +
-      '#nxRappelV709 b{display:block;font-size:15px;margin:0 26px 2px 0}' +
-      '#nxRappelV709 p{margin:0 0 10px;color:#E3E8EE}' +
-      '#nxRappelV709 .nx-r-btns{display:flex;flex-wrap:wrap;gap:8px}' +
-      '#nxRappelV709 button{font:inherit;font-weight:700;border-radius:9px;padding:9px 13px;min-height:40px;cursor:pointer;border:0}' +
-      '#nxRappelV709 .nx-r-go{background:#fff;color:#16324F}' +
-      '#nxRappelV709 .nx-r-push{background:#C9A24B;color:#16324F}' +
-      '#nxRappelV709 .nx-r-x{position:absolute;top:6px;right:6px;background:transparent;color:#fff;font-size:20px;min-height:34px;padding:2px 10px}' +
-      '#nxRappelV709 .nx-r-ok{margin:8px 0 0;font-size:13px;color:#BFE6C8}';
+      '#nxAlertesV731{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:2147482000;max-width:480px;margin:0 auto;' +
+      'background:#fff;color:#16324F;border-radius:18px;padding:16px;box-shadow:0 14px 40px rgba(8,18,32,.35);border:1px solid rgba(22,50,79,.12);' +
+      'font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;animation:nxAlV731 .35s cubic-bezier(.2,.8,.2,1) both}' +
+      '@keyframes nxAlV731{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}' +
+      '@media (prefers-reduced-motion:reduce){#nxAlertesV731{animation:none}}' +
+      '#nxAlertesV731 .nx-al-top{display:flex;gap:12px;align-items:center}' +
+      '#nxAlertesV731 img{width:52px;height:52px;border-radius:12px;flex:none}' +
+      '#nxAlertesV731 b{display:block;font-size:17px;line-height:1.2}' +
+      '#nxAlertesV731 p{margin:10px 0 0;color:#3D5168}' +
+      '#nxAlertesV731 .nx-al-btns{display:flex;gap:8px;margin-top:14px}' +
+      '#nxAlertesV731 button{font:inherit;font-weight:800;border-radius:12px;padding:12px 14px;min-height:46px;cursor:pointer;border:0;flex:1}' +
+      '#nxAlertesV731 .nx-al-go{background:linear-gradient(135deg,#16324F,#1E5FA9);color:#fff;flex:1.6}' +
+      '#nxAlertesV731 .nx-al-no{background:#EEF2F7;color:#16324F}' +
+      '#nxAlertesV731 .nx-al-ok{margin:12px 0 0;font-weight:700;color:#1b7a46}';
     document.head.appendChild(s);
   }
 
-  function fermer() {
-    var el = document.getElementById('nxRappelV709');
+  function fermerCarte() {
+    var el = document.getElementById('nxAlertesV731');
     if (el && el.parentNode) el.parentNode.removeChild(el);
-    ecrire('nx_rappel_ferme_v709', jourCle());
   }
 
-  function afficher(sb, msg) {
-    if (document.getElementById('nxRappelV709')) return;
+  function afficherCarte(sb) {
+    if (document.getElementById('nxAlertesV731')) return;
     styles();
     var box = document.createElement('div');
-    box.id = 'nxRappelV709';
-    box.setAttribute('role', 'status');
-    var t = document.createElement('b'); t.textContent = msg.title || 'Nexora';
-    var p = document.createElement('p'); p.textContent = msg.body || '';
-    var x = document.createElement('button'); x.className = 'nx-r-x'; x.type = 'button';
-    x.setAttribute('aria-label', 'Fermer'); x.textContent = '×'; x.onclick = fermer;
-    var row = document.createElement('div'); row.className = 'nx-r-btns';
-    var go = document.createElement('button'); go.type = 'button'; go.className = 'nx-r-go';
-    go.textContent = 'Je révise'; go.onclick = fermer;
-    row.appendChild(go);
-    if (pushPossible() && Notification.permission === 'default') {
-      var pu = document.createElement('button'); pu.type = 'button'; pu.className = 'nx-r-push';
-      pu.textContent = 'Recevoir ce rappel chaque jour';
-      pu.onclick = function () {
-        pu.disabled = true;
-        activerPush(sb).then(function (r) {
-          var m = document.createElement('div'); m.className = 'nx-r-ok';
-          m.textContent = r === 'granted' ? 'C’est activé : rendez-vous demain à 11 h.' :
-            'Notifications non autorisées. Vous pouvez les activer dans les réglages du navigateur.';
-          if (pu.parentNode) pu.parentNode.removeChild(pu);
-          box.appendChild(m);
-        }).catch(function () { pu.disabled = false; });
-      };
-      row.appendChild(pu);
-    }
-    box.appendChild(x); box.appendChild(t); box.appendChild(p); box.appendChild(row);
+    box.id = 'nxAlertesV731';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-label', 'Activer les rappels Nexora');
+    var top = document.createElement('div'); top.className = 'nx-al-top';
+    var img = document.createElement('img'); img.src = '/assets/icons/nexora-192.png'; img.alt = 'Nexora';
+    var t = document.createElement('b'); t.textContent = 'Reçois ta leçon du jour';
+    top.appendChild(img); top.appendChild(t);
+    var p = document.createElement('p');
+    p.textContent = 'Un petit rappel le matin et le soir pour ne pas perdre le rythme. Tu peux l’arrêter quand tu veux.';
+    var row = document.createElement('div'); row.className = 'nx-al-btns';
+    var go = document.createElement('button'); go.type = 'button'; go.className = 'nx-al-go'; go.textContent = 'Activer les rappels';
+    var no = document.createElement('button'); no.type = 'button'; no.className = 'nx-al-no'; no.textContent = 'Plus tard';
+    no.onclick = function () {
+      var e = etatCarte(); e.refus = (e.refus || 0) + 1; e.dernier = Date.now(); noterCarte(e);
+      fermerCarte();
+    };
+    go.onclick = function () {
+      go.disabled = true; go.textContent = 'Un instant…';
+      activerPush(sb).then(function (r) {
+        var e = etatCarte(); e.dernier = Date.now(); if (r === 'granted') e.fait = true; else e.refus = (e.refus || 0) + 1; noterCarte(e);
+        var m = document.createElement('div'); m.className = 'nx-al-ok';
+        m.textContent = r === 'granted' ? '✓ Activé. À demain matin !' :
+          'Les notifications sont bloquées. Tu pourras les activer dans les réglages du navigateur.';
+        if (r !== 'granted') m.style.color = '#8a5a00';
+        box.replaceChild(m, row);
+        setTimeout(fermerCarte, r === 'granted' ? 2200 : 4500);
+      }).catch(function () { go.disabled = false; go.textContent = 'Activer les rappels'; });
+    };
+    row.appendChild(go); row.appendChild(no);
+    box.appendChild(top); box.appendChild(p); box.appendChild(row);
     document.body.appendChild(box);
+  }
+
+  function ecranLibre() {
+    /* pas de carte par-dessus l'inscription, le code de récupération ou la fenêtre d'installation (la barre d'installation du bas reste visible) */
+    var m = document.getElementById('accountModal');
+    if (m && m.classList.contains('open')) return false;
+    if (document.getElementById('nxRcOkV716') && document.getElementById('nxRcOkV716').offsetParent) return false;
+    if (document.querySelector('.nx-isheet-v721.on, .nx-isheet-v721.open')) return false;
+    return !document.hidden;
+  }
+
+  function carteEnAttente(sb) {
+    if (!pushPossible() || Notification.permission !== 'default') return;
+    var e = etatCarte();
+    if (e.fait || (e.refus || 0) >= 3) return;
+    if (e.dernier && (Date.now() - e.dernier) < 3 * 24 * 3600 * 1000) return;
+    var essais = 0;
+    var iv = setInterval(function () {
+      essais++;
+      if (essais > 60) { clearInterval(iv); return; }
+      if (!ecranLibre()) return;
+      sb.auth.getSession().then(function (r) {
+        var u = r && r.data && r.data.session && r.data.session.user;
+        if (!u || u.is_anonymous) return;
+        if (!ecranLibre() || document.getElementById('nxAlertesV731')) return;
+        clearInterval(iv);
+        afficherCarte(sb);
+      }).catch(function () {});
+    }, 6000);
   }
 
   function demarrer() {
     attendreClient(12).then(function (sb) {
       if (!sb) return;
       rafraichirPush(sb);
-      demandeAuto(sb);
-      if (new Date().getHours() < HEURE) return;
-      if (lire('nx_rappel_ferme_v709') === jourCle()) return;
-      sb.rpc('nexora_rappel_du_jour').then(function (r) {
-        if (r && r.data && r.data.title) afficher(sb, r.data);
-      }).catch(function () {});
+      setTimeout(function () { carteEnAttente(sb); }, 20000);
     }).catch(function () {});
   }
 
