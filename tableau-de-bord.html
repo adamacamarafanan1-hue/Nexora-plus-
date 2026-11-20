@@ -39,6 +39,13 @@ input{width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--line);
 input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,234,.2)}
 .err{color:#ff8d84;font-weight:600;font-size:13.5px;margin:10px 0 0;min-height:20px}
 .seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}.seg button{border:0;background:none;color:var(--mut);padding:7px 12px;border-radius:9px;font-weight:700;font-size:13px}.seg button.on{background:var(--acc);color:#fff}
+.pay{border-top:1px solid var(--line);padding:12px 0}.pay:first-of-type{border-top:0}
+.pay h3{margin:0 0 2px;font-size:16px}.pay .m{font-size:22px;font-weight:800;color:var(--ok)}
+.pay .l{font-size:13px;color:var(--mut);line-height:1.6}.pay .l b{color:var(--txt)}
+.pay .row{display:flex;gap:8px;margin-top:10px}.pay .row button{flex:1;padding:12px;border-radius:12px;border:0;font-weight:800;font-size:14.5px}
+.ok-b{background:var(--ok);color:#06210f}.no-b{background:rgba(255,141,132,.15);color:#ff8d84}
+.pay .ask{margin-top:10px;padding:10px;border-radius:12px;background:rgba(240,178,74,.12);font-size:13.5px}
+.tag.w{background:rgba(240,178,74,.15);color:var(--warn)}.tag.r{background:rgba(255,141,132,.15);color:#ff8d84}
 .hid{display:none!important}
 @media (min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -62,6 +69,7 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     <div class="seg" id="seg"><button data-j="7">7 jours</button><button data-j="14" class="on">14 jours</button><button data-j="30">30 jours</button></div>
     <div class="sp"></div><span class="sub" id="maj"></span><button class="btn" id="rf">Actualiser</button>
   </div>
+  <section class="card" id="payCard"><h2>Paiements à valider <span id="payN"></span></h2><div id="pay"></div><p class="note">Vérifiez toujours le SMS Orange Money avant de valider : montant exact et numéro payeur.</p></section>
   <div class="kpis" id="kpis"></div>
   <section class="card" style="margin-top:14px"><h2>Inscriptions par jour</h2><div class="bars" id="bars"></div></section>
   <section class="card"><h2>Parcours des visiteurs</h2><div class="fun" id="fun"></div><div class="note" id="fnote"></div></section>
@@ -99,9 +107,42 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     .then(function(x){
       if(x.s===401){sortir('Session expirée. Reconnectez-vous.');return}
       if(x.s>=400){sortir((x.j&&x.j.message&&/administrateur/.test(x.j.message))?'Ce compte n’est pas administrateur Nexora.':'Erreur de chargement.');return}
-      ecran(true);rendre(x.j);
+      ecran(true);rendre(x.j);chargerPaiements();
     }).catch(function(){$('#maj').textContent='Hors connexion'});
   }
+
+  var payOuvert=null;
+  function depuis(d){var h=Math.floor((Date.now()-new Date(d).getTime())/3600000);if(h<1)return 'à l’instant';if(h<24)return 'il y a '+h+' h';var j=Math.floor(h/24);return 'il y a '+j+' jour'+(j>1?'s':'')}
+  function fmt(n){return String(n||0).replace(/\B(?=(\d{3})+(?!\d))/g,' ')}
+  function chargerPaiements(){
+    fetch(SB+'/rest/v1/rpc/nexora_admin_paiements_v727',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:'{}'})
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j}})})
+    .then(function(x){if(x.s>=400||!Array.isArray(x.j)){$('#pay').innerHTML='<p class="note">Liste des paiements indisponible.</p>';return}rendrePaiements(x.j)})
+    .catch(function(){$('#pay').innerHTML='<p class="note">Hors connexion.</p>'});
+  }
+  function rendrePaiements(l){
+    var att=l.filter(function(x){return x.statut==='payment_declared'||x.statut==='under_review'}),fait=l.filter(function(x){return att.indexOf(x)<0});
+    $('#payN').innerHTML=att.length?'<span class="tag w">'+att.length+' en attente</span>':'';
+    var h=att.length?att.map(function(x){
+      var prod=x.produit==='jeuadams'?'Jeu Adams':'Nexora';
+      var conf=payOuvert&&payOuvert.id===x.id;
+      return '<div class="pay"><h3>'+esc(x.nom)+'</h3><div class="m">'+fmt(x.montant)+' GNF</div><div class="l">'+prod+' · '+esc(x.formule||(x.mois+' mois'))+' · déclaré '+depuis(x.declare_le)+'<br>Numéro payeur : <b>'+esc(x.tel_payeur||'—')+'</b>'+(x.tel_compte?'<br>Téléphone du compte : '+esc(x.tel_compte):'')+(x.reference?'<br>Référence : <b>'+esc(x.reference)+'</b>':'')+'</div>'+
+      (conf?'<div class="ask">'+(payOuvert.a==='approve'?'Confirmer : j’ai bien reçu <b>'+fmt(x.montant)+' GNF</b> de ce numéro ?':'Refuser ce paiement ?')+'<div class="row"><button class="'+(payOuvert.a==='approve'?'ok-b':'no-b')+'" data-conf="'+x.id+'">Oui, '+(payOuvert.a==='approve'?'valider':'refuser')+'</button><button class="btn" data-ann="1">Annuler</button></div></div>':
+      '<div class="row"><button class="ok-b" data-a="approve" data-id="'+x.id+'">Valider</button><button class="no-b" data-a="reject" data-id="'+x.id+'">Refuser</button></div>')+'</div>';
+    }).join(''):'<p class="note" style="margin:0">Aucun paiement en attente.</p>';
+    if(fait.length)h+='<div class="note" style="margin-top:14px">Derniers traités</div><table><tbody>'+fait.map(function(x){return '<tr><td>'+esc(x.nom)+'<br><small style="color:var(--mut)">'+fmt(x.montant)+' GNF</small></td><td style="text-align:right"><span class="tag'+(x.statut==='approved'?'':' r')+'">'+(x.statut==='approved'?'validé':'refusé')+'</span></td></tr>'}).join('')+'</tbody></table>';
+    $('#pay').innerHTML=h;
+  }
+  $('#pay').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    if(b.getAttribute('data-a')){payOuvert={id:b.getAttribute('data-id'),a:b.getAttribute('data-a')};chargerPaiements();return}
+    if(b.getAttribute('data-ann')){payOuvert=null;chargerPaiements();return}
+    var id=b.getAttribute('data-conf');if(!id||!payOuvert)return;var dec=payOuvert.a;b.disabled=true;b.textContent='Envoi…';
+    fetch(SB+'/rest/v1/rpc/nexora_admin_review_payment_request_secure',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({p_request_id:id,p_decision:dec,p_admin_note:'Traité depuis le tableau de bord'})})
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j}})})
+    .then(function(x){payOuvert=null;if(x.s>=400){$('#pay').insertAdjacentHTML('afterbegin','<p class="err">'+esc((x.j&&x.j.message)||'Échec, réessayez.')+'</p>');setTimeout(chargerPaiements,2500);return}chargerPaiements()})
+    .catch(function(){payOuvert=null;$('#pay').insertAdjacentHTML('afterbegin','<p class="err">Hors connexion, rien n’a été modifié.</p>')});
+  });
   function pct(a,b){return b>0?Math.min(100,Math.round(a*100/b)):0}
   function ligne(lib,n,max,sub){return '<div class="fr"><span>'+lib+'</span><div class="tr"><i style="width:'+pct(n,max)+'%"></i></div><b>'+n+(sub?'<small style="color:var(--mut);font-weight:500"> '+sub+'</small>':'')+'</b></div>'}
   function rendre(d){
