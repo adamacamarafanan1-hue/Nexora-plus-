@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Défi du jour · Jeu Adams</title>
+<meta name="description" content="Le défi du jour de Jeu Adams : 5 questions, les mêmes pour tout le monde. Bats tes amis !">
+<meta name="theme-color" content="#0F1B3D">
+<link rel="icon" type="image/png" sizes="192x192" href="/jeu-adams-app/icon-192.png">
+<link rel="apple-touch-icon" href="/jeu-adams-app/icon-192.png">
+<style>
+:root{--ink:#0F1B3D;--ink2:#1D2D5E;--gold:#F4B63F;--gold-d:#C98A12;--paper:#F3F5FA;--line:#D9DEEB;--muted:#5A6482;--ok:#12805C;--ko:#C0392B;--card:#fff}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 "Avenir Next","Trebuchet MS","Segoe UI",Roboto,system-ui,sans-serif;min-height:100vh;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+button{font:inherit;cursor:pointer}
+.top{background:var(--ink);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:11px;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:19px;letter-spacing:-.04em;flex:none}
+.brand{font-size:19px;font-weight:800;line-height:1.1}.brand small{display:block;font-size:12px;font-weight:500;color:#B9C3E4}
+.top a{margin-left:auto;color:#fff;text-decoration:none;border:1px solid #3A4C86;border-radius:999px;padding:9px 14px;font-weight:700;font-size:14px;min-height:40px;display:inline-flex;align-items:center}
+.wrap{max-width:560px;margin:0 auto;padding:18px 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:14px;box-shadow:0 6px 24px rgba(15,27,61,.06)}
+h1{font-size:28px;line-height:1.1;margin:0 0 6px;letter-spacing:-.02em}
+h2{font-size:18px;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 14px}
+.date{display:inline-block;background:#FFF4D9;color:#7A5200;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:800;text-transform:capitalize;margin-bottom:10px}
+.serie{display:flex;align-items:center;gap:10px;background:var(--ink);color:#fff;border-radius:16px;padding:12px 16px;margin:14px 0;font-weight:800}
+.serie b{font-size:28px;color:var(--gold);line-height:1}
+.serie span{font-weight:600;font-size:14px;color:#C9D2EE}
+label.f{display:block;font-weight:800;font-size:14px;margin:14px 0 6px}
+input.t{width:100%;padding:14px;border:2px solid var(--line);border-radius:14px;font:inherit;font-size:17px;background:#fff;color:var(--ink)}
+input.t:focus{outline:0;border-color:var(--gold-d);box-shadow:0 0 0 4px rgba(244,182,63,.25)}
+.cta{display:block;width:100%;border:0;border-radius:16px;padding:16px;font-weight:900;font-size:18px;min-height:56px;background:var(--gold);color:var(--ink);box-shadow:0 8px 20px rgba(244,182,63,.4)}
+.cta:disabled{opacity:.55;box-shadow:none}
+.cta.alt{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.cta.wa{background:#25D366;color:#06210f;box-shadow:none}
+.row{display:flex;gap:10px;margin-top:12px}.row .cta{flex:1;font-size:16px}
+.msg{min-height:22px;margin:10px 0 0;color:var(--ko);font-weight:700;font-size:14px}
+.dots{display:flex;gap:6px;margin-bottom:16px}
+.dots i{flex:1;height:8px;border-radius:9px;background:var(--line)}
+.dots i.on{background:var(--gold)}.dots i.done{background:var(--ink)}
+.chip{display:inline-block;background:#EAF0FF;color:var(--ink2);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:800;margin-bottom:10px}
+.q{font-size:22px;line-height:1.25;font-weight:800;margin:0 0 16px}
+.ch{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:16px;padding:15px 16px;margin-bottom:10px;font-weight:700;font-size:17px;color:var(--ink);min-height:56px}
+.ch:active{transform:scale(.99)}
+.ch.sel{border-color:var(--gold-d);background:#FFF4D9}
+.score{font-size:64px;font-weight:900;line-height:1;margin:6px 0;letter-spacing:-.03em}
+.score small{font-size:28px;color:var(--muted);font-weight:800}
+.badge{display:inline-block;background:var(--ink);color:#fff;border-radius:999px;padding:7px 14px;font-weight:800;font-size:14px;margin:4px 6px 4px 0}
+.rev{border-top:1px solid var(--line);padding:12px 0}
+.rev:first-child{border-top:0}
+.rev p{margin:0 0 6px;font-weight:800}
+.rev .a{font-size:15px;font-weight:700}.rev .a.ok{color:var(--ok)}.rev .a.ko{color:var(--ko)}
+.tabs{display:flex;background:var(--paper);border-radius:14px;padding:4px;margin-bottom:12px}
+.tabs button{flex:1;border:0;background:none;padding:11px;border-radius:11px;font-weight:800;color:var(--muted)}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(15,27,61,.1)}
+.lb{display:flex;align-items:center;gap:12px;padding:11px 8px;border-radius:12px}
+.lb.me{background:#FFF4D9}
+.lb .r{width:34px;height:34px;border-radius:50%;background:var(--paper);display:flex;align-items:center;justify-content:center;font-weight:900;flex:none}
+.lb .r.m1{background:var(--gold)}.lb .r.m2{background:#D5DAE6}.lb .r.m3{background:#E2B58A}
+.lb .n{flex:1;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .p{font-weight:900}
+.note{color:var(--muted);font-size:13px;margin:10px 0 0}
+.hide{display:none!important}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .3s ease both}@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">JA</div>
+  <div class="brand">Défi du jour<small>Jeu Adams</small></div>
+  <a href="/jeu-adams-app/index.html">Les jeux</a>
+</header>
+<main class="wrap">
+
+  <section class="card" id="vAccueil">
+    <span class="date" id="aDate"></span>
+    <h1>5 questions. 3 minutes.</h1>
+    <p class="sub">Les mêmes questions pour tout le monde. Reviens chaque jour pour garder ta série.</p>
+    <div class="serie"><b id="aSerie">0</b><div>jours de suite 🔥<br><span id="aSerieTxt">Joue aujourd’hui pour démarrer ta série.</span></div></div>
+    <div id="aForm">
+      <label class="f" for="aPseudo">Ton pseudo (visible dans le classement)</label>
+      <input class="t" id="aPseudo" maxlength="20" autocomplete="nickname" placeholder="Exemple : Mariama" />
+      <p class="msg" id="aMsg" role="alert"></p>
+      <button class="cta" id="aGo" type="button">Commencer le défi</button>
+    </div>
+    <div id="aFait" class="hide">
+      <p class="sub" style="margin:0 0 6px">Tu as déjà joué aujourd’hui.</p>
+      <div class="score" id="aScore"></div>
+      <div class="row"><button class="cta wa" id="aShare1" type="button">Partager sur WhatsApp</button></div>
+    </div>
+    <div class="row"><button class="cta alt" id="aRank" type="button">🏆 Voir le classement</button></div>
+    <p class="note">Une seule partie par jour. Le défi change chaque matin.</p>
+  </section>
+
+  <section class="card hide" id="vLogin">
+    <h1>Connexion nécessaire</h1>
+    <p class="sub">Pour jouer au défi et apparaître au classement, connecte-toi à Jeu Adams.</p>
+    <button class="cta" type="button" onclick="location.href='/jeu-adams-app/index.html'">Me connecter</button>
+  </section>
+
+  <section class="card hide" id="vJeu">
+    <div class="dots" id="jDots"></div>
+    <span class="chip" id="jTheme"></span>
+    <p class="q" id="jQ"></p>
+    <div id="jCh"></div>
+  </section>
+
+  <section class="card hide" id="vRes">
+    <span class="date">Résultat du jour</span>
+    <div class="score" id="rScore"></div>
+    <p class="sub" id="rMsg" style="margin:0 0 6px"></p>
+    <div><span class="badge" id="rRang"></span><span class="badge" id="rSerie"></span></div>
+    <div class="row"><button class="cta wa" id="rShare" type="button">Défier mes amis sur WhatsApp</button></div>
+    <div class="row"><button class="cta alt" id="rRank" type="button">🏆 Classement</button></div>
+    <h2 style="margin-top:20px">Tes réponses</h2>
+    <div id="rRev"></div>
+  </section>
+
+  <section class="card hide" id="vRank">
+    <h2>🏆 Classement</h2>
+    <div class="tabs"><button class="on" data-p="jour" type="button">Aujourd’hui</button><button data-p="semaine" type="button">Cette semaine</button></div>
+    <div id="lbList"></div>
+    <div class="row"><button class="cta alt" id="lbBack" type="button">Retour</button></div>
+  </section>
+
+</main>
+<script src="/assets/vendor/supabase-js-2.112.2.js"></script>
+<script>
+(function(){
+  'use strict';
+  var SB='https://lzypxingcykvgxdifccq.supabase.co',KEY='sb_publishable_BOYKDhcighKMhX4k3I6RBw_F-B2jaPY';
+  var LIEN='https://jeu-adams.vercel.app/defi';
+  var sb=window.supabase.createClient(SB,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+  function $(s){return document.querySelector(s)}
+  function vue(id){['vAccueil','vLogin','vJeu','vRes','vRank'].forEach(function(v){$('#'+v).classList.toggle('hide',v!==id)});window.scrollTo(0,0)}
+  function lire(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+  function ecrire(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  var etat=null,rep=[],idx=0,t0=0,dernier=null;
+
+  $('#aDate').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  $('#aPseudo').value=lire('ja_pseudo_v1');
+
+  function sessionOk(){
+    return sb.auth.getSession().then(function(r){
+      if(r&&r.data&&r.data.session)return r.data.session;
+      return sb.auth.signInAnonymously().then(function(x){return x&&!x.error&&x.data?x.data.session:null}).catch(function(){return null});
+    });
+  }
+  function serie(n){
+    $('#aSerie').textContent=n;
+    $('#aSerieTxt').textContent=n>0?'Ne casse pas ta série : reviens demain.':'Joue aujourd’hui pour démarrer ta série.';
+  }
+  function charger(){
+    sessionOk().then(function(s){
+      if(!s){vue('vLogin');return}
+      sb.rpc('jeu_defi_du_jour').then(function(r){
+        if(r.error||!r.data){$('#aMsg').textContent='Le défi n’est pas disponible pour le moment. Réessaie plus tard.';return}
+        etat=r.data;serie(etat.serie||0);
+        var fait=!!etat.deja_joue;
+        $('#aForm').classList.toggle('hide',fait);$('#aFait').classList.toggle('hide',!fait);
+        if(fait)$('#aScore').innerHTML=etat.score+'<small> / '+etat.total+'</small>';
+        vue('vAccueil');
+      });
+    });
+  }
+  $('#aGo').addEventListener('click',function(){
+    var p=$('#aPseudo').value.trim();
+    if(p.replace(/[^A-Za-z0-9À-ÿ]/g,'').length<2){$('#aMsg').textContent='Choisis un pseudo de 2 à 20 caractères.';return}
+    $('#aMsg').textContent='';ecrire('ja_pseudo_v1',p);
+    if(!etat||!etat.questions||!etat.questions.length){charger();return}
+    rep=[];idx=0;t0=Date.now();jouer();
+  });
+  function jouer(){
+    var qs=etat.questions,q=qs[idx];
+    $('#jDots').innerHTML=qs.map(function(_,i){return '<i class="'+(i<idx?'done':i===idx?'on':'')+'"></i>'}).join('');
+    $('#jTheme').textContent=q.theme;$('#jQ').textContent=q.question;
+    var box=$('#jCh');box.innerHTML='';
+    q.choix.forEach(function(c,i){
+      var b=document.createElement('button');b.type='button';b.className='ch';b.textContent=c;
+      b.addEventListener('click',function(){
+        if(box.getAttribute('data-l'))return;box.setAttribute('data-l','1');b.classList.add('sel');rep.push(i);
+        setTimeout(function(){box.removeAttribute('data-l');idx++;if(idx<qs.length)jouer();else envoyer()},380);
+      });
+      box.appendChild(b);
+    });
+    vue('vJeu');
+  }
+  function envoyer(){
+    var duree=Date.now()-t0;
+    sb.rpc('jeu_defi_repondre',{p_reponses:rep,p_pseudo:lire('ja_pseudo_v1'),p_duree_ms:duree}).then(function(r){
+      if(r.error){vue('vAccueil');$('#aMsg').textContent=(r.error.message||'Envoi impossible.');return}
+      afficher(r.data,etat.questions);
+    });
+  }
+  function msgScore(s){return s===5?'Parfait ! 🎉':s>=4?'Excellent !':s>=3?'Bien joué !':s>=2?'Pas mal, demain tu feras mieux !':'Courage, reviens demain !'}
+  function afficher(d,qs){
+    dernier=d;
+    $('#rScore').innerHTML=d.score+'<small> / '+d.total+'</small>';
+    $('#rMsg').textContent=msgScore(d.score);
+    $('#rRang').textContent='🏅 '+d.rang+(d.rang===1?'er':'ᵉ')+' sur '+d.joueurs+' joueur'+(d.joueurs>1?'s':'');
+    $('#rSerie').textContent='🔥 Série : '+d.serie+' jour'+(d.serie>1?'s':'');
+    $('#rRev').innerHTML='';
+    qs.forEach(function(q,i){
+      var bon=d.bonnes[i],ok=rep[i]===bon,div=document.createElement('div');div.className='rev';
+      var p=document.createElement('p');p.textContent=(i+1)+'. '+q.question;div.appendChild(p);
+      var a=document.createElement('div');a.className='a '+(ok?'ok':'ko');
+      a.textContent=ok?'✓ '+q.choix[bon]:'✗ Ta réponse : '+q.choix[rep[i]]+' — Bonne réponse : '+q.choix[bon];div.appendChild(a);
+      $('#rRev').appendChild(div);
+    });
+    serie(d.serie);
+    vue('vRes');
+  }
+  function partager(score,serieN){
+    var t='🎯 Défi Jeu Adams du jour : j’ai fait '+score+'/5'+(serieN>1?' ! 🔥 '+serieN+' jours de suite':' !')+' Essaie de me battre 👉 '+LIEN;
+    window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank','noopener');
+  }
+  $('#rShare').addEventListener('click',function(){if(dernier)partager(dernier.score,dernier.serie)});
+  $('#aShare1').addEventListener('click',function(){if(etat)partager(etat.score,etat.serie)});
+  function classement(p){
+    document.querySelectorAll('.tabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-p')===p)});
+    $('#lbList').innerHTML='<p class="sub">Chargement…</p>';
+    sb.rpc('jeu_defi_classement',{p_periode:p}).then(function(r){
+      if(r.error||!r.data){$('#lbList').innerHTML='<p class="sub">Classement indisponible.</p>';return}
+      var top=r.data.top||[];
+      if(!top.length){$('#lbList').innerHTML='<p class="sub">Personne n’a encore joué. Sois le premier !</p>';return}
+      $('#lbList').innerHTML='';
+      top.forEach(function(x){
+        var d=document.createElement('div');d.className='lb'+(x.moi?' me':'');
+        var r1=document.createElement('div');r1.className='r'+(x.rang<=3?' m'+x.rang:'');r1.textContent=x.rang;
+        var n=document.createElement('div');n.className='n';n.textContent=x.pseudo+(x.moi?' (toi)':'');
+        var pt=document.createElement('div');pt.className='p';pt.textContent=p==='semaine'?x.points+' pts':x.points+'/5';
+        d.appendChild(r1);d.appendChild(n);d.appendChild(pt);$('#lbList').appendChild(d);
+      });
+      if(r.data.moi&&!top.some(function(x){return x.moi})){
+        var m=document.createElement('p');m.className='note';m.textContent='Ta place : '+r.data.moi.rang+'ᵉ';$('#lbList').appendChild(m);
+      }
+    });
+  }
+  function ouvrirClassement(){sessionOk().then(function(s){if(!s){vue('vLogin');return}vue('vRank');classement('jour')})}
+  $('#aRank').addEventListener('click',ouvrirClassement);
+  $('#rRank').addEventListener('click',ouvrirClassement);
+  document.querySelector('.tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(b)classement(b.getAttribute('data-p'))});
+  $('#lbBack').addEventListener('click',function(){charger()});
+  charger();
+})();
+</script>
+</body>
+</html>
