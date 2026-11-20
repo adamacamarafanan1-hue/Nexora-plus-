@@ -1246,6 +1246,24 @@
       parentPost('nx-adams-frame-ready',{deferred:ctx.deferStart===true});
       if(startAuthorized&&!officialStartTriggered){officialStartTriggered=true;setTimeout(directStart,180)}
     }
+    /* Remerciement affiché à la fin de chaque partie. */
+    function nomsLisibles(a){a=a.filter(Boolean);return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' et '+a[a.length-1]}
+    setInterval(function(){
+      try{
+        var ov=document.getElementById('g-recap-ov'),w=document.querySelector('.win-ov.show,.comp-win-ov.show'),box=null,noms=Array.isArray(ctx.playerNames)?ctx.playerNames.slice():[];
+        if(ov&&ov.classList.contains('show')){
+          box=ov.querySelector('.recap-box')||ov;
+          var sub=(document.getElementById('g-recap-sub')||{}).textContent||'',m=sub.match(/Solo\s*[—-]\s*(.+?)\s*·/);
+          if(m&&m[1])noms=[m[1]];
+        }else if(w){box=w.querySelector('.win-box')||w.firstElementChild}
+        if(!box||box.querySelector('[data-nx-merci]'))return;
+        var d=document.createElement('div');d.setAttribute('data-nx-merci','1');
+        d.style.cssText='margin:14px 0 4px;padding:12px 14px;border-radius:14px;background:rgba(255,215,0,.14);border:1px solid rgba(255,215,0,.45);color:#fff;font-weight:800;font-size:15px;line-height:1.4;text-align:center';
+        var n=nomsLisibles(noms);
+        d.textContent='🙏 Merci d’avoir joué'+(n?', '+n:'')+' ! À très bientôt sur Jeu Adams.';
+        box.appendChild(d);
+      }catch(_m){}
+    },700);
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',announceFrameReady,{once:true});
     else setTimeout(announceFrameReady,0);
   }
@@ -1834,10 +1852,15 @@
     }
     function etape2(n){
       var cols=['#EF4444','#22C55E','#3B82F6','#F59E0B'],h='<h2 style="margin:0 0 4px;font-size:22px">Prénoms des joueurs</h2><p style="margin:0 0 14px;color:#5A6482;font-size:15px">'+n+' joueurs sur ce téléphone. Tu peux laisser les noms par défaut.</p>';
-      for(var i=0;i<n;i++)h+='<input data-nom="'+i+'" maxlength="20" placeholder="Joueur '+(i+1)+'" style="display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:14px;border:2px solid #D9DEEB;border-left:6px solid '+cols[i]+';border-radius:12px;font-size:17px">';
+      for(var i=0;i<n;i++)h+='<input data-nom="'+i+'" maxlength="20" enterkeyhint="'+(i<n-1?'next':'go')+'" autocomplete="off" autocapitalize="words" placeholder="Joueur '+(i+1)+'" style="display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:14px;border:2px solid #D9DEEB;border-left:6px solid '+cols[i]+';border-radius:12px;font-size:17px">';
       h+='<button type="button" data-go="1" style="display:block;width:100%;margin-top:4px;padding:15px;border:0;border-radius:14px;background:#F4B63F;color:#0F1B3D;font-weight:900;font-size:18px">▶ Commencer</button><button type="button" data-n="back" style="width:100%;background:none;border:0;color:#5A6482;padding:10px;font-size:15px">Retour</button>';
       box.innerHTML=h;box.setAttribute('data-n',n);var f=box.querySelector('input');if(f)f.focus();
     }
+    d.addEventListener('keydown',function(e){
+      if(e.key!=='Enter'||!e.target.matches||!e.target.matches('input[data-nom]'))return;
+      e.preventDefault();var ins=[].slice.call(box.querySelectorAll('input[data-nom]')),i=ins.indexOf(e.target);
+      if(i<ins.length-1)ins[i+1].focus();else{var go=box.querySelector('[data-go]');if(go)go.click()}
+    });
     etape1();document.body.appendChild(d);
     d.addEventListener('click',function(e){
       var b=e.target.closest('button');if(!b)return;
