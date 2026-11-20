@@ -75,7 +75,11 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     <div class="sp"></div><span class="sub" id="maj"></span><button class="btn" id="rf">Actualiser</button>
   </div>
   <section class="card" id="payCard"><h2>Paiements à valider <span id="payN"></span></h2><div id="pay"></div><p class="note">Vérifiez toujours le SMS Orange Money avant de valider : montant exact et numéro payeur.</p></section>
-  <section class="card" id="msgCard"><h2>Messages du jour</h2><div id="msgs"></div><div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="msgPrev">← Jour précédent</button><button class="btn" id="msgNext">Jour suivant →</button></div><p class="note">Envoie le message du matin vers 7 h et celui du soir vers 18 h, à tes groupes et à ta liste de diffusion WhatsApp.</p></section>
+  <section class="card" id="msgCard"><h2>Messages du jour</h2><div id="msgs"></div><div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="msgPrev">← Jour précédent</button><button class="btn" id="msgNext">Jour suivant →</button></div><p class="note">Envoie le message du matin vers 7 h et celui du soir vers 18 h, à tes groupes et à ta liste de diffusion WhatsApp.</p>
+    <h2 style="margin-top:18px">Alertes sur les téléphones</h2>
+    <p class="note" id="alInfo" style="margin:0 0 10px">Chargement…</p>
+    <div class="row" style="display:flex;gap:8px"><button class="btn" id="tstM" style="flex:1">Tester le matin</button><button class="btn" id="tstS" style="flex:1">Tester le soir</button></div>
+    <p class="note" id="alRes"></p></section>
   <div class="kpis" id="kpis"></div>
   <section class="card" style="margin-top:14px"><h2>Inscriptions par jour</h2><div class="bars" id="bars"></div></section>
   <section class="card"><h2>Parcours des visiteurs</h2><div class="fun" id="fun"></div><div class="note" id="fnote"></div></section>
@@ -113,7 +117,7 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     .then(function(x){
       if(x.s===401){sortir('Session expirée. Reconnectez-vous.');return}
       if(x.s>=400){sortir((x.j&&x.j.message&&/administrateur/.test(x.j.message))?'Ce compte n’est pas administrateur Nexora.':'Erreur de chargement.');return}
-      ecran(true);rendre(x.j);chargerPaiements();
+      ecran(true);rendre(x.j);chargerPaiements();chargerAlertes();
     }).catch(function(){$('#maj').textContent='Hors connexion'});
   }
 
@@ -183,6 +187,22 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(el.textContent).then(ok,secours);else secours();
   });
   rendreMsgs();
+
+  function chargerAlertes(){
+    fetch(SB+'/rest/v1/rpc/nexora_admin_alertes_v730',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:'{}'})
+    .then(function(r){return r.json()}).then(function(j){
+      if(j&&typeof j.appareils==='number')$('#alInfo').innerHTML='Envoi automatique chaque jour à 7 h et à 18 h. <b>'+j.appareils+' téléphone'+(j.appareils>1?'s':'')+'</b> sur '+j.comptes_total+' comptes ont activé les alertes.';
+      else $('#alInfo').textContent='Information indisponible.';
+    }).catch(function(){$('#alInfo').textContent='Hors connexion.'});
+  }
+  function tester(slot,b){
+    b.disabled=true;$('#alRes').textContent='Envoi du test…';
+    fetch(SB+'/rest/v1/rpc/nexora_admin_test_alerte_v730',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({p_slot:slot})})
+    .then(function(r){b.disabled=false;$('#alRes').textContent=r.ok?'Test envoyé. Regarde ton téléphone dans quelques secondes (seulement le tien).':'Échec de l’envoi du test.'})
+    .catch(function(){b.disabled=false;$('#alRes').textContent='Hors connexion.'});
+  }
+  $('#tstM').addEventListener('click',function(){tester('matin',this)});
+  $('#tstS').addEventListener('click',function(){tester('soir',this)});
   function pct(a,b){return b>0?Math.min(100,Math.round(a*100/b)):0}
   function ligne(lib,n,max,sub){return '<div class="fr"><span>'+lib+'</span><div class="tr"><i style="width:'+pct(n,max)+'%"></i></div><b>'+n+(sub?'<small style="color:var(--mut);font-weight:500"> '+sub+'</small>':'')+'</b></div>'}
   function rendre(d){

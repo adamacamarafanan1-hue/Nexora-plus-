@@ -10,7 +10,8 @@ const PUBLIC_ASSETS = [
   "/index.html",
   "/manifest.json",
   "/assets/icons/nexora-192.png",
-  "/assets/icons/nexora-512.png"
+  "/assets/icons/nexora-512.png",
+  "/assets/icons/nexora-badge.png"
 ];
 
 const TOUJOURS_FRAIS = new Set([
@@ -217,23 +218,32 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
 });
 
-/* Notifications push : rappel quotidien de 11 h. */
+/* Notifications push : alertes du matin (7 h) et du soir (18 h), avec le logo Nexora. */
 self.addEventListener("push", (event) => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (_e) { d = {}; }
-  event.waitUntil(self.registration.showNotification(d.title || "Nexora", {
+  const options = {
     body: d.body || "Reviens étudier sur Nexora.",
     icon: "/assets/icons/nexora-192.png",
-    badge: "/assets/icons/nexora-192.png",
-    tag: "rappel-quotidien",
+    badge: "/assets/icons/nexora-badge.png",
+    tag: d.slot ? "alerte-" + d.slot : "rappel-quotidien",
     renotify: true,
-    data: { url: d.url || "/" }
-  }));
+    lang: "fr",
+    vibrate: [120, 60, 120],
+    data: { url: d.url || "/", partage: d.partage || "" }
+  };
+  if (d.partage) options.actions = [{ action: "partager", title: "Partager à un ami" }];
+  event.waitUntil(self.registration.showNotification(d.title || "Nexora", options));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const cible = (event.notification.data && event.notification.data.url) || "/";
+  const partage = (event.notification.data && event.notification.data.partage) || "";
+  if (event.action === "partager" && partage) {
+    event.waitUntil(self.clients.openWindow("https://wa.me/?text=" + encodeURIComponent(partage)));
+    return;
+  }
   event.waitUntil((async () => {
     const pages = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     for (const page of pages) {
