@@ -1449,7 +1449,46 @@
     try{URL.revokeObjectURL(state.frameObjectUrl)}catch(_revokeError){window.nxLog&&window.nxLog(_revokeError)}
     state.frameObjectUrl=null;
   }
+  /* Tableau d'honneur : le jeu signale sa fin de partie, la page parente propose d'inscrire le nom. */
+  var HONNEUR_OBS="(function(){var k='';function t(id){var e=document.getElementById(id);return e?String(e.textContent||''):''}function sh(id){var e=document.getElementById(id);return !!(e&&e.classList.contains('show'))}setInterval(function(){try{var sc=0,nom='',cle='';if(sh('g-recap-ov')){sc=parseInt(t('g-recap-score'),10)||0;var m=t('g-recap-sub').match(/Solo\\s*[\\u2014-]\\s*(.+?)\\s*\\u00b7/);nom=m?m[1]:'';cle='s'+sc}else if(sh('win-ov')){var d=t('win-detail').match(/(\\d+)/);sc=d?parseInt(d[1],10):0;nom=t('win-name').replace(/^[^A-Za-z0-9\\u00C0-\\u00FF]+/,'').replace(/\\s*\\u2014.*$/,'');cle='w'+sc+nom}if(!cle){k='';return}if(cle!==k){k=cle;if(sc>0)parent.postMessage({jaFin:1,score:sc,nom:nom},'*')}}catch(e){}},900)})();";
+  function honneurInject(html){
+    try{var tag='<script>'+HONNEUR_OBS.replace(/<\/script/gi,'<\\/script')+'</scr'+'ipt>';var i=html.lastIndexOf('</body>');return i>-1?html.slice(0,i)+tag+html.slice(i):html+tag}catch(_e){return html}
+  }
+  var honneurSeuil=null,honneurLabel='';
+  function honneurClient(){try{return window.NexoraApp&&window.NexoraApp.getSupabaseClient&&window.NexoraApp.getSupabaseClient()}catch(_e){return null}}
+  function honneurDemander(score,nom){
+    var c=honneurClient();if(!c)return;
+    var ancien=document.getElementById('nxHonneur');if(ancien)ancien.remove();
+    var pre='';try{pre=localStorage.getItem('ja_pseudo_v2')||''}catch(_e){}
+    pre=pre||String(nom||'').slice(0,20);
+    var d=document.createElement('div');d.id='nxHonneur';
+    d.style.cssText='position:fixed;inset:0;z-index:2147483640;background:rgba(15,27,61,.82);display:flex;align-items:center;justify-content:center;padding:18px;font-family:system-ui,sans-serif';
+    d.innerHTML='<div style="background:#fff;color:#0F1B3D;border-radius:20px;padding:22px;max-width:380px;width:100%;text-align:center"><div style="font-size:44px">🏆</div><h2 style="margin:6px 0;font-size:22px">Score remarquable : '+score+' points !</h2><p style="margin:0 0 14px;color:#5A6482">Ton nom peut apparaître dans le tableau d’honneur de Jeu Adams.</p><input id="nxHonneurNom" maxlength="20" style="width:100%;box-sizing:border-box;padding:14px;border:2px solid #D9DEEB;border-radius:14px;font-size:17px" placeholder="Ton nom" value="'+String(pre).replace(/[<>&"]/g,'')+'"><button id="nxHonneurOk" type="button" style="width:100%;margin-top:12px;padding:15px;border:0;border-radius:14px;background:#F4B63F;color:#0F1B3D;font-weight:900;font-size:17px">Inscrire mon nom</button><button id="nxHonneurNon" type="button" style="margin-top:8px;background:none;border:0;color:#5A6482;padding:10px;font-size:15px">Non merci</button><p id="nxHonneurMsg" style="min-height:18px;color:#C0392B;font-weight:700;margin:6px 0 0;font-size:14px"></p></div>';
+    document.body.appendChild(d);
+    document.getElementById('nxHonneurNon').onclick=function(){d.remove()};
+    document.getElementById('nxHonneurOk').onclick=function(){
+      var nm=document.getElementById('nxHonneurNom').value.trim();
+      if(nm.replace(/[^A-Za-z0-9\u00C0-\u00FF]/g,'').length<2){document.getElementById('nxHonneurMsg').textContent='Choisis un nom de 2 à 20 caractères.';return}
+      try{localStorage.setItem('ja_pseudo_v2',nm)}catch(_e){}
+      Promise.resolve(c.rpc('jeu_honneur_enregistrer',{p_jeu:honneurLabel,p_score:score,p_pseudo:nm})).then(function(r){
+        if(r&&r.error){document.getElementById('nxHonneurMsg').textContent=/Connexion/.test(r.error.message||'')?'Connecte-toi pour inscrire ton nom.':(r.error.message||'Impossible pour le moment.');return}
+        var ok=r&&r.data&&r.data.ok;d.remove();
+        if(window.toast)window.toast(ok?'Bravo ! Ton nom est dans le tableau d’honneur 🏆':(r&&r.data&&r.data.raison==='trop_rapide'?'Tu viens déjà d’être inscrit, réessaie plus tard.':'Score pas assez élevé pour le tableau.'));
+      });
+    };
+  }
+  window.addEventListener('message',function(ev){
+    try{
+      var d=ev.data;if(!d||d.jaFin!==1||!state.frame||ev.source!==state.frame.contentWindow)return;
+      var score=Number(d.score)|0;if(score<1)return;
+      var c=honneurClient();if(!c)return;
+      var go=function(){if(honneurSeuil!==null&&score<honneurSeuil)return;honneurDemander(score,d.nom)};
+      if(honneurSeuil!==null){go();return}
+      Promise.resolve(c.rpc('jeu_honneur_liste')).then(function(r){honneurSeuil=(r&&r.data&&Number(r.data.seuil))||30;go()}).catch(function(){});
+    }catch(_e){}
+  });
   function mountHtmlGame(wrap,html,label){
+    honneurLabel=String(label||'').slice(0,24);html=honneurInject(html);
     wrap.innerHTML='';releaseFrameObjectUrl();
     var frame=document.createElement('iframe');frame.className='nx-adams-game-frame';frame.setAttribute('data-nx-adams-game-frame','');frame.setAttribute('title',safeText(label||'Jeu Adams'));frame.setAttribute('allow','autoplay; fullscreen; clipboard-write');frame.setAttribute('allowfullscreen','');frame.setAttribute('referrerpolicy','no-referrer');
     wrap.appendChild(frame);state.frame=frame;state.frameReady=false;
