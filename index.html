@@ -24619,17 +24619,17 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     var ref=$('.account-email-field',m);if(!ref||!ref.parentNode)return;
     var b=document.createElement('div');b.id='nxTelBlockV713';
     b.innerHTML='<div class="field"><label class="label" for="nxTelV713">Numéro de téléphone *</label><input class="input" id="nxTelV713" type="tel" inputmode="tel" enterkeyhint="next" autocomplete="tel" placeholder="Ex : 620 00 00 00"/></div>'
-      +'<div class="field"><label class="label" for="nxPinV713">Code secret à 4 chiffres *</label><div id="nxPinWrapV714"><input class="input nx-pin-v713" id="nxPinV713" type="password" inputmode="numeric" enterkeyhint="go" maxlength="4" autocomplete="off" placeholder="••••"/><button type="button" class="nx-pin-eye-v714" id="nxPinEyeV714">Afficher</button></div>'
-      +'<div class="nx-pin2-v715"><label class="label" for="nxPin2V715" style="margin-top:10px;display:block">Confirmez le code secret *</label><input class="input nx-pin-v713" id="nxPin2V715" type="password" inputmode="numeric" enterkeyhint="go" maxlength="4" autocomplete="off" placeholder="••••"/></div>'
-      +'<small class="nx-pin-help-create-v713">Tapez le même code deux fois. Choisissez 4 chiffres faciles à retenir : ils vous permettront de vous reconnecter.</small>'
+      +'<div class="field"><label class="label" for="nxPinV713">Code secret *</label><div id="nxPinWrapV714"><input class="input nx-pin-v713" id="nxPinV713" type="password" inputmode="numeric" enterkeyhint="go" maxlength="6" autocomplete="off" placeholder="••••••"/><button type="button" class="nx-pin-eye-v714" id="nxPinEyeV714">Afficher</button></div>'
+      +'<div class="nx-pin2-v715"><label class="label" for="nxPin2V715" style="margin-top:10px;display:block">Confirmez le code secret *</label><input class="input nx-pin-v713" id="nxPin2V715" type="password" inputmode="numeric" enterkeyhint="go" maxlength="6" autocomplete="off" placeholder="••••••"/></div>'
+      +'<small class="nx-pin-help-create-v713">Tapez le même code deux fois. Choisissez 6 chiffres faciles à retenir (évitez 123456 ou votre date de naissance) : ils vous permettront de vous reconnecter.</small>'
       +'<small class="nx-pin-help-login-v713">Code oublié ? <button type="button" class="nx-link-v716" id="nxForgotV716" style="background:none;border:0;padding:0;color:inherit;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer">Retrouver mon compte</button></small></div>'
       +'<p id="nxTelErrV713" role="alert"></p>';
     ref.parentNode.insertBefore(b,ref);
     var l=document.createElement('button');l.type='button';l.className='nx-mode-link-v713';l.id='nxModeLinkV713';l.textContent='J’ai un compte créé avec un email';
     ref.parentNode.insertBefore(l,ref.nextSibling);
     var nom=$('#nxAccountNameV379');if(nom){var lb=$('label[for="nxAccountNameV379"]');if(lb)lb.textContent='Prénom et nom *'}
-    var pin=$('#nxPinV713'),pin2=$('#nxPin2V715');pin.addEventListener('input',function(){pin.value=pin.value.replace(/\D/g,'').slice(0,4);erreur('')});
-    pin2.addEventListener('input',function(){pin2.value=pin2.value.replace(/\D/g,'').slice(0,4);erreur('');if(pin2.value.length===4)pin2.blur()});
+    var pin=$('#nxPinV713'),pin2=$('#nxPin2V715');pin.addEventListener('input',function(){pin.value=pin.value.replace(/\D/g,'').slice(0,6);erreur('')});
+    pin2.addEventListener('input',function(){pin2.value=pin2.value.replace(/\D/g,'').slice(0,6);erreur('');if(pin2.value.length===6)pin2.blur()});
     $('#nxTelV713').addEventListener('input',function(){erreur('')});
     var eye=$('#nxPinEyeV714');if(eye)eye.addEventListener('click',function(){var h=pin.type==='password';pin.type=h?'text':'password';pin2.type=pin.type;eye.textContent=h?'Masquer':'Afficher'});
     if(nom)nom.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();$('#nxTelV713').focus()}});
@@ -24642,7 +24642,8 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     var tel=$('#nxTelV713'),pin=$('#nxPinV713');if(!tel||!pin)return 'Formulaire indisponible.';
     var d=chiffres(tel.value);
     if(d.length<8||d.length>15)return 'Entrez un numéro de téléphone valide.';
-    if(!/^\d{4}$/.test(pin.value))return 'Le code secret doit avoir exactement 4 chiffres.';
+    if(mode()==='create'?!/^\d{6}$/.test(pin.value):!/^(\d{4}|\d{6})$/.test(pin.value))return mode()==='create'?'Le code secret doit avoir exactement 6 chiffres.':'Le code secret doit avoir 4 ou 6 chiffres.';
+    if(mode()==='create'&&/^(\d)\1{5}$|^123456$|^654321$|^012345$/.test(pin.value))return 'Ce code est trop facile à deviner. Choisissez-en un autre.';
     if(mode()==='create'){var p2=$('#nxPin2V715');if(!p2||p2.value!==pin.value)return 'Les deux codes ne sont pas identiques. Retapez-les.'}
     var em=$('[data-auth-email]'),pw=$('[data-auth-password]'),ph=$('[data-account-phone]');
     if(em)em.value='p'+d+'@'+DOM;
@@ -24704,7 +24705,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   /* ---- A. Code de récupération juste après la création ---- */
   function afficherCode(token){
     var code=genCode();
-    var o=ov('<h2>🔐 Votre code de récupération</h2><p>Si vous oubliez votre code à 4 chiffres, ce code vous permettra de retrouver votre compte. <b>Notez-le ou prenez une capture d’écran maintenant.</b> Il ne sera plus affiché.</p><div class="nx-code-v716" id="nxRcV716">…</div><button type="button" class="nx-btn-v716 nx-btn2-v716" id="nxRcCopyV716" disabled>Copier le code</button><label class="nx-chk-v716"><input type="checkbox" id="nxRcChkV716" disabled/> <span>J’ai noté mon code de récupération</span></label><p class="nx-err-v716" id="nxRcErrV716" role="alert"></p><button type="button" class="nx-btn-v716" id="nxRcOkV716" disabled>Continuer</button>');
+    var o=ov('<h2>🔐 Votre code de récupération</h2><p>Si vous oubliez votre code secret, ce code vous permettra de retrouver votre compte. <b>Notez-le ou prenez une capture d’écran maintenant.</b> Il ne sera plus affiché.</p><div class="nx-code-v716" id="nxRcV716">…</div><button type="button" class="nx-btn-v716 nx-btn2-v716" id="nxRcCopyV716" disabled>Copier le code</button><label class="nx-chk-v716"><input type="checkbox" id="nxRcChkV716" disabled/> <span>J’ai noté mon code de récupération</span></label><p class="nx-err-v716" id="nxRcErrV716" role="alert"></p><button type="button" class="nx-btn-v716" id="nxRcOkV716" disabled>Continuer</button>');
     var box=$('#nxRcV716',o),chk=$('#nxRcChkV716',o),ok=$('#nxRcOkV716',o),cp=$('#nxRcCopyV716',o),er=$('#nxRcErrV716',o);
     function enreg(){
       er.style.display='none';box.textContent='…';
@@ -24724,22 +24725,22 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   /* ---- B. Retrouver son compte avec le code de récupération ---- */
   function retrouver(){
     var tel0=($('#nxTelV713')||{}).value||'';
-    var o=ov('<h2>Retrouver mon compte</h2><p>Entrez votre numéro, le code de récupération reçu à l’inscription, puis choisissez un nouveau code à 4 chiffres.</p>'
+    var o=ov('<h2>Retrouver mon compte</h2><p>Entrez votre numéro, le code de récupération reçu à l’inscription, puis choisissez un nouveau code à 6 chiffres.</p>'
       +'<div class="field"><label class="label" for="nxRtTelV716">Numéro de téléphone</label><input class="input" id="nxRtTelV716" type="tel" inputmode="tel" autocomplete="tel"/></div>'
       +'<div class="field"><label class="label" for="nxRtCodeV716">Code de récupération</label><input class="input" id="nxRtCodeV716" type="text" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX" style="text-transform:uppercase;letter-spacing:.1em"/></div>'
-      +'<div class="field"><label class="label" for="nxRtPinV716">Nouveau code à 4 chiffres</label><input class="input" id="nxRtPinV716" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"/></div>'
-      +'<div class="field"><label class="label" for="nxRtPin2V716">Confirmez le nouveau code</label><input class="input" id="nxRtPin2V716" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"/></div>'
+      +'<div class="field"><label class="label" for="nxRtPinV716">Nouveau code à 6 chiffres</label><input class="input" id="nxRtPinV716" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••"/></div>'
+      +'<div class="field"><label class="label" for="nxRtPin2V716">Confirmez le nouveau code</label><input class="input" id="nxRtPin2V716" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••"/></div>'
       +'<p class="nx-err-v716" id="nxRtErrV716" role="alert"></p><button type="button" class="nx-btn-v716" id="nxRtOkV716">Retrouver mon compte</button><button type="button" class="nx-btn-v716 nx-btn2-v716" id="nxRtNoV716">Annuler</button>'
       +'<p style="margin-top:12px;font-size:13px">Pas de code de récupération ? <a href="https://wa.me/224620417383" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>.</p>');
     var tel=$('#nxRtTelV716',o),code=$('#nxRtCodeV716',o),p1=$('#nxRtPinV716',o),p2=$('#nxRtPin2V716',o),er=$('#nxRtErrV716',o),ok=$('#nxRtOkV716',o);
     tel.value=tel0;
-    [p1,p2].forEach(function(i){i.addEventListener('input',function(){i.value=i.value.replace(/\D/g,'').slice(0,4);er.style.display='none'})});
+    [p1,p2].forEach(function(i){i.addEventListener('input',function(){i.value=i.value.replace(/\D/g,'').slice(0,6);er.style.display='none'})});
     function err(t){er.textContent=t;er.style.display='block'}
     $('#nxRtNoV716',o).onclick=function(){o.remove()};
     ok.onclick=function(){
       if(tel.value.replace(/\D/g,'').length<8)return err('Entrez votre numéro de téléphone.');
       if(code.value.replace(/[^A-Za-z0-9]/g,'').length<8)return err('Entrez le code de récupération (8 caractères).');
-      if(!/^\d{4}$/.test(p1.value))return err('Le nouveau code doit avoir 4 chiffres.');
+      if(!/^\d{6}$/.test(p1.value)||/^(\d)\1{5}$|^123456$/.test(p1.value))return err('Le nouveau code doit avoir 6 chiffres, pas trop faciles.');
       if(p1.value!==p2.value)return err('Les deux codes ne sont pas identiques.');
       ok.disabled=true;ok.textContent='Vérification…';
       rpc('nexora_recuperer_code',{p_telephone:tel.value,p_code:code.value,p_nouveau_pin:p1.value}).then(function(r){
@@ -24864,7 +24865,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function progres(){
     var nom=$('#nxAccountNameV379'),tel=$('#nxTelV713'),p=$('#nxPinV713'),p2=$('#nxPin2V715');if(!nom||!tel||!p||!p2)return;
     var d=tel.value.replace(/\D/g,'');
-    var ok=[nom.value.trim().length>=3,d.length>=8&&d.length<=15,/^\d{4}$/.test(p.value),/^\d{4}$/.test(p2.value)&&p2.value===p.value];
+    var ok=[nom.value.trim().length>=3,d.length>=8&&d.length<=15,/^\d{6}$/.test(p.value),/^\d{6}$/.test(p2.value)&&p2.value===p.value];
     var is=document.querySelectorAll('.nx-prog-bar-v717 i');ok.forEach(function(v,i){if(is[i])is[i].classList.toggle('on',v)});
     [[nom,0],[tel,1],[p,2],[p2,3]].forEach(function(a){var f=a[0].closest('.field');if(f)f.classList.toggle('nx-ok-v717',ok[a[1]])});
     var r=ok.filter(function(v){return !v}).length,t=$('#nxProgTxtV717');

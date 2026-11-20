@@ -147,8 +147,8 @@ button{font:inherit;cursor:pointer}
     <form id="jaPhoneForm" novalidate autocomplete="on">
       <label class="ja-field" id="jaFNom"><span>Prénom et nom</span><input id="jaNom" type="text" autocomplete="name" enterkeyhint="next" maxlength="60" placeholder="Ex : Mariama Diallo"><em class="ja-err">Entre ton prénom et ton nom.</em></label>
       <label class="ja-field" id="jaFTel"><span>Numéro de téléphone</span><div class="ja-tel"><i>+224</i><input id="jaTel" type="tel" inputmode="tel" autocomplete="tel-national" enterkeyhint="next" placeholder="620 00 00 00"></div><em class="ja-err">Entre un numéro valide (9 chiffres).</em></label>
-      <label class="ja-field" id="jaFPin"><span id="jaPinLbl">Code secret (4 chiffres)</span><div class="ja-pinrow"><input id="jaPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="go" placeholder="••••"><button type="button" class="ja-eye" id="jaEye">Voir</button></div><em class="ja-err">Le code secret doit avoir exactement 4 chiffres.</em><small class="ja-hint" id="jaPinHint" style="background:#FFF6DF;border:1px solid #F1D48B;border-radius:10px;padding:9px 11px;color:#7A5200;font-weight:700">⚠️ Retiens bien ton code secret ! Sans lui, tu ne pourras pas te reconnecter. Note-le ou prends-le en capture.</small></label>
-      <label class="ja-field" id="jaFPin2"><span>Retape ton code secret</span><div class="ja-pinrow"><input id="jaPin2" type="password" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="go" placeholder="••••"></div><em class="ja-err">Les deux codes ne sont pas identiques.</em></label>
+      <label class="ja-field" id="jaFPin"><span id="jaPinLbl">Code secret</span><div class="ja-pinrow"><input id="jaPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" enterkeyhint="go" placeholder="••••••"><button type="button" class="ja-eye" id="jaEye">Voir</button></div><em class="ja-err">Le code secret doit avoir 6 chiffres (4 pour les anciens comptes).</em><small class="ja-hint" id="jaPinHint" style="background:#FFF6DF;border:1px solid #F1D48B;border-radius:10px;padding:9px 11px;color:#7A5200;font-weight:700">⚠️ Retiens bien ton code secret ! Sans lui, tu ne pourras pas te reconnecter. Note-le ou prends-le en capture.</small></label>
+      <label class="ja-field" id="jaFPin2"><span>Retape ton code secret</span><div class="ja-pinrow"><input id="jaPin2" type="password" inputmode="numeric" maxlength="6" autocomplete="off" enterkeyhint="go" placeholder="••••••"></div><em class="ja-err">Les deux codes ne sont pas identiques.</em></label>
       <label class="ja-chk" id="jaFCgu"><input type="checkbox" id="jaCgu"><span>J’accepte les conditions d’utilisation et la politique de confidentialité.</span></label>
       <button class="ja-cta gold ja-big" id="jaPhoneGo" type="submit">Me connecter</button>
     </form>
@@ -321,7 +321,7 @@ button{font:inherit;cursor:pointer}
     $('#jaTabIn').setAttribute('aria-selected',String(!modeCreation));$('#jaTabUp').setAttribute('aria-selected',String(modeCreation));
     ['#jaFNom','#jaFPin2','#jaFCgu'].forEach(function(id){$(id).style.display=modeCreation?'':'none'});
     $('#jaPinHint').style.display=modeCreation?'':'none';
-    $('#jaPinLbl').textContent=modeCreation?'Choisis ton code secret (4 chiffres)':'Ton code secret (4 chiffres)';
+    $('#jaPinLbl').textContent=modeCreation?'Choisis ton code secret (6 chiffres)':'Ton code secret (6 chiffres, ou 4 si compte ancien)';
     $('#jaPhoneGo').textContent=modeCreation?'Créer mon compte':'Me connecter';
     $('#jaPin').setAttribute('autocomplete',modeCreation?'new-password':'current-password');
     ['#jaFNom','#jaFTel','#jaFPin','#jaFPin2'].forEach(function(id){marquer(id,false)});
@@ -332,7 +332,7 @@ button{font:inherit;cursor:pointer}
   $('#jaTabUp').onclick=function(){modeCreation=true;modeMail=false;majMode()};
   $('#jaMailMode').onclick=function(){modeMail=!modeMail;majMode()};
   $('#jaEye').onclick=function(){var h=$('#jaPin').type==='password';$('#jaPin').type=h?'text':'password';$('#jaPin2').type=$('#jaPin').type;$('#jaEye').textContent=h?'Cacher':'Voir'};
-  ['#jaPin','#jaPin2'].forEach(function(id){$(id).addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,4);msg('');if(id==='#jaPin2'&&this.value.length===4)this.blur()})});
+  ['#jaPin','#jaPin2'].forEach(function(id){$(id).addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,6);msg('');if(id==='#jaPin2'&&this.value.length===6)this.blur()})});
   $('#jaTel').addEventListener('input',function(){this.value=this.value.replace(/[^\d +]/g,'');msg('');marquer('#jaFTel',false)});
   $('#jaNom').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#jaTel').focus()}});
   $('#jaTel').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#jaPin').focus()}});
@@ -352,7 +352,7 @@ button{font:inherit;cursor:pointer}
     var ok=true;
     if(modeCreation)ok=marquer('#jaFNom',nom.length<2)&&ok;
     msg('');ok=marquer('#jaFTel',!telOk(tel))&&ok;
-    ok=marquer('#jaFPin',!/^\d{4}$/.test(pin))&&ok;
+    ok=marquer('#jaFPin',modeCreation?(!/^\d{6}$/.test(pin)||/^(\d)\1{5}$|^123456$|^654321$|^012345$/.test(pin)):!/^(\d{4}|\d{6})$/.test(pin))&&ok;
     if(modeCreation){ok=marquer('#jaFPin2',pin2!==pin)&&ok;if(!$('#jaCgu').checked){msg('Coche la case pour accepter les conditions.','err');ok=false}}
     if(!ok){var f=document.querySelector('.ja-field.bad input');if(f)f.focus();return}
     var d=chiffres(tel),email='p'+d+'@'+DOMTEL,pass='Nx'+pin+'-'+d;
