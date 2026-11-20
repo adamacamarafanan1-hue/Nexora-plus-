@@ -96,7 +96,7 @@ button{font:inherit;cursor:pointer}
     <span style="flex:1;min-width:0;font-weight:800;font-size:16px;line-height:1.25">Continue d’apprendre sur Nexora<small style="display:block;font-weight:500;font-size:13px;color:#5A6482;margin-top:2px">Cours de la maternelle à la Terminale, Brevet, BAC et évaluations corrigées. Même compte que Jeu Adams.</small></span>
     <span style="flex:none;font-weight:900;font-size:20px" aria-hidden="true">→</span>
   </a>
-  <p class="ja-foot">Jeu Adams — certifié INRAP, créé en 2010. <button type="button" class="ja-link" id="jaInstall" hidden>Installer l’application</button></p>
+  <p class="ja-foot">Jeu Adams — certifié INRAP, créé en 2010. <span id="jaVer" style="opacity:.6"></span> <button type="button" class="ja-link" id="jaInstall" hidden>Installer l’application</button></p>
 </main>
 
 <!-- Connexion / inscription -->
@@ -451,6 +451,9 @@ button{font:inherit;cursor:pointer}
   sb.auth.onAuthStateChange(function(){setTimeout(charger,0)});
   charger();
 })();
+</script>
+<script>
+(function(){try{fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(v){var e=document.getElementById('jaVer');if(e&&v&&v.version)e.textContent='· '+v.version}).catch(function(){})}catch(e){}})();
 </script>
 </body>
 </html>
