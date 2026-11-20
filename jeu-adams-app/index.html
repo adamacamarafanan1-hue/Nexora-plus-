@@ -259,10 +259,32 @@ button{font:inherit;cursor:pointer}
 
   function dateLisible(v){try{var d=new Date(v);return d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}catch(e){return ''}}
 
+
+  function changerCode(){
+    var m=String((etat.user&&etat.user.email)||'').match(/^p(\d+)@tel\./);if(!m)return;
+    var d=m[1],o=document.createElement('div');
+    o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(10,20,35,.72);display:flex;align-items:center;justify-content:center;padding:16px';
+    o.innerHTML='<div style="background:#fff;color:#16243a;border-radius:16px;padding:20px 18px;max-width:360px;width:100%;font-family:inherit"><h2 style="margin:0 0 6px;font-size:19px">Changer mon code secret</h2><p style="margin:0 0 12px;font-size:14px;line-height:1.5">Choisis un nouveau code à 6 chiffres, plus sûr que l’ancien.</p><input id="jaNP1" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Nouveau code (6 chiffres)" style="width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1.5px solid #c9d2e3;border-radius:10px;margin-bottom:8px"><input id="jaNP2" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Retape le nouveau code" style="width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1.5px solid #c9d2e3;border-radius:10px"><p id="jaNPm" role="alert" style="min-height:18px;margin:8px 0;font-size:13px;color:#b3261e"></p><button type="button" id="jaNPok" style="width:100%;padding:13px;border:0;border-radius:12px;background:#1E5FA9;color:#fff;font:800 16px inherit;font-family:inherit">Enregistrer</button><button type="button" id="jaNPno" style="width:100%;padding:12px;margin-top:8px;border:1.5px solid #c9d2e3;border-radius:12px;background:transparent;color:inherit;font:700 15px inherit;font-family:inherit">Annuler</button></div>';
+    document.body.appendChild(o);
+    var a=o.querySelector('#jaNP1'),b=o.querySelector('#jaNP2'),ms=o.querySelector('#jaNPm'),ok=o.querySelector('#jaNPok');
+    [a,b].forEach(function(i){i.addEventListener('input',function(){i.value=i.value.replace(/\D/g,'').slice(0,6);ms.textContent=''})});
+    o.querySelector('#jaNPno').onclick=function(){o.remove()};
+    ok.onclick=function(){
+      if(!/^\d{6}$/.test(a.value)||/^(\d)\1{5}$|^123456$|^654321$|^012345$/.test(a.value)){ms.textContent='Choisis 6 chiffres, pas trop faciles à deviner.';return}
+      if(a.value!==b.value){ms.textContent='Les deux codes ne sont pas identiques.';return}
+      ok.disabled=true;ms.style.color='#16243a';ms.textContent='Un instant…';
+      Promise.resolve(sb.auth.updateUser({password:'Nx'+a.value+'-'+d})).then(function(r){
+        ok.disabled=false;
+        if(r&&r.error){ms.style.color='#b3261e';ms.textContent='Changement impossible. Déconnecte-toi, reconnecte-toi puis réessaie.';return}
+        o.remove();window.toast('Code secret changé. Retiens-le bien !');
+      }).catch(function(){ok.disabled=false;ms.style.color='#b3261e';ms.textContent='Pas de connexion Internet.'});
+    };
+  }
   function rendreEntete(){
     var u=$('#jaUser');
     if(etat.user){
-      var pn=String((etat.user.user_metadata&&etat.user.user_metadata.name)||'').split(' ')[0];u.innerHTML=(pn?'<span style="font-weight:800;font-size:14px;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">👋 '+esc(pn)+'</span>':'')+'<button type="button" class="ja-chip" id="jaOut">Déconnexion</button>';
+      var pn=String((etat.user.user_metadata&&etat.user.user_metadata.name)||'').split(' ')[0];u.innerHTML=(pn?'<span style="font-weight:800;font-size:14px;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">👋 '+esc(pn)+'</span>':'')+(/^p\d+@tel\./.test(String(etat.user.email||''))?'<button type="button" class="ja-chip" id="jaCode" title="Changer mon code secret">🔑 Code</button>':'')+'<button type="button" class="ja-chip" id="jaOut">Déconnexion</button>';
+      var bc=$('#jaCode');if(bc)bc.onclick=changerCode;
       $('#jaOut').onclick=function(){sb.auth.signOut().then(function(){etat.user=null;etat.acces=null;rendreEntete();rendreStatut()})};
     }else{
       u.innerHTML='<button type="button" class="ja-chip gold" id="jaIn">Se connecter</button>';
