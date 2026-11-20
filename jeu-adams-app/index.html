@@ -89,12 +89,18 @@ button{font:inherit;cursor:pointer}
     <h1>Le jeu éducatif guinéen, sur ton téléphone</h1>
     <p>18 jeux de plateau, de la maternelle à l’université et au monde professionnel. Chaque bonne réponse fait avancer ton pion.</p>
   </section>
-  <section id="jaHonneur" style="background:#0F1B3D;color:#fff;border-radius:20px;padding:16px;margin:0 0 16px;box-shadow:0 8px 22px rgba(15,27,61,.25)" aria-label="Tableau d’honneur">
-    <h2 style="margin:0 0 4px;font-size:20px">🏆 Tableau d’honneur</h2>
-    <p id="jaHonneurSub" style="margin:0 0 10px;color:#C9D2EE;font-size:14px">Les meilleurs scores de Jeu Adams. Fais un score remarquable et ton nom apparaît ici.</p>
-    <div id="jaHonneurListe"></div>
-  </section>
-  <a href="https://nexora-plus-beta.vercel.app/" rel="noopener" style="display:flex;align-items:center;gap:14px;background:#fff;color:#0F1B3D;text-decoration:none;border:2px solid #D9DEEB;border-radius:18px;padding:14px 16px;margin:0 0 16px"><span style="font-size:30px" aria-hidden="true">📚</span><span style="flex:1;font-weight:800;font-size:17px;line-height:1.2">Nexora : cours, BAC et Brevet<small style="display:block;font-weight:500;font-size:13px;color:#5A6482">Utilise le même compte que Jeu Adams</small></span><span style="background:#0F1B3D;color:#fff;border-radius:999px;padding:10px 16px;font-weight:800">Ouvrir</span></a>
+  <a href="https://nexora-plus-beta.vercel.app/" rel="noopener" style="display:block;background:linear-gradient(135deg,#0F1B3D,#1D2D5E);color:#fff;text-decoration:none;border-radius:20px;padding:18px;margin:0 0 16px;box-shadow:0 8px 22px rgba(15,27,61,.25)">
+    <span style="display:inline-block;background:#F4B63F;color:#0F1B3D;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase">Du jeu au cours</span>
+    <strong style="display:block;font-size:22px;line-height:1.2;margin:10px 0 6px">Continue d’apprendre sur Nexora</strong>
+    <span style="display:block;color:#C9D2EE;font-size:15px;margin-bottom:12px">Tu aimes jouer ? Révise aussi avec les vrais cours.</span>
+    <ul style="margin:0 0 14px;padding:0;list-style:none;font-size:15px;line-height:1.7">
+      <li>📚 Cours de la maternelle à la Terminale</li>
+      <li>🎓 Préparation au Brevet et au BAC</li>
+      <li>📝 Évaluations corrigées automatiquement</li>
+      <li>🔑 Le même compte que Jeu Adams</li>
+    </ul>
+    <span style="display:block;text-align:center;background:#F4B63F;color:#0F1B3D;border-radius:14px;padding:14px;font-weight:900;font-size:17px">Ouvrir Nexora →</span>
+  </a>
   <section class="ja-status" id="jaStatus" aria-live="polite"></section>
   <div id="jaCatalogue"></div>
   <p class="ja-foot">Jeu Adams — certifié INRAP, créé en 2010. <button type="button" class="ja-link" id="jaInstall" hidden>Installer l’application</button></p>
@@ -347,23 +353,6 @@ button{font:inherit;cursor:pointer}
   rendreCatalogue();rendreEntete();rendreStatut();
   sb.auth.onAuthStateChange(function(){setTimeout(charger,0)});
   charger();
-})();
-</script>
-<script>
-(function(){
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function charger(){
-    var c=window.__jaClient;if(!c)return setTimeout(charger,400);
-    Promise.resolve(c.rpc('jeu_honneur_liste')).then(function(r){
-      var box=document.getElementById('jaHonneurListe');if(!box)return;
-      var d=r&&r.data;if(!d){box.innerHTML='';return}
-      var top=d.top||[];
-      if(!top.length){box.innerHTML='<p style="margin:0;font-weight:700">Personne pour l’instant : sois le premier ! Termine une partie avec au moins '+esc(d.seuil)+' points.</p>';return}
-      var med=['🥇','🥈','🥉'];
-      box.innerHTML=top.map(function(x,i){return '<div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-top:1px solid rgba(255,255,255,.12)"><span style="width:30px;text-align:center;font-weight:900">'+(med[i]||(i+1))+'</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800">'+esc(x.pseudo)+'<small style="display:block;font-weight:500;color:#B9C3E4">'+esc(x.jeu)+'</small></span><b style="color:#F4B63F;font-size:18px">'+esc(x.score)+' pts</b></div>'}).join('');
-    }).catch(function(){});
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',charger);else charger();
 })();
 </script>
 </body>
