@@ -89,36 +89,84 @@ button{font:inherit;cursor:pointer}
     <h1>Le jeu éducatif guinéen, sur ton téléphone</h1>
     <p>18 jeux de plateau, de la maternelle à l’université et au monde professionnel. Chaque bonne réponse fait avancer ton pion.</p>
   </section>
-  <a href="https://nexora-plus-beta.vercel.app/" rel="noopener" style="display:block;background:linear-gradient(135deg,#0F1B3D,#1D2D5E);color:#fff;text-decoration:none;border-radius:20px;padding:18px;margin:0 0 16px;box-shadow:0 8px 22px rgba(15,27,61,.25)">
-    <span style="display:inline-block;background:#F4B63F;color:#0F1B3D;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase">Du jeu au cours</span>
-    <strong style="display:block;font-size:22px;line-height:1.2;margin:10px 0 6px">Continue d’apprendre sur Nexora</strong>
-    <span style="display:block;color:#C9D2EE;font-size:15px;margin-bottom:12px">Tu aimes jouer ? Révise aussi avec les vrais cours.</span>
-    <ul style="margin:0 0 14px;padding:0;list-style:none;font-size:15px;line-height:1.7">
-      <li>📚 Cours de la maternelle à la Terminale</li>
-      <li>🎓 Préparation au Brevet et au BAC</li>
-      <li>📝 Évaluations corrigées automatiquement</li>
-      <li>🔑 Le même compte que Jeu Adams</li>
-    </ul>
-    <span style="display:block;text-align:center;background:#F4B63F;color:#0F1B3D;border-radius:14px;padding:14px;font-weight:900;font-size:17px">Ouvrir Nexora →</span>
-  </a>
   <section class="ja-status" id="jaStatus" aria-live="polite"></section>
   <div id="jaCatalogue"></div>
+  <a href="https://nexora-plus-beta.vercel.app/" rel="noopener" style="display:flex;align-items:center;gap:14px;background:#fff;color:#0F1B3D;text-decoration:none;border:1px solid #D9DEEB;border-radius:16px;padding:14px 16px;margin:30px 0 0">
+    <span style="font-size:28px" aria-hidden="true">📚</span>
+    <span style="flex:1;min-width:0;font-weight:800;font-size:16px;line-height:1.25">Continue d’apprendre sur Nexora<small style="display:block;font-weight:500;font-size:13px;color:#5A6482;margin-top:2px">Cours de la maternelle à la Terminale, Brevet, BAC et évaluations corrigées. Même compte que Jeu Adams.</small></span>
+    <span style="flex:none;font-weight:900;font-size:20px" aria-hidden="true">→</span>
+  </a>
   <p class="ja-foot">Jeu Adams — certifié INRAP, créé en 2010. <button type="button" class="ja-link" id="jaInstall" hidden>Installer l’application</button></p>
 </main>
 
-<!-- Connexion -->
+<!-- Connexion / inscription -->
+<style>
+[hidden]{display:none!important}
+.ja-brand{white-space:nowrap}
+.ja-top{gap:8px}.ja-user{min-width:0;flex:1;justify-content:flex-end}
+@media(max-width:430px){.ja-chip{padding:8px 10px;font-size:13px}}
+@media(max-width:430px){.ja-brand small{display:none}}
+.ja-tabs{display:flex;background:#EEF1F8;border-radius:12px;padding:4px;margin:0 0 14px}
+.ja-tabs button{flex:1;border:0;background:none;border-radius:9px;padding:11px 8px;font-weight:800;color:var(--muted);min-height:44px}
+.ja-tabs button.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(15,27,61,.12)}
+.ja-tel{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:#fff;min-height:52px}
+.ja-tel:focus-within{outline:3px solid #B8C6F0;border-color:var(--ink2)}
+.ja-tel i{font-style:normal;font-weight:800;padding:0 4px 0 12px;color:var(--ink2);white-space:nowrap}
+.ja-tel input{border:0!important;outline:0!important;flex:1;min-width:0;padding:12px 12px 12px 6px;font-size:18px;letter-spacing:.02em;background:transparent}
+.ja-pinrow{position:relative}
+.ja-pinrow input{letter-spacing:.6em;text-align:center;font-weight:800;font-size:22px}
+.ja-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:#EEF1F8;border-radius:8px;padding:8px 10px;font-size:13px;font-weight:800;color:var(--ink2)}
+.ja-hint{display:block;font-size:13px;color:var(--muted);margin:5px 0 0;font-weight:500}
+.ja-chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:4px 0 12px;line-height:1.4}
+.ja-chk input{width:22px;height:22px;flex:none;margin-top:1px}
+.ja-err{color:var(--bad);font-size:13.5px;font-weight:700;margin:5px 0 0;display:none}
+.ja-field.bad input,.ja-field.bad .ja-tel{border-color:var(--bad)}
+.ja-field.bad .ja-err{display:block}
+.ja-big{width:100%;min-height:54px;font-size:17px}
+.ja-reco{font:800 28px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;text-align:center;padding:18px 8px;border:2px dashed #2d74c9;border-radius:12px;background:rgba(45,116,201,.08);margin:10px 0 12px;user-select:all}
+</style>
 <div class="ja-sheet" id="jaAuth" role="dialog" aria-modal="true" aria-labelledby="jaAuthT">
   <div class="ja-panel">
     <button type="button" class="ja-x" data-close aria-label="Fermer">×</button>
-    <h2 id="jaAuthT">Connexion</h2>
-    <p class="ja-sub" id="jaAuthS">Utilise ton compte Nexora ou crée un compte Jeu Adams.</p>
-    <form id="jaAuthForm" novalidate>
+    <h2 id="jaAuthT">Bienvenue sur Jeu Adams</h2>
+    <p class="ja-sub" id="jaAuthS">Pas besoin d’e-mail : ton numéro de téléphone et un code secret suffisent.</p>
+    <div class="ja-tabs" role="tablist"><button type="button" id="jaTabIn" role="tab">Me connecter</button><button type="button" id="jaTabUp" role="tab">Créer mon compte</button></div>
+
+    <form id="jaPhoneForm" novalidate autocomplete="on">
+      <label class="ja-field" id="jaFNom"><span>Prénom et nom</span><input id="jaNom" type="text" autocomplete="name" enterkeyhint="next" maxlength="60" placeholder="Ex : Mariama Diallo"><em class="ja-err">Entre ton prénom et ton nom.</em></label>
+      <label class="ja-field" id="jaFTel"><span>Numéro de téléphone</span><div class="ja-tel"><i>+224</i><input id="jaTel" type="tel" inputmode="tel" autocomplete="tel-national" enterkeyhint="next" placeholder="620 00 00 00"></div><em class="ja-err">Entre un numéro valide (9 chiffres).</em></label>
+      <label class="ja-field" id="jaFPin"><span id="jaPinLbl">Code secret (4 chiffres)</span><div class="ja-pinrow"><input id="jaPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="go" placeholder="••••"><button type="button" class="ja-eye" id="jaEye">Voir</button></div><em class="ja-err">Le code secret doit avoir exactement 4 chiffres.</em><small class="ja-hint" id="jaPinHint">Choisis 4 chiffres faciles à retenir.</small></label>
+      <label class="ja-field" id="jaFPin2"><span>Retape ton code secret</span><div class="ja-pinrow"><input id="jaPin2" type="password" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="go" placeholder="••••"></div><em class="ja-err">Les deux codes ne sont pas identiques.</em></label>
+      <label class="ja-chk" id="jaFCgu"><input type="checkbox" id="jaCgu"><span>J’accepte les conditions d’utilisation et la politique de confidentialité.</span></label>
+      <button class="ja-cta gold ja-big" id="jaPhoneGo" type="submit">Me connecter</button>
+    </form>
+    <p class="ja-msg" id="jaAuthMsg" role="alert"></p>
+    <button type="button" class="ja-link" id="jaForgot">Code oublié ? Retrouver mon compte</button><br>
+    <button type="button" class="ja-link" id="jaMailMode" style="font-weight:500">J’ai un compte avec une adresse e-mail</button>
+
+    <form id="jaAuthForm" novalidate hidden>
       <label class="ja-field"><span>Adresse e-mail</span><input id="jaMail" type="email" autocomplete="email" inputmode="email" required></label>
       <label class="ja-field"><span>Mot de passe</span><input id="jaPass" type="password" autocomplete="current-password" minlength="6" required></label>
-      <button class="ja-cta gold" id="jaAuthGo" type="submit" style="width:100%">Se connecter</button>
+      <button class="ja-cta gold ja-big" id="jaAuthGo" type="submit">Se connecter</button>
     </form>
-    <p class="ja-msg" id="jaAuthMsg" role="status"></p>
-    <button type="button" class="ja-link" id="jaAuthSwitch">Pas de compte ? Créer un compte</button>
+
+    <div id="jaReco" hidden>
+      <h2>🔐 Ton code de récupération</h2>
+      <p class="ja-sub">Si tu oublies ton code à 4 chiffres, ce code te permet de retrouver ton compte. <b>Note-le ou fais une capture d’écran maintenant.</b> Il ne sera plus affiché.</p>
+      <div class="ja-reco" id="jaRecoCode">…</div>
+      <label class="ja-chk"><input type="checkbox" id="jaRecoChk" disabled><span>J’ai noté mon code de récupération.</span></label>
+      <button type="button" class="ja-cta gold ja-big" id="jaRecoOk" disabled>Commencer à jouer</button>
+      <p class="ja-msg err" id="jaRecoMsg"></p>
+    </div>
+
+    <form id="jaForgotForm" hidden novalidate>
+      <p class="ja-sub">Entre ton numéro, ton code de récupération (reçu à la création du compte) et choisis un nouveau code secret.</p>
+      <label class="ja-field"><span>Numéro de téléphone</span><div class="ja-tel"><i>+224</i><input id="jaFTel2" type="tel" inputmode="tel" placeholder="620 00 00 00"></div></label>
+      <label class="ja-field"><span>Code de récupération</span><input id="jaFCode" type="text" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX"></label>
+      <label class="ja-field"><span>Nouveau code secret (4 chiffres)</span><div class="ja-pinrow"><input id="jaFPinN" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"></div></label>
+      <button class="ja-cta gold ja-big" type="submit" id="jaForgotGo">Retrouver mon compte</button>
+      <button type="button" class="ja-link" id="jaForgotBack">Retour</button>
+    </form>
   </div>
 </div>
 
@@ -219,19 +267,19 @@ button{font:inherit;cursor:pointer}
   function rendreEntete(){
     var u=$('#jaUser');
     if(etat.user){
-      u.innerHTML='<button type="button" class="ja-chip" id="jaOut">Déconnexion</button>';
+      var pn=String((etat.user.user_metadata&&etat.user.user_metadata.name)||'').split(' ')[0];u.innerHTML=(pn?'<span style="font-weight:800;font-size:14px;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">👋 '+esc(pn)+'</span>':'')+'<button type="button" class="ja-chip" id="jaOut">Déconnexion</button>';
       $('#jaOut').onclick=function(){sb.auth.signOut().then(function(){etat.user=null;etat.acces=null;rendreEntete();rendreStatut()})};
     }else{
       u.innerHTML='<button type="button" class="ja-chip gold" id="jaIn">Se connecter</button>';
-      $('#jaIn').onclick=function(){ouvrirAuth()};
+      $('#jaIn').onclick=function(){ouvrirAuth(false)};
     }
   }
   function rendreStatut(){
     var box=$('#jaStatus'),a=etat.acces;
     if(!etat.user){
       box.className='ja-status';
-      box.innerHTML='<div><b>Jeu Adams Guinée est gratuit</b><span>Connecte-toi pour jouer aux autres jeux.</span></div><button type="button" class="ja-cta gold" id="jaS1">Se connecter</button>';
-      $('#jaS1').onclick=ouvrirAuth;return;
+      box.innerHTML='<div><b>Jeu Adams Guinée est gratuit</b><span>Crée ton compte en 30 secondes avec ton numéro, sans e-mail.</span></div><button type="button" class="ja-cta gold" id="jaS1">Créer mon compte</button>';
+      $('#jaS1').onclick=function(){ouvrirAuth(true)};return;
     }
     if(a&&a.active){
       box.className='ja-status on';
@@ -257,29 +305,129 @@ button{font:inherit;cursor:pointer}
   function fermer(id){$(id).classList.remove('open')}
   document.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest('[data-close]');if(c){var s=c.closest('.ja-sheet');if(s)s.classList.remove('open')}});
 
-  var modeCreation=false;
-  function majAuthTexte(){
-    $('#jaAuthT').textContent=modeCreation?'Créer un compte':'Connexion';
-    $('#jaAuthGo').textContent=modeCreation?'Créer mon compte':'Se connecter';
-    $('#jaAuthSwitch').textContent=modeCreation?'J’ai déjà un compte : me connecter':'Pas de compte ? Créer un compte';
-    $('#jaPass').setAttribute('autocomplete',modeCreation?'new-password':'current-password');
-    $('#jaAuthMsg').textContent='';$('#jaAuthMsg').className='ja-msg';
+  /* ---- Connexion / inscription par téléphone + code secret (comme Nexora : même compte) ---- */
+  var DOMTEL='tel.nexora-plus.com',modeCreation=false,modeMail=false,dernierNom='';
+  function chiffres(t){var d=String(t||'').replace(/\D/g,'');if(d.indexOf('00')===0)d=d.slice(2);if(d.length===9)d='224'+d;return d}
+  function telOk(t){var d=chiffres(t);return d.length>=11&&d.length<=15}
+  function marquer(id,bad){var f=$(id);if(f)f.classList.toggle('bad',!!bad);return !bad}
+  function msg(t,cls){var m=$('#jaAuthMsg');m.className='ja-msg'+(cls?' '+cls:'');m.textContent=t||''}
+  function montrer(sel,on){var e=$(sel);if(e)e.hidden=!on}
+  function vue(v){ /* v : 'tel' | 'mail' | 'reco' | 'oubli' */
+    var tel=v==='tel';
+    montrer('#jaPhoneForm',tel);montrer('#jaAuthForm',v==='mail');montrer('#jaReco',v==='reco');montrer('#jaForgotForm',v==='oubli');
+    montrer('.ja-tabs',tel||v==='mail');montrer('#jaAuthS',tel||v==='mail');
+    $('#jaForgot').style.display=tel&&!modeCreation?'':'none';
+    $('#jaMailMode').style.display=(tel||v==='mail')?'':'none';
+    $('#jaMailMode').textContent=v==='mail'?'Me connecter avec mon numéro':'J’ai un compte avec une adresse e-mail';
+    if(v==='reco'){$('#jaAuthT').textContent='Compte créé !';}
+    else if(v==='oubli'){$('#jaAuthT').textContent='Retrouver mon compte'}
+    else $('#jaAuthT').textContent=modeCreation?'Crée ton compte gratuit':'Content de te revoir';
   }
-  function ouvrirAuth(){modeCreation=false;majAuthTexte();ouvrir('#jaAuth')}
-  $('#jaAuthSwitch').onclick=function(){modeCreation=!modeCreation;majAuthTexte()};
-  $('#jaAuthForm').addEventListener('submit',function(ev){
+  function majMode(){
+    $('#jaTabIn').classList.toggle('on',!modeCreation);$('#jaTabUp').classList.toggle('on',modeCreation);
+    $('#jaTabIn').setAttribute('aria-selected',String(!modeCreation));$('#jaTabUp').setAttribute('aria-selected',String(modeCreation));
+    ['#jaFNom','#jaFPin2','#jaFCgu'].forEach(function(id){$(id).style.display=modeCreation?'':'none'});
+    $('#jaPinHint').style.display=modeCreation?'':'none';
+    $('#jaPinLbl').textContent=modeCreation?'Choisis ton code secret (4 chiffres)':'Ton code secret (4 chiffres)';
+    $('#jaPhoneGo').textContent=modeCreation?'Créer mon compte':'Me connecter';
+    $('#jaPin').setAttribute('autocomplete',modeCreation?'new-password':'current-password');
+    ['#jaFNom','#jaFTel','#jaFPin','#jaFPin2'].forEach(function(id){marquer(id,false)});
+    msg('');vue(modeMail?'mail':'tel');
+  }
+  function ouvrirAuth(creation){modeCreation=creation===true;modeMail=false;majMode();ouvrir('#jaAuth');setTimeout(function(){var f=$(modeCreation?'#jaNom':'#jaTel');if(f)f.focus()},120)}
+  $('#jaTabIn').onclick=function(){modeCreation=false;modeMail=false;majMode()};
+  $('#jaTabUp').onclick=function(){modeCreation=true;modeMail=false;majMode()};
+  $('#jaMailMode').onclick=function(){modeMail=!modeMail;majMode()};
+  $('#jaForgot').onclick=function(){msg('');$('#jaFTel2').value=$('#jaTel').value;vue('oubli')};
+  $('#jaForgotBack').onclick=function(){majMode()};
+  $('#jaEye').onclick=function(){var h=$('#jaPin').type==='password';$('#jaPin').type=h?'text':'password';$('#jaPin2').type=$('#jaPin').type;$('#jaEye').textContent=h?'Cacher':'Voir'};
+  ['#jaPin','#jaPin2','#jaFPinN'].forEach(function(id){$(id).addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,4);msg('');if(id==='#jaPin2'&&this.value.length===4)this.blur()})});
+  $('#jaTel').addEventListener('input',function(){this.value=this.value.replace(/[^\d +]/g,'');msg('');marquer('#jaFTel',false)});
+  $('#jaNom').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#jaTel').focus()}});
+  $('#jaTel').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#jaPin').focus()}});
+  $('#jaPin').addEventListener('keydown',function(e){if(e.key==='Enter'&&modeCreation){e.preventDefault();$('#jaPin2').focus()}});
+
+  function apres(){
+    fermer('#jaAuth');
+    charger().then(function(){
+      var n=(dernierNom||'').split(' ')[0];if(n&&window.toast)window.toast('Bienvenue, '+n+' !');
+      if(window.__jaApres){var f=window.__jaApres;window.__jaApres=null;window.nxRequireSubscriptionAccess('adams',f)}
+    });
+  }
+  function erreurReseau(){var go=$('#jaPhoneGo');go.disabled=false;msg('Pas de connexion Internet. Vérifie ton réseau puis réessaie.','err')}
+  function afficherRecup(token){
+    var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789',b=new Uint8Array(8),code='';
+    (window.crypto||window.msCrypto).getRandomValues(b);
+    for(var i=0;i<8;i++){code+=A.charAt(b[i]%A.length);if(i===3)code+='-'}
+    msg('');vue('reco');var box=$('#jaRecoCode'),chk=$('#jaRecoChk'),ok=$('#jaRecoOk'),er=$('#jaRecoMsg');
+    function enreg(){
+      er.textContent='';box.textContent='…';
+      Promise.resolve(sb.rpc('nexora_enregistrer_recuperation',{p_code:code})).then(function(r){
+        if(r&&r.error)throw r.error;box.textContent=code;chk.disabled=false;
+      }).catch(function(){er.textContent='Impossible d’enregistrer le code pour le moment.';ok.textContent='Réessayer';ok.disabled=false;ok.onclick=function(){ok.textContent='Commencer à jouer';ok.disabled=true;ok.onclick=fin;enreg()}});
+    }
+    function fin(){if(chk.checked)apres()}
+    chk.checked=false;ok.disabled=true;ok.textContent='Commencer à jouer';ok.onclick=fin;
+    chk.onchange=function(){ok.disabled=!chk.checked};
+    enreg();
+  }
+  $('#jaPhoneForm').addEventListener('submit',function(ev){
     ev.preventDefault();
-    var mail=$('#jaMail').value.trim(),pass=$('#jaPass').value,msg=$('#jaAuthMsg'),go=$('#jaAuthGo');
-    if(!/^\S+@\S+\.\S+$/.test(mail)){msg.className='ja-msg err';msg.textContent='Entre une adresse e-mail valide.';return}
-    if(pass.length<6){msg.className='ja-msg err';msg.textContent='Le mot de passe doit avoir au moins 6 caractères.';return}
-    go.disabled=true;msg.className='ja-msg';msg.textContent='Un instant…';
-    var p=modeCreation?sb.auth.signUp({email:mail,password:pass}):sb.auth.signInWithPassword({email:mail,password:pass});
+    var nom=$('#jaNom').value.trim().replace(/\s+/g,' '),tel=$('#jaTel').value,pin=$('#jaPin').value,pin2=$('#jaPin2').value,go=$('#jaPhoneGo');
+    var ok=true;
+    if(modeCreation)ok=marquer('#jaFNom',nom.length<2)&&ok;
+    msg('');ok=marquer('#jaFTel',!telOk(tel))&&ok;
+    ok=marquer('#jaFPin',!/^\d{4}$/.test(pin))&&ok;
+    if(modeCreation){ok=marquer('#jaFPin2',pin2!==pin)&&ok;if(!$('#jaCgu').checked){msg('Coche la case pour accepter les conditions.','err');ok=false}}
+    if(!ok){var f=document.querySelector('.ja-field.bad input');if(f)f.focus();return}
+    var d=chiffres(tel),email='p'+d+'@'+DOMTEL,pass='Nx'+pin+'-'+d;
+    go.disabled=true;msg('Un instant…');dernierNom=nom;
+    var p=modeCreation
+      ?sb.auth.signUp({email:email,password:pass,options:{data:{name:nom,profession:'Joueur Jeu Adams',location:'Guinée',phone:d,contact:d,nexora_account_type:'student',notify_new_posts:false,notify_email:false,notify_sms:false,legal_terms_accepted_at:new Date().toISOString(),legal_terms_version:'NEXORA_LEGAL_PILOT_2026_06_30'}}})
+      :sb.auth.signInWithPassword({email:email,password:pass});
     Promise.resolve(p).then(function(r){
       go.disabled=false;
-      if(r&&r.error){msg.className='ja-msg err';msg.textContent=/invalid login/i.test(r.error.message||'')?'E-mail ou mot de passe incorrect.':(r.error.message||'Connexion impossible.');return}
-      if(modeCreation&&r.data&&!r.data.session){msg.className='ja-msg ok';msg.textContent='Compte créé. Ouvre le message reçu par e-mail pour le confirmer, puis connecte-toi.';return}
-      fermer('#jaAuth');charger().then(function(){if(window.__jaApres){var f=window.__jaApres;window.__jaApres=null;window.nxRequireSubscriptionAccess('adams',f)}});
-    }).catch(function(){go.disabled=false;msg.className='ja-msg err';msg.textContent='Connexion impossible. Vérifie ton réseau.'});
+      if(r&&r.error){
+        var m=String(r.error.message||'');
+        if(/already|registered|exists/i.test(m)){modeCreation=false;majMode();$('#jaTel').value=tel;msg('Ce numéro a déjà un compte. Entre ton code secret pour te connecter.','err');$('#jaPin').focus();return}
+        if(/invalid login|credentials/i.test(m)){msg('Numéro ou code secret incorrect.','err');marquer('#jaFPin',true);$('#jaForgot').style.display='';return}
+        if(/rate|too many|limit/i.test(m)){msg('Trop d’essais. Attends quelques minutes puis réessaie.','err');return}
+        msg('Connexion impossible pour le moment. Réessaie.','err');return;
+      }
+      if(modeCreation){
+        if(r.data&&r.data.session){afficherRecup(r.data.session.access_token);return}
+        msg('Compte créé. Connecte-toi avec ton numéro et ton code secret.','ok');modeCreation=false;majMode();return;
+      }
+      var meta=(r.data&&r.data.user&&r.data.user.user_metadata)||{};dernierNom=meta.name||dernierNom;apres();
+    }).catch(erreurReseau);
+  });
+
+  $('#jaForgotForm').addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var tel=$('#jaFTel2').value,code=$('#jaFCode').value.trim().toUpperCase(),pin=$('#jaFPinN').value,go=$('#jaForgotGo');
+    if(!telOk(tel)){msg('Entre ton numéro de téléphone.','err');return}
+    if(code.length<8){msg('Entre ton code de récupération (8 caractères).','err');return}
+    if(!/^\d{4}$/.test(pin)){msg('Le nouveau code secret doit avoir 4 chiffres.','err');return}
+    go.disabled=true;msg('Un instant…');
+    Promise.resolve(sb.rpc('nexora_recuperer_code',{p_telephone:tel,p_code:code,p_nouveau_pin:pin})).then(function(r){
+      go.disabled=false;var v=r&&r.data;
+      if(v==='ok'){$('#jaTel').value=tel;$('#jaPin').value=pin;modeCreation=false;majMode();msg('Code changé. Connexion…','ok');$('#jaPhoneForm').requestSubmit();return}
+      msg(v==='bloque'?'Trop d’essais. Réessaie dans 1 heure ou écris-nous sur WhatsApp.':'Numéro ou code de récupération incorrect.','err');
+    }).catch(function(){go.disabled=false;msg('Pas de connexion Internet.','err')});
+  });
+
+  /* e-mail (anciens comptes) */
+  $('#jaAuthForm').addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var mail=$('#jaMail').value.trim(),pass=$('#jaPass').value,go=$('#jaAuthGo');
+    if(!/^\S+@\S+\.\S+$/.test(mail)){msg('Entre une adresse e-mail valide.','err');return}
+    if(pass.length<6){msg('Le mot de passe doit avoir au moins 6 caractères.','err');return}
+    go.disabled=true;msg('Un instant…');
+    Promise.resolve(sb.auth.signInWithPassword({email:mail,password:pass})).then(function(r){
+      go.disabled=false;
+      if(r&&r.error){msg(/invalid login/i.test(r.error.message||'')?'E-mail ou mot de passe incorrect.':'Connexion impossible.','err');return}
+      var meta=(r.data&&r.data.user&&r.data.user.user_metadata)||{};dernierNom=meta.name||'';apres();
+    }).catch(function(){go.disabled=false;msg('Pas de connexion Internet.','err')});
   });
 
   function formatTel(t){t=String(t||'').replace(/\D/g,'');return t.replace(/(\d{3})(\d{2})(\d{2})(\d{2})$/,'$1 $2 $3 $4')}
@@ -328,7 +476,7 @@ button{font:inherit;cursor:pointer}
       window.__jaApres=rappel||null;
       return sb.auth.getSession().then(function(r){
         var u=r&&r.data&&r.data.session;
-        if(!u){ouvrirAuth();return false}
+        if(!u){ouvrirAuth(true);return false}
         return sb.rpc('jeuadams_mon_acces').then(function(x){
           etat.acces=x&&x.data||null;rendreStatut();
           if(etat.acces&&etat.acces.active){
