@@ -1501,7 +1501,7 @@
     });
   }
   function openGame(key,label){
-    resetSession(false);state.mode='solo';state.gameKey=canonicalGameKey(key);state.gameTitle=label||titleFromKey(state.gameKey);state.gameInstanceId=randomId();
+    effacerSauvegardes();resetSession(false);state.mode='solo';state.gameKey=canonicalGameKey(key);state.gameTitle=label||titleFromKey(state.gameKey);state.gameInstanceId=randomId();
     var seed=Math.floor(Math.random()*2147483000)+1;
     var activePlayContext=window.__NEXORA_ADAMS_PLAY_CONTEXT||null;
     var individualChallenge=!!(activePlayContext&&String(activePlayContext.type||'')==='individual_challenge');
@@ -1857,7 +1857,7 @@
     var modal=document.querySelector('.nx-adams-game-modal');if(!modal)return;
     var b=modal.querySelector('[data-action="adams-players"]');if(!b)return;
     var k=String(state.gameKey||'').toLowerCase();
-    var ok=!!k&&!/^(maternelle|ecole)$/.test(k)&&!window.__NEXORA_ADAMS_PLAY_CONTEXT&&!state.room&&(state.mode==='solo'||state.mode==='local');
+    var ok=!!k&&!window.__NEXORA_ADAMS_PLAY_CONTEXT&&!state.room&&(state.mode==='solo'||state.mode==='local');
     b.hidden=!ok;
   }
   function openWithPolicy(k,callback){k=String(k||'').toLowerCase();try{var kdo=window.NexoraKDO,access=kdo&&typeof kdo.getAccess==='function'?kdo.getAccess():null,official=kdo&&typeof kdo.getOfficialGame==='function'?kdo.getOfficialGame():null;if(access&&access.can_play&&official&&String(official.key||'').toLowerCase()===k){if(typeof callback==='function')callback();return true}}catch(_kdoAccessError){window.nxLog&&window.nxLog(_kdoAccessError)}if(k==='guinee'){if(typeof callback==='function')callback();return true;}if(typeof window.nxRequireSubscriptionAccess==='function')return window.nxRequireSubscriptionAccess('adams',callback);return false;}
