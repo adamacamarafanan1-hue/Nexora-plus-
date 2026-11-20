@@ -914,6 +914,7 @@
           try{window.launchGame(key)}catch(_launchError){window.nxLog&&window.nxLog(_launchError)}
         }else if(screenId&&typeof window.showScreen==='function')window.showScreen(screenId);
 
+        if(ctx.showSetup){var mn=document.getElementById('menu');if(mn){mn.classList.remove('active');mn.style.display='none'}window.scrollTo(0,0);document.addEventListener('click',function(){[150,500,1200,2500].forEach(function(t){setTimeout(fitBoard,t)})},true);setInterval(fitBoard,1500);parentPost('nx-adams-ready',{multiplayer:false});return}
         var selectFn=window[pfx+'SelectCount'],startFn=window[pfx+'StartGame'],gameObj=window[pfx+'Game'];
         if(typeof selectFn==='function')selectFn(count);
         else if(gameObj&&typeof gameObj.selectCount==='function')gameObj.selectCount(count);
@@ -1264,6 +1265,7 @@
       'body{box-sizing:border-box!important}'+
       '.wrap,.container,.layout,.boardbox,.game-container,.game-screen,.screen,.screen.active{min-width:0!important;max-width:100%!important}'+
       '.boardbox,.game-board-wrap,.plateau-wrap{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch}'+
+      '.back-btn,.comp-back,.ed-back{display:none!important}'+
       'canvas,svg,img,video{max-width:100%}'+
       '</style>';
     if(html.indexOf('nx-adams-viewport-fit-v133')<0){
@@ -1802,8 +1804,16 @@
     var seed=Math.floor(Math.random()*2147483000)+1;
     return launchGameSource(state.gameKey,state.gameTitle,{multiplayer:false,playMode:'local',autoStart:true,playerCount:n,playerNames:names,seed:seed,gameInstanceId:state.gameInstanceId});
   }
+  function openSetupGame(key,label){
+    resetSession(false);state.mode='local';state.gameKey=canonicalGameKey(key);state.gameTitle=label||titleFromKey(state.gameKey);state.gameInstanceId=randomId();
+    var seed=Math.floor(Math.random()*2147483000)+1;
+    return launchGameSource(state.gameKey,state.gameTitle,{multiplayer:false,playMode:'local',showSetup:true,autoStart:true,seed:seed,gameInstanceId:state.gameInstanceId});
+  }
   function choisirJoueurs(key,label,callback){
-    if(window.__NEXORA_ADAMS_PLAY_CONTEXT||/^(maternelle|ecole)$/.test(String(key||'').toLowerCase()))return callback(1);
+    var k0=String(key||'').toLowerCase();
+    if(window.__NEXORA_ADAMS_PLAY_CONTEXT||/^(maternelle|ecole)$/.test(k0))return callback(1);
+    /* Jeux dont le moteur a son propre écran « Nombre de joueurs » (Solo, 2, 3, 4 + prénoms) : on l'affiche. */
+    if(/^(preuniv|univ|pro|sport|guinee|sante|musique|art|histoire)$/.test(k0))return openSetupGame(key,label);
     var vieux=document.getElementById('nxNbJoueurs');if(vieux)vieux.remove();
     var d=document.createElement('div');d.id='nxNbJoueurs';
     d.style.cssText='position:fixed;inset:0;z-index:2147483630;background:rgba(15,27,61,.85);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,sans-serif';

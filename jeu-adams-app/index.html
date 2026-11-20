@@ -135,13 +135,13 @@ button{font:inherit;cursor:pointer}
     <form id="jaPhoneForm" novalidate autocomplete="on">
       <label class="ja-field" id="jaFNom"><span>Prénom et nom</span><input id="jaNom" type="text" autocomplete="name" enterkeyhint="next" maxlength="60" placeholder="Ex : Mariama Diallo"><em class="ja-err">Entre ton prénom et ton nom.</em></label>
       <label class="ja-field" id="jaFTel"><span>Numéro de téléphone</span><div class="ja-tel"><i>+224</i><input id="jaTel" type="tel" inputmode="tel" autocomplete="tel-national" enterkeyhint="next" placeholder="620 00 00 00"></div><em class="ja-err">Entre un numéro valide (9 chiffres).</em></label>
-      <label class="ja-field" id="jaFPin"><span id="jaPinLbl">Code secret (4 chiffres)</span><div class="ja-pinrow"><input id="jaPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="go" placeholder="••••"><button type="button" class="ja-eye" id="jaEye">Voir</button></div><em class="ja-err">Le code secret doit avoir exactement 4 chiffres.</em><small class="ja-hint" id="jaPinHint">Choisis 4 chiffres faciles à retenir.</small></label>
+      <label class="ja-field" id="jaFPin"><span id="jaPinLbl">Code secret (4 chiffres)</span><div class="ja-pinrow"><input id="jaPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="go" placeholder="••••"><button type="button" class="ja-eye" id="jaEye">Voir</button></div><em class="ja-err">Le code secret doit avoir exactement 4 chiffres.</em><small class="ja-hint" id="jaPinHint" style="background:#FFF6DF;border:1px solid #F1D48B;border-radius:10px;padding:9px 11px;color:#7A5200;font-weight:700">⚠️ Retiens bien ton code secret ! Sans lui, tu ne pourras pas te reconnecter. Note-le ou prends-le en capture.</small></label>
       <label class="ja-field" id="jaFPin2"><span>Retape ton code secret</span><div class="ja-pinrow"><input id="jaPin2" type="password" inputmode="numeric" maxlength="4" autocomplete="off" enterkeyhint="go" placeholder="••••"></div><em class="ja-err">Les deux codes ne sont pas identiques.</em></label>
       <label class="ja-chk" id="jaFCgu"><input type="checkbox" id="jaCgu"><span>J’accepte les conditions d’utilisation et la politique de confidentialité.</span></label>
       <button class="ja-cta gold ja-big" id="jaPhoneGo" type="submit">Me connecter</button>
     </form>
     <p class="ja-msg" id="jaAuthMsg" role="alert"></p>
-    <button type="button" class="ja-link" id="jaForgot">Code oublié ? Retrouver mon compte</button><br>
+    <a class="ja-link" id="jaForgot" target="_blank" rel="noopener" href="https://wa.me/224620417383?text=Bonjour%2C%20j%E2%80%99ai%20oubli%C3%A9%20mon%20code%20secret%20Jeu%20Adams.%20Mon%20num%C3%A9ro%20%3A%20" style="display:inline-block">Code oublié ? Écris-nous sur WhatsApp</a><br>
     <button type="button" class="ja-link" id="jaMailMode" style="font-weight:500">J’ai un compte avec une adresse e-mail</button>
 
     <form id="jaAuthForm" novalidate hidden>
@@ -150,23 +150,6 @@ button{font:inherit;cursor:pointer}
       <button class="ja-cta gold ja-big" id="jaAuthGo" type="submit">Se connecter</button>
     </form>
 
-    <div id="jaReco" hidden>
-      <h2>🔐 Ton code de récupération</h2>
-      <p class="ja-sub">Si tu oublies ton code à 4 chiffres, ce code te permet de retrouver ton compte. <b>Note-le ou fais une capture d’écran maintenant.</b> Il ne sera plus affiché.</p>
-      <div class="ja-reco" id="jaRecoCode">…</div>
-      <label class="ja-chk"><input type="checkbox" id="jaRecoChk" disabled><span>J’ai noté mon code de récupération.</span></label>
-      <button type="button" class="ja-cta gold ja-big" id="jaRecoOk" disabled>Commencer à jouer</button>
-      <p class="ja-msg err" id="jaRecoMsg"></p>
-    </div>
-
-    <form id="jaForgotForm" hidden novalidate>
-      <p class="ja-sub">Entre ton numéro, ton code de récupération (reçu à la création du compte) et choisis un nouveau code secret.</p>
-      <label class="ja-field"><span>Numéro de téléphone</span><div class="ja-tel"><i>+224</i><input id="jaFTel2" type="tel" inputmode="tel" placeholder="620 00 00 00"></div></label>
-      <label class="ja-field"><span>Code de récupération</span><input id="jaFCode" type="text" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX"></label>
-      <label class="ja-field"><span>Nouveau code secret (4 chiffres)</span><div class="ja-pinrow"><input id="jaFPinN" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"></div></label>
-      <button class="ja-cta gold ja-big" type="submit" id="jaForgotGo">Retrouver mon compte</button>
-      <button type="button" class="ja-link" id="jaForgotBack">Retour</button>
-    </form>
   </div>
 </div>
 
@@ -314,14 +297,12 @@ button{font:inherit;cursor:pointer}
   function montrer(sel,on){var e=$(sel);if(e)e.hidden=!on}
   function vue(v){ /* v : 'tel' | 'mail' | 'reco' | 'oubli' */
     var tel=v==='tel';
-    montrer('#jaPhoneForm',tel);montrer('#jaAuthForm',v==='mail');montrer('#jaReco',v==='reco');montrer('#jaForgotForm',v==='oubli');
+    montrer('#jaPhoneForm',tel);montrer('#jaAuthForm',v==='mail');
     montrer('.ja-tabs',tel||v==='mail');montrer('#jaAuthS',tel||v==='mail');
-    $('#jaForgot').style.display=tel&&!modeCreation?'':'none';
+    $('#jaForgot').style.display=tel&&!modeCreation?'inline-block':'none';
     $('#jaMailMode').style.display=(tel||v==='mail')?'':'none';
     $('#jaMailMode').textContent=v==='mail'?'Me connecter avec mon numéro':'J’ai un compte avec une adresse e-mail';
-    if(v==='reco'){$('#jaAuthT').textContent='Compte créé !';}
-    else if(v==='oubli'){$('#jaAuthT').textContent='Retrouver mon compte'}
-    else $('#jaAuthT').textContent=modeCreation?'Crée ton compte gratuit':'Content de te revoir';
+    $('#jaAuthT').textContent=modeCreation?'Crée ton compte gratuit':'Content de te revoir';
   }
   function majMode(){
     $('#jaTabIn').classList.toggle('on',!modeCreation);$('#jaTabUp').classList.toggle('on',modeCreation);
@@ -338,10 +319,8 @@ button{font:inherit;cursor:pointer}
   $('#jaTabIn').onclick=function(){modeCreation=false;modeMail=false;majMode()};
   $('#jaTabUp').onclick=function(){modeCreation=true;modeMail=false;majMode()};
   $('#jaMailMode').onclick=function(){modeMail=!modeMail;majMode()};
-  $('#jaForgot').onclick=function(){msg('');$('#jaFTel2').value=$('#jaTel').value;vue('oubli')};
-  $('#jaForgotBack').onclick=function(){majMode()};
   $('#jaEye').onclick=function(){var h=$('#jaPin').type==='password';$('#jaPin').type=h?'text':'password';$('#jaPin2').type=$('#jaPin').type;$('#jaEye').textContent=h?'Cacher':'Voir'};
-  ['#jaPin','#jaPin2','#jaFPinN'].forEach(function(id){$(id).addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,4);msg('');if(id==='#jaPin2'&&this.value.length===4)this.blur()})});
+  ['#jaPin','#jaPin2'].forEach(function(id){$(id).addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,4);msg('');if(id==='#jaPin2'&&this.value.length===4)this.blur()})});
   $('#jaTel').addEventListener('input',function(){this.value=this.value.replace(/[^\d +]/g,'');msg('');marquer('#jaFTel',false)});
   $('#jaNom').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#jaTel').focus()}});
   $('#jaTel').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#jaPin').focus()}});
@@ -355,22 +334,6 @@ button{font:inherit;cursor:pointer}
     });
   }
   function erreurReseau(){var go=$('#jaPhoneGo');go.disabled=false;msg('Pas de connexion Internet. Vérifie ton réseau puis réessaie.','err')}
-  function afficherRecup(token){
-    var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789',b=new Uint8Array(8),code='';
-    (window.crypto||window.msCrypto).getRandomValues(b);
-    for(var i=0;i<8;i++){code+=A.charAt(b[i]%A.length);if(i===3)code+='-'}
-    msg('');vue('reco');var box=$('#jaRecoCode'),chk=$('#jaRecoChk'),ok=$('#jaRecoOk'),er=$('#jaRecoMsg');
-    function enreg(){
-      er.textContent='';box.textContent='…';
-      Promise.resolve(sb.rpc('nexora_enregistrer_recuperation',{p_code:code})).then(function(r){
-        if(r&&r.error)throw r.error;box.textContent=code;chk.disabled=false;
-      }).catch(function(){er.textContent='Impossible d’enregistrer le code pour le moment.';ok.textContent='Réessayer';ok.disabled=false;ok.onclick=function(){ok.textContent='Commencer à jouer';ok.disabled=true;ok.onclick=fin;enreg()}});
-    }
-    function fin(){if(chk.checked)apres()}
-    chk.checked=false;ok.disabled=true;ok.textContent='Commencer à jouer';ok.onclick=fin;
-    chk.onchange=function(){ok.disabled=!chk.checked};
-    enreg();
-  }
   $('#jaPhoneForm').addEventListener('submit',function(ev){
     ev.preventDefault();
     var nom=$('#jaNom').value.trim().replace(/\s+/g,' '),tel=$('#jaTel').value,pin=$('#jaPin').value,pin2=$('#jaPin2').value,go=$('#jaPhoneGo');
@@ -390,30 +353,16 @@ button{font:inherit;cursor:pointer}
       if(r&&r.error){
         var m=String(r.error.message||'');
         if(/already|registered|exists/i.test(m)){modeCreation=false;majMode();$('#jaTel').value=tel;msg('Ce numéro a déjà un compte. Entre ton code secret pour te connecter.','err');$('#jaPin').focus();return}
-        if(/invalid login|credentials/i.test(m)){msg('Numéro ou code secret incorrect.','err');marquer('#jaFPin',true);$('#jaForgot').style.display='';return}
+        if(/invalid login|credentials/i.test(m)){msg('Numéro ou code secret incorrect.','err');marquer('#jaFPin',true);$('#jaForgot').style.display='inline-block';return}
         if(/rate|too many|limit/i.test(m)){msg('Trop d’essais. Attends quelques minutes puis réessaie.','err');return}
         msg('Connexion impossible pour le moment. Réessaie.','err');return;
       }
       if(modeCreation){
-        if(r.data&&r.data.session){afficherRecup(r.data.session.access_token);return}
+        if(r.data&&r.data.session){apres();return}
         msg('Compte créé. Connecte-toi avec ton numéro et ton code secret.','ok');modeCreation=false;majMode();return;
       }
       var meta=(r.data&&r.data.user&&r.data.user.user_metadata)||{};dernierNom=meta.name||dernierNom;apres();
     }).catch(erreurReseau);
-  });
-
-  $('#jaForgotForm').addEventListener('submit',function(ev){
-    ev.preventDefault();
-    var tel=$('#jaFTel2').value,code=$('#jaFCode').value.trim().toUpperCase(),pin=$('#jaFPinN').value,go=$('#jaForgotGo');
-    if(!telOk(tel)){msg('Entre ton numéro de téléphone.','err');return}
-    if(code.length<8){msg('Entre ton code de récupération (8 caractères).','err');return}
-    if(!/^\d{4}$/.test(pin)){msg('Le nouveau code secret doit avoir 4 chiffres.','err');return}
-    go.disabled=true;msg('Un instant…');
-    Promise.resolve(sb.rpc('nexora_recuperer_code',{p_telephone:tel,p_code:code,p_nouveau_pin:pin})).then(function(r){
-      go.disabled=false;var v=r&&r.data;
-      if(v==='ok'){$('#jaTel').value=tel;$('#jaPin').value=pin;modeCreation=false;majMode();msg('Code changé. Connexion…','ok');$('#jaPhoneForm').requestSubmit();return}
-      msg(v==='bloque'?'Trop d’essais. Réessaie dans 1 heure ou écris-nous sur WhatsApp.':'Numéro ou code de récupération incorrect.','err');
-    }).catch(function(){go.disabled=false;msg('Pas de connexion Internet.','err')});
   });
 
   /* e-mail (anciens comptes) */
