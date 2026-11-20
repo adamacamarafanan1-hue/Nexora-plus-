@@ -46,6 +46,11 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
 .ok-b{background:var(--ok);color:#06210f}.no-b{background:rgba(255,141,132,.15);color:#ff8d84}
 .pay .ask{margin-top:10px;padding:10px;border-radius:12px;background:rgba(240,178,74,.12);font-size:13.5px}
 .tag.w{background:rgba(240,178,74,.15);color:var(--warn)}.tag.r{background:rgba(255,141,132,.15);color:#ff8d84}
+.msg{border-top:1px solid var(--line);padding:12px 0}.msg:first-of-type{border-top:0}
+.msg h3{margin:0 0 6px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.msg pre{white-space:pre-wrap;word-wrap:break-word;margin:0;padding:12px;border-radius:12px;background:var(--card2);font:inherit;font-size:14.5px;line-height:1.55}
+.msg .row{display:flex;gap:8px;margin-top:8px}.msg .row button,.msg .row a{flex:1;text-align:center;text-decoration:none;padding:11px;border-radius:12px;border:0;font-weight:800;font-size:14px}
+.cp{background:var(--card2);color:var(--txt);border:1px solid var(--line)!important}.wa{background:#25D366;color:#06210f}
 .hid{display:none!important}
 @media (min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -70,6 +75,7 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     <div class="sp"></div><span class="sub" id="maj"></span><button class="btn" id="rf">Actualiser</button>
   </div>
   <section class="card" id="payCard"><h2>Paiements à valider <span id="payN"></span></h2><div id="pay"></div><p class="note">Vérifiez toujours le SMS Orange Money avant de valider : montant exact et numéro payeur.</p></section>
+  <section class="card" id="msgCard"><h2>Messages du jour</h2><div id="msgs"></div><div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="msgPrev">← Jour précédent</button><button class="btn" id="msgNext">Jour suivant →</button></div><p class="note">Envoie le message du matin vers 7 h et celui du soir vers 18 h, à tes groupes et à ta liste de diffusion WhatsApp.</p></section>
   <div class="kpis" id="kpis"></div>
   <section class="card" style="margin-top:14px"><h2>Inscriptions par jour</h2><div class="bars" id="bars"></div></section>
   <section class="card"><h2>Parcours des visiteurs</h2><div class="fun" id="fun"></div><div class="note" id="fnote"></div></section>
@@ -143,6 +149,40 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     .then(function(x){payOuvert=null;if(x.s>=400){$('#pay').insertAdjacentHTML('afterbegin','<p class="err">'+esc((x.j&&x.j.message)||'Échec, réessayez.')+'</p>');setTimeout(chargerPaiements,2500);return}chargerPaiements()})
     .catch(function(){payOuvert=null;$('#pay').insertAdjacentHTML('afterbegin','<p class="err">Hors connexion, rien n’a été modifié.</p>')});
   });
+
+  var LIEN='https://nexora-plus-beta.vercel.app/';
+  var MATIN=[
+  "☀️ Bonjour ! Une leçon par jour, c'est 30 leçons par mois. Ouvre Nexora aujourd'hui 👉 {L}\nEt partage ce lien à un camarade ou à un parent : l'inscription prend 30 secondes, avec un numéro de téléphone.",
+  "📚 Le BAC et le Brevet se préparent maintenant, pas la veille. Sujets et évaluations corrigées sur Nexora 👉 {L}\nEnvoie ce lien à un ami qui prépare l'examen.",
+  "🎯 Défi du matin : fais une évaluation corrigée sur Nexora et regarde ta note. Ensuite, lance le défi à un ami 👉 {L}",
+  "👨‍👩‍👧 Parents : le programme guinéen, de la maternelle à la Terminale, dans le téléphone de votre enfant. Découvrez Nexora 👉 {L}\nTransmettez ce lien aux parents de votre entourage.",
+  "💡 Astuce : installe Nexora sur ton téléphone, il s'ouvre comme une application. Après l'inscription, appuie sur « Installer » 👉 {L}\nMontre l'astuce à un ami.",
+  "🌅 Chaque matin, 15 minutes de révision peuvent changer une année scolaire. Commence avec Nexora 👉 {L}\nPartage ce lien dans ton groupe de classe.",
+  "🎲 Connais-tu le Jeu Adams, le jeu éducatif de Nexora ? Apprendre en jouant 👉 {L}\nInvite un ami pour jouer ensemble."];
+  var SOIR=[
+  "🌙 Bonsoir ! As-tu fait ta leçon aujourd'hui ? Dix minutes avant de dormir suffisent 👉 {L}\nUn camarade n'a pas encore Nexora ? Envoie-lui ce lien.",
+  "📝 Ce soir, révise ce que tu as vu en classe aujourd'hui avec les leçons de Nexora 👉 {L}\nPartage le lien avec ceux de ta classe.",
+  "🏆 Bravo à ceux qui travaillent chaque jour ! Continue sur Nexora 👉 {L}\nInvite un ami pour réviser ensemble : on avance mieux à deux.",
+  "📱 Nexora s'installe sur ton téléphone en quelques secondes. Essaie 👉 {L}\nDis-le à un ami qui hésite encore.",
+  "👨‍🏫 Enseignants et directeurs : Nexora aide vos élèves à réviser à la maison 👉 {L}\nTransmettez ce lien à vos collègues.",
+  "⭐ Ton avis compte : qu'est-ce qui t'aide le plus sur Nexora ? Réponds-moi ici. Et si tu l'apprécies, partage le lien 👉 {L}",
+  "🔔 Rappel du soir : prépare ton cartable et ta leçon de demain avec Nexora 👉 {L}\nPartage ce lien à un parent ou à un ami, ça peut l'aider."];
+  var decal=0;
+  function jourN(){return Math.floor((Date.now()-new Date().getTimezoneOffset()*60000)/864e5)+decal}
+  function rendreMsgs(){
+    var i=((jourN()%7)+7)%7,d=new Date(Date.now()+decal*864e5).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    function bloc(t,tx,id){tx=tx.replace(/\{L\}/g,LIEN);return '<div class="msg"><h3>'+t+' · '+d+'</h3><pre id="'+id+'">'+esc(tx)+'</pre><div class="row"><button class="cp" data-cp="'+id+'">Copier</button><a class="wa" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(tx)+'">WhatsApp</a></div></div>'}
+    $('#msgs').innerHTML=bloc('Matin · 7 h',MATIN[i],'mm')+bloc('Soir · 18 h',SOIR[i],'ms');
+  }
+  $('#msgPrev').addEventListener('click',function(){decal--;rendreMsgs()});
+  $('#msgNext').addEventListener('click',function(){decal++;rendreMsgs()});
+  $('#msgs').addEventListener('click',function(e){
+    var b=e.target.closest('[data-cp]');if(!b)return;var el=document.getElementById(b.getAttribute('data-cp'));
+    function ok(){b.textContent='Copié ✓';setTimeout(function(){b.textContent='Copier'},1800)}
+    function secours(){try{var r=document.createRange();r.selectNodeContents(el);var sl=getSelection();sl.removeAllRanges();sl.addRange(r);document.execCommand('copy');ok()}catch(_){b.textContent='Sélectionne le texte'}}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(el.textContent).then(ok,secours);else secours();
+  });
+  rendreMsgs();
   function pct(a,b){return b>0?Math.min(100,Math.round(a*100/b)):0}
   function ligne(lib,n,max,sub){return '<div class="fr"><span>'+lib+'</span><div class="tr"><i style="width:'+pct(n,max)+'%"></i></div><b>'+n+(sub?'<small style="color:var(--mut);font-weight:500"> '+sub+'</small>':'')+'</b></div>'}
   function rendre(d){
