@@ -418,6 +418,8 @@ button{font:inherit;cursor:pointer}
     chargerPaiement().then(rendrePaiement);
   }
   window.__jaOuvrirAbonnement=ouvrirAbonnement;
+  /* Offre d'abonnement en fin de partie de Guinée : seulement pour un joueur sans abonnement actif. */
+  window.__jaOffreAbonnement=function(){return !(etat.acces&&etat.acces.active===true)};
 
   /* Le moteur de jeux demande l'accès : on répond avec l'abonnement Jeu Adams. */
   function installerGarde(){

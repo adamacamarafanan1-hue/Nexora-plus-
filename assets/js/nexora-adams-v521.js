@@ -1262,6 +1262,15 @@
         var n=nomsLisibles(noms);
         d.textContent='🙏 Merci d’avoir joué'+(n?', '+n:'')+' ! À très bientôt sur Jeu Adams.';
         box.appendChild(d);
+        if(ctx.offreAbonnement&&!box.querySelector('[data-nx-offre]')){
+          var o=document.createElement('div');o.setAttribute('data-nx-offre','1');
+          o.style.cssText='margin:10px 0 4px;padding:14px;border-radius:14px;background:#FFD700;color:#1b1b1b;text-align:center;font-weight:800;font-size:15px;line-height:1.4';
+          o.innerHTML='🎉 Bravo ! Tu as aimé ?<br><span style="font-weight:600;font-size:14px">Débloque les 17 autres jeux : 90 000 GNF par mois, paiement Orange Money.</span>';
+          var bt=document.createElement('button');bt.type='button';bt.textContent='Débloquer les 17 jeux';
+          bt.style.cssText='display:block;width:100%;margin-top:10px;padding:13px;border:0;border-radius:12px;background:#1b1b1b;color:#FFD700;font:inherit;font-weight:800;font-size:16px';
+          bt.addEventListener('click',function(){parentPost('nx-adams-offer',{})});
+          o.appendChild(bt);box.appendChild(o);
+        }
       }catch(_m){}
     },700);
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',announceFrameReady,{once:true});
@@ -1490,6 +1499,7 @@
   }
   function launchGameSource(key,label,context){
     context=context||{};key=String(key||'').trim().replace(/[^a-z0-9_-]/gi,'');
+    try{if(key==='guinee'&&typeof window.__jaOffreAbonnement==='function'&&window.__jaOffreAbonnement()){context=Object.assign({},context,{offreAbonnement:true})}}catch(_o){}
     var modal=openModal(),wrap=qs('[data-nx-adams-game-frame-wrap]',modal);
     try{modal.setAttribute('data-nx-game-key',key)}catch(_k){}
     var choosingLevel=key==='maternelle'||key==='ecole';
@@ -1766,6 +1776,9 @@
       if(state.captureResolver){var resolver=state.captureResolver;state.captureResolver=null;if(state.captureTimer){clearTimeout(state.captureTimer);state.captureTimer=null}resolver(String(data.dataUrl||''))}
     }else if(data.type==='nx-adams-game-result'){
       state.scoreRequestPending=false;recordGameResult(data);
+    }else if(data.type==='nx-adams-offer'){
+      try{closeGame&&closeGame()}catch(_c){}
+      setTimeout(function(){try{window.__jaOuvrirAbonnement&&window.__jaOuvrirAbonnement()}catch(_a){}},250);
     }else if(data.type==='nx-adams-score-unavailable'){
       if(state.scoreRequestPending)showScoreUnavailable();
     }
