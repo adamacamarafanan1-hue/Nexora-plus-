@@ -846,6 +846,8 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     if(phoneInput){
       phoneInput.disabled=!SELECTED_PLAN||state==='pending'||state==='approved';
       if(CURRENT_REQUEST&&CURRENT_REQUEST.payer_phone)phoneInput.value=CURRENT_REQUEST.payer_phone;
+      var refInput=root.querySelector('[data-nx-payment-ref]');
+      if(refInput)refInput.disabled=phoneInput.disabled;
     }
 
 
@@ -984,15 +986,17 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
     return SELECTED_PLAN;
   }
 
-  async function createPaymentRequestOnServer(client,user,phone){
+  async function createPaymentRequestOnServer(client,user,phone,ref){
     await resolveRealSelectedPlan(client);
     var rpcErrors=[];
-    var rpcNames=['nexora_create_payment_request_v7','nexora_create_payment_request_v6','nexora_create_payment_request'];
+    var rpcNames=['nexora_create_payment_request_v8','nexora_create_payment_request_v7','nexora_create_payment_request_v6','nexora_create_payment_request'];
     for(var i=0;i<rpcNames.length;i++){
       var rpcName=rpcNames[i];
       try{
         var rpcResult=await withTimeout(
-          client.rpc(rpcName,rpcName==='nexora_create_payment_request_v7'
+          client.rpc(rpcName,rpcName==='nexora_create_payment_request_v8'
+            ?{p_plan_id:SELECTED_PLAN.id,p_payer_phone:phone,p_reference:ref||null}
+            :rpcName==='nexora_create_payment_request_v7'
             ?{p_plan_id:SELECTED_PLAN.id,p_payer_phone:phone}
             :{p_duration_months:SELECTED_PLAN.months,p_payer_phone:phone}),
           15000,
@@ -1067,7 +1071,8 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
       var client=await waitClient();
       var user=await currentUser(client);
       if(!user)throw new Error('Connecte-toi à ton compte Nexora avant de déclarer le paiement.');
-      var data=await createPaymentRequestOnServer(client,user,phone);
+      var refEl=scope.querySelector('[data-nx-payment-ref]')||document.querySelector('[data-nx-payment-ref]');
+      var data=await createPaymentRequestOnServer(client,user,phone,String(refEl&&refEl.value||'').trim());
       if(!data||data.success!==true)throw new Error(data&&data.message?data.message:'Le paiement n’a pas pu être confirmé. Réessaie dans quelques instants.');
 
       CURRENT_REQUEST=Object.assign({status:'payment_declared',code_status:'pending',payer_phone:phone},data,{found:true});
@@ -1137,7 +1142,7 @@ var _v549=await Promise.all([entitlement(),loadManifest()]);var record=_v549[0],
       '<div class="nx-pay-modal-selected"><div><small>Durée choisie · '+'accès complet à Nexora (Élèves + Pro)'+'</small><strong>'+esc(plan.label)+'</strong></div><b>'+formatGNF(plan.total)+'</b></div>'+
       (plan.demo_only?'<div class="nx-pay-status-v168"><b>Tarif de prévisualisation.</b> Au moment de valider, Nexora vérifie obligatoirement la formule réelle dans Supabase. Aucun paiement ne sera enregistré sans plan_id serveur.</div>':'')+ 
       (merchantPhone()?'<div class="nx-orange-money-box-v168"><span class="nx-om-mark-v169" aria-hidden="true">OM</span><div><small>Payez sur ce numéro</small><strong data-nx-merchant-phone>'+esc(formatPhone(merchantPhone()))+'</strong></div><button type="button" class="nx-pay-copy-btn" data-nx-copy-merchant>Copier</button></div>':'<div class="nx-pay-status-v168">Le montant est visible. Le numéro Orange Money officiel et la validation du paiement sont chargés par Supabase dans la version connectée.</div>')+ 
-      '<div class="nx-pay-fields"><div class="nx-pay-field"><label>Numéro utilisé pour le paiement</label><input data-nx-payer-phone type="tel" inputmode="numeric" autocomplete="tel" maxlength="15" placeholder="Exemple : 620 00 00 00"></div></div>'+ 
+      '<div class="nx-pay-fields"><div class="nx-pay-field"><label>Numéro utilisé pour le paiement</label><input data-nx-payer-phone type="tel" inputmode="numeric" autocomplete="tel" maxlength="15" placeholder="Exemple : 620 00 00 00"></div><div class="nx-pay-field"><label>Numéro de transaction <small>(facultatif, reçu par SMS)</small></label><input data-nx-payment-ref type="text" autocomplete="off" maxlength="40" placeholder="Exemple : MP2611201234"></div></div>'+ 
       '<div class="nx-pay-action-row"><button type="button" class="nx-pay-primary" data-nx-declare-payment>Valider mon paiement</button><div class="nx-pay-secondary-row-v169 single"><button type="button" class="nx-pay-secondary" data-nx-back-plans>Changer la durée</button></div></div>'+ 
       '<div class="nx-pay-status-v168" data-nx-payment-feedback aria-live="polite"></div>';
   }

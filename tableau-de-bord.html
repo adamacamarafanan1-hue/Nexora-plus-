@@ -126,7 +126,7 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     var h=att.length?att.map(function(x){
       var prod=x.produit==='jeuadams'?'Jeu Adams':'Nexora';
       var conf=payOuvert&&payOuvert.id===x.id;
-      return '<div class="pay"><h3>'+esc(x.nom)+'</h3><div class="m">'+fmt(x.montant)+' GNF</div><div class="l">'+prod+' · '+esc(x.formule||(x.mois+' mois'))+' · déclaré '+depuis(x.declare_le)+'<br>Numéro payeur : <b>'+esc(x.tel_payeur||'—')+'</b>'+(x.tel_compte?'<br>Téléphone du compte : '+esc(x.tel_compte):'')+(x.reference?'<br>Référence : <b>'+esc(x.reference)+'</b>':'')+'</div>'+
+      return '<div class="pay"><h3>'+esc(x.nom)+'</h3><div class="m">'+fmt(x.montant)+' GNF</div><div class="l">'+prod+' · '+esc(x.formule||(x.mois+' mois'))+' · déclaré '+depuis(x.declare_le)+'<br>Numéro payeur : <b>'+esc(x.tel_payeur||'—')+'</b>'+(x.tel_compte?'<br>Téléphone du compte : '+esc(x.tel_compte):'')+(x.transaction?'<br>N° de transaction : <b>'+esc(x.transaction)+'</b>':'<br><small>Pas de numéro de transaction indiqué</small>')+'</div>'+
       (conf?'<div class="ask">'+(payOuvert.a==='approve'?'Confirmer : j’ai bien reçu <b>'+fmt(x.montant)+' GNF</b> de ce numéro ?':'Refuser ce paiement ?')+'<div class="row"><button class="'+(payOuvert.a==='approve'?'ok-b':'no-b')+'" data-conf="'+x.id+'">Oui, '+(payOuvert.a==='approve'?'valider':'refuser')+'</button><button class="btn" data-ann="1">Annuler</button></div></div>':
       '<div class="row"><button class="ok-b" data-a="approve" data-id="'+x.id+'">Valider</button><button class="no-b" data-a="reject" data-id="'+x.id+'">Refuser</button></div>')+'</div>';
     }).join(''):'<p class="note" style="margin:0">Aucun paiement en attente.</p>';
