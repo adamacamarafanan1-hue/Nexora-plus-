@@ -18,6 +18,7 @@
     '.nxi-duo .nxi-img{aspect-ratio:3/2}',
     '.nxi-porte{display:block;width:100%;height:150px;aspect-ratio:auto;object-fit:cover;object-position:50% 60%;border-radius:8px;margin:0 0 12px;position:relative;z-index:1}',
     '.nx-porte-v510 .nxi-porte+.nx-porte-rang-v510{margin-top:2px}',
+    '.nxi-porte.nxi-porte-ja{height:auto;aspect-ratio:3/2;object-position:50% 50%}',
     '.nx-porte-v510.nxi-ja{--p-accent:#E0762B;--p-accent-clair:#F2A46B;min-height:0;margin-top:14px}',
     '.nxi-asst{display:flex;align-items:center;gap:14px;width:100%;margin:14px 0 0;padding:14px 16px;border:2px solid #C9862F;border-radius:14px;background:#16324F;color:#fff;font-family:inherit;text-align:left;cursor:pointer;box-sizing:border-box}',
     '.nxi-asst:active{transform:translateY(1px)}',
@@ -65,7 +66,8 @@
         var j = document.createElement('button');
         j.type = 'button'; j.className = 'nx-porte-v510 nxi-ja'; j.setAttribute('data-nxi-ja', '1'); j.setAttribute('data-nxi', '1');
         j.setAttribute('data-action', 'go'); j.setAttribute('data-screen', 'adams');
-        j.innerHTML = '<span aria-hidden="true" class="nx-porte-rang-v510">03</span><span class="nx-porte-sur-v510">Jeux</span><span class="nx-porte-nom-v510">Jeu Adams</span><span class="nx-porte-note-v510">Jeux de société éducatifs · Jeu Guinée gratuit</span><span aria-hidden="true" class="nx-porte-go-v510">Entrer dans l’espace</span>';
+        var jp = img('nx-porte-jeuadams', '', 'nxi-porte nxi-porte-ja'); jp.removeAttribute('width'); jp.removeAttribute('height'); jp.setAttribute('aria-hidden', 'true'); j.appendChild(jp);
+        j.insertAdjacentHTML('beforeend', '<span aria-hidden="true" class="nx-porte-rang-v510">03</span><span class="nx-porte-sur-v510">Jeux</span><span class="nx-porte-nom-v510">Jeu Adams</span><span class="nx-porte-note-v510">Jeux de société éducatifs · Jeu Guinée gratuit</span><span aria-hidden="true" class="nx-porte-go-v510">Entrer dans l’espace</span>');
         g.parentNode.insertBefore(j, g.nextSibling);
       }
       if (esp.querySelector('[data-nxi-asst]')) return;
