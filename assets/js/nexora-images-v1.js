@@ -17,7 +17,15 @@
     '.nxi-duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}',
     '.nxi-duo .nxi-img{aspect-ratio:3/2}',
     '.nxi-porte{display:block;width:100%;height:150px;aspect-ratio:auto;object-fit:cover;object-position:50% 60%;border-radius:8px;margin:0 0 12px;position:relative;z-index:1}',
-    '.nx-porte-v510 .nxi-porte+.nx-porte-rang-v510{margin-top:2px}'
+    '.nx-porte-v510 .nxi-porte+.nx-porte-rang-v510{margin-top:2px}',
+    '.nxi-asst{display:flex;align-items:center;gap:14px;width:100%;margin:14px 0 0;padding:14px 16px;border:2px solid #C9862F;border-radius:14px;background:#16324F;color:#fff;font-family:inherit;text-align:left;cursor:pointer;box-sizing:border-box}',
+    '.nxi-asst:active{transform:translateY(1px)}',
+    '.nxi-asst-photo{width:76px;height:76px;flex:0 0 76px;border-radius:50%;object-fit:cover;object-position:50% 25%;border:3px solid #fff;background:#DDE3EA}',
+    '.nxi-asst-txt{display:flex;flex-direction:column;gap:3px;min-width:0}',
+    '.nxi-asst-sur{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#E8B766}',
+    '.nxi-asst-nom{font-family:Georgia,serif;font-size:26px;font-weight:700;line-height:1.1;color:#fff}',
+    '.nxi-asst-note{font-size:15px;line-height:1.35;color:#D6DEE8}',
+    '.nxi-asst-go{font-size:16px;font-weight:700;color:#E8B766;margin-top:2px}'
   ].join('');
   (document.head || document.documentElement).appendChild(css);
 
@@ -48,6 +56,21 @@
       p = img(d[0], d[1], 'nxi-porte'); p.removeAttribute('width'); p.removeAttribute('height'); p.setAttribute('data-nxi', '1');
       p.setAttribute('aria-hidden', 'true'); p.alt = '';
       btn.insertBefore(p, btn.firstChild);
+    });
+    document.querySelectorAll('.nx-espaces-v510').forEach(function (esp) {
+      if (esp.querySelector('[data-nxi-asst]')) return;
+      var g = esp.querySelector('.nx-espaces-grille-v510');
+      if (!g) return;
+      var a = document.createElement('button');
+      a.type = 'button'; a.className = 'nxi-asst'; a.setAttribute('data-nxi-asst', '1'); a.setAttribute('data-nxi', '1');
+      a.setAttribute('aria-label', 'Ouvrir l’assistant Nexora');
+      var ph = new Image(); ph.className = 'nxi-asst-photo'; ph.alt = ''; ph.width = 76; ph.height = 76; ph.src = '/assets/img/adams-assistant.jpg';
+      ph.onerror = function () { ph.style.visibility = 'hidden'; };
+      var t = document.createElement('span'); t.className = 'nxi-asst-txt';
+      t.innerHTML = '<span class="nxi-asst-sur">Besoin d’aide ?</span><span class="nxi-asst-nom">Assistant Nexora</span><span class="nxi-asst-note">Posez vos questions : cours, prix, paiement, compte.</span><span class="nxi-asst-go">Poser ma question ›</span>';
+      a.appendChild(ph); a.appendChild(t);
+      a.addEventListener('click', function () { var b = document.querySelector('.nxa-btn'); if (b) b.click(); });
+      g.parentNode.insertBefore(a, g.nextSibling);
     });
     document.querySelectorAll('[data-nx-cycle-v406]').forEach(function (sec) {
       k = sec.getAttribute('data-nx-cycle-v406');
