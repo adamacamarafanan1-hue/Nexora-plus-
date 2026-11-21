@@ -187,7 +187,7 @@
     var s = document.createElement('style'); s.id = 'nxaStyle';
     s.textContent =
       '.nxa-btn{position:fixed;right:14px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:9000;display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border:0;border-radius:999px;background:#16324F;color:#fff;font:800 14px/1 system-ui,sans-serif;box-shadow:0 6px 20px rgba(10,20,35,.35);cursor:pointer}' +
-      '.nxa-btn[hidden]{display:none}' +
+      '.nxa-btn,.nxa-btn[hidden]{display:none!important}' +
       '@media(min-width:900px){.nxa-btn{bottom:24px;right:24px}}' +
       '.nxa-av{width:40px;height:40px;border-radius:50%;background:#C9862F;color:#fff;display:flex;align-items:center;justify-content:center;font:800 18px/1 system-ui,sans-serif;overflow:hidden;flex:0 0 auto;object-fit:cover}' +
       '.nxa-p{position:fixed;inset:0;z-index:2147481100;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,20,35,.55)}' +
