@@ -18,6 +18,7 @@
     '.nxi-duo .nxi-img{aspect-ratio:3/2}',
     '.nxi-porte{display:block;width:100%;height:150px;aspect-ratio:auto;object-fit:cover;object-position:50% 60%;border-radius:8px;margin:0 0 12px;position:relative;z-index:1}',
     '.nx-porte-v510 .nxi-porte+.nx-porte-rang-v510{margin-top:2px}',
+    '.nx-porte-v510.nxi-ja{--p-accent:#E0762B;--p-accent-clair:#F2A46B;min-height:0;margin-top:14px}',
     '.nxi-asst{display:flex;align-items:center;gap:14px;width:100%;margin:14px 0 0;padding:14px 16px;border:2px solid #C9862F;border-radius:14px;background:#16324F;color:#fff;font-family:inherit;text-align:left;cursor:pointer;box-sizing:border-box}',
     '.nxi-asst:active{transform:translateY(1px)}',
     '.nxi-asst-photo{width:76px;height:76px;flex:0 0 76px;border-radius:50%;object-fit:cover;object-position:50% 25%;border:3px solid #fff;background:#DDE3EA}',
@@ -58,9 +59,16 @@
       btn.insertBefore(p, btn.firstChild);
     });
     document.querySelectorAll('.nx-espaces-v510').forEach(function (esp) {
-      if (esp.querySelector('[data-nxi-asst]')) return;
       var g = esp.querySelector('.nx-espaces-grille-v510');
       if (!g) return;
+      if (!esp.querySelector('[data-nxi-ja]')) {
+        var j = document.createElement('button');
+        j.type = 'button'; j.className = 'nx-porte-v510 nxi-ja'; j.setAttribute('data-nxi-ja', '1'); j.setAttribute('data-nxi', '1');
+        j.setAttribute('data-action', 'go'); j.setAttribute('data-screen', 'adams');
+        j.innerHTML = '<span aria-hidden="true" class="nx-porte-rang-v510">03</span><span class="nx-porte-sur-v510">Jeux</span><span class="nx-porte-nom-v510">Jeu Adams</span><span class="nx-porte-note-v510">Jeux de société éducatifs · Jeu Guinée gratuit</span><span aria-hidden="true" class="nx-porte-go-v510">Entrer dans l’espace</span>';
+        g.parentNode.insertBefore(j, g.nextSibling);
+      }
+      if (esp.querySelector('[data-nxi-asst]')) return;
       var a = document.createElement('button');
       a.type = 'button'; a.className = 'nxi-asst'; a.setAttribute('data-nxi-asst', '1'); a.setAttribute('data-nxi', '1');
       a.setAttribute('aria-label', 'Ouvrir l’assistant Nexora');
@@ -70,7 +78,7 @@
       t.innerHTML = '<span class="nxi-asst-sur">Besoin d’aide ?</span><span class="nxi-asst-nom">Assistant Nexora</span><span class="nxi-asst-note">Posez vos questions : cours, prix, paiement, compte.</span><span class="nxi-asst-go">Poser ma question ›</span>';
       a.appendChild(ph); a.appendChild(t);
       a.addEventListener('click', function () { var b = document.querySelector('.nxa-btn'); if (b) b.click(); });
-      g.parentNode.insertBefore(a, g.nextSibling);
+      var apres = esp.querySelector('[data-nxi-ja]') || g; apres.parentNode.insertBefore(a, apres.nextSibling);
     });
     document.querySelectorAll('[data-nx-cycle-v406]').forEach(function (sec) {
       k = sec.getAttribute('data-nx-cycle-v406');
