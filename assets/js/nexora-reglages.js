@@ -1774,6 +1774,16 @@
   (document.head || document.documentElement).appendChild(s);
 })();
 
+/* V747 — Illustrations : chargement du module (fichier séparé). */
+(function () {
+  if (window.__nxImagesChargeurV747) return;
+  window.__nxImagesChargeurV747 = true;
+  var s = document.createElement('script');
+  s.src = '/assets/js/nexora-images-v1.js?v=747';
+  s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
+
 /* V746 — Assistant Nexora : chargement du module (fichier séparé). */
 (function () {
   if (window.__nxAssistantChargeurV746) return;
