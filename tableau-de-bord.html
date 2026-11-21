@@ -79,6 +79,7 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
   <section class="card" id="apCard"><h2>Apporteurs d’affaires <span id="apN"></span></h2><div id="ap"></div>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="apNom" placeholder="Nom de l’apporteur" style="flex:1;min-width:140px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt)"><input id="apTel" inputmode="tel" placeholder="Téléphone" style="flex:1;min-width:120px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt)"><button class="btn" id="apAdd">Ajouter</button></div>
     <p class="note">Commission : 25 % du premier paiement de chaque client amené, versée une seule fois. Niveaux : Bronze dès 1 client payant, Argent dès 5, Or dès 15.</p></section>
+  <section class="card" id="jaCard"><h2>Jeu Adams : inscrits sans abonnement <span id="jaN"></span></h2><div id="jaL"></div><p class="note">Ces personnes ont créé un compte sur Jeu Adams mais n’ont pas payé. Relance-les poliment par WhatsApp, une seule fois, et n’insiste pas si elles disent non.</p></section>
   <section class="card" id="msgCard"><h2>Messages du jour</h2><div id="msgs"></div><div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="msgPrev">← Jour précédent</button><button class="btn" id="msgNext">Jour suivant →</button></div><p class="note">Envoie le message du matin vers 7 h et celui du soir vers 18 h, à tes groupes et à ta liste de diffusion WhatsApp.</p>
     <h2 style="margin-top:18px">Alertes sur les téléphones</h2>
     <p class="note" id="alInfo" style="margin:0 0 10px">Chargement…</p>
@@ -121,7 +122,7 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
     .then(function(x){
       if(x.s===401){sortir('Session expirée. Reconnectez-vous.');return}
       if(x.s>=400){sortir((x.j&&x.j.message&&/administrateur/.test(x.j.message))?'Ce compte n’est pas administrateur Nexora.':'Erreur de chargement.');return}
-      ecran(true);rendre(x.j);chargerPaiements();chargerKdo();chargerAp();chargerAlertes();
+      ecran(true);rendre(x.j);chargerPaiements();chargerKdo();chargerAp();chargerJa();chargerAlertes();
     }).catch(function(){$('#maj').textContent='Hors connexion'});
   }
 
@@ -144,6 +145,18 @@ input:focus{outline:0;border-color:var(--acc);box-shadow:0 0 0 4px rgba(59,139,2
   $('#kdoClot').addEventListener('click',function(){var b=this;b.disabled=true;
     rpcK('nx_cadeaux_admin_cloturer',{}).then(function(x){b.disabled=false;if(x.s>=400){$('#kdo').insertAdjacentHTML('afterbegin','<p class="err">Échec, réessayez.</p>');return}chargerKdo()})});
 
+  function chargerJa(){
+    rpcK('nx_ja_inscrits_sans_abonnement').then(function(x){
+      if(x.s>=400||!Array.isArray(x.j)){$('#jaL').innerHTML='<p class="note">Liste indisponible.</p>';return}
+      $('#jaN').innerHTML=x.j.length?'<span class="tag w">'+x.j.length+'</span>':'';
+      $('#jaL').innerHTML=x.j.length?x.j.map(function(g){
+        var d=String(g.telephone||'').replace(/\D/g,'');if(d.length===9)d='224'+d;
+        var pr=String(g.nom||'').trim().split(' ')[0];
+        var msg='Bonjour'+(pr?' '+pr:'')+', tu as aimé Jeu Adams ? Les 17 autres jeux t’attendent : 90 000 GNF par mois, paiement par Orange Money. Dis-moi si tu as une question !';
+        return '<div class="pay"><h3>'+esc(g.nom||'Sans nom')+'</h3><div class="l">'+esc(d||'—')+'<br>Inscrit '+depuis(g.inscrit_le)+(g.derniere_visite?' · dernière visite '+depuis(g.derniere_visite):'')+'</div>'+(d?'<a class="btn" style="display:inline-block;text-decoration:none;margin-top:8px" target="_blank" rel="noopener" href="https://wa.me/'+d+'?text='+encodeURIComponent(msg)+'">Relancer sur WhatsApp</a>':'')+'</div>';
+      }).join(''):'<p class="note" style="margin:0">Personne pour le moment : tous les inscrits ont payé.</p>';
+    }).catch(function(){$('#jaL').innerHTML='<p class="note">Hors connexion.</p>'});
+  }
   var NIV={'Or':'🥇 Or','Argent':'🥈 Argent','Bronze':'🥉 Bronze','—':'Nouveau'};
   function chargerAp(){
     rpcK('nx_apporteur_admin_liste').then(function(x){
