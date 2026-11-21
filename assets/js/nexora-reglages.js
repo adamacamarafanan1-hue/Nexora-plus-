@@ -1774,6 +1774,16 @@
   (document.head || document.documentElement).appendChild(s);
 })();
 
+/* V746 — Assistant Nexora : chargement du module (fichier séparé). */
+(function () {
+  if (window.__nxAssistantChargeurV746) return;
+  window.__nxAssistantChargeurV746 = true;
+  var s = document.createElement('script');
+  s.src = '/assets/js/nexora-assistant-v1.js?v=746';
+  s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
+})();
+
 /* V705 — Nouvel écran d'entrée : chargement du module (fichier séparé).
    L'ancien contenu de la porte est masqué pendant le chargement ; s'il
    n'a pas été remplacé au bout de 4 secondes, il réapparaît tel quel. */
