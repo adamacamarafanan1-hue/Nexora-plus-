@@ -25008,6 +25008,12 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   }
   var ETAPES=[[0,'Préparation…'],[25,'Téléchargement…'],[55,'Installation…'],[85,'Finalisation…'],[100,'Installée']];
   function libelle(p){var t=ETAPES[0][1];for(var i=0;i<ETAPES.length;i++)if(p>=ETAPES[i][0])t=ETAPES[i][1];return t}
+  function horsChrome(){var u=navigator.userAgent||'';return /Android/i.test(u)&&(!/Chrome\//.test(u)||/FBAN|FBAV|Instagram|TikTok|musical_ly|Snapchat|Line\/|; wv\)|SamsungBrowser|OPR\/|Opera|UCBrowser|MiuiBrowser|HuaweiBrowser|EdgA|Firefox/i.test(u))}
+  function boutonChrome(){
+    if(!horsChrome())return '';
+    var l='intent://'+location.host+'/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(location.origin+'/')+';end';
+    return '<a href="'+l+'" style="display:block;margin:12px 0 0;padding:14px;border-radius:999px;background:#143B67;color:#fff;text-align:center;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Ouvrir Nexora dans Chrome</a>';
+  }
   function etapesManuelles(){
     if(pf()==='ios')return ['Ouvrez Nexora dans <b>Safari</b>.','Touchez <b>Partager</b> (carré avec une flèche vers le haut).','Choisissez <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.'];
     var u=navigator.userAgent||'';
@@ -25041,7 +25047,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     var b=$('#nxIbigV721',ouvert);b.textContent=installee?'Installée ✓':'J’ai compris';b.classList.add('ok');
     if(!installee){$('#nxIlabV721',ouvert).textContent='Prêt à installer';$('#nxIpctV721',ouvert).textContent='✓'}
     var n=$('#nxInoteV721',ouvert);n.style.display='block';
-    n.innerHTML=installee?'Cherchez l’icône <b>Nexora</b> sur votre écran d’accueil et ouvrez-la comme une application.':'<b>L’installation automatique n’est pas disponible ici.</b> Faites-la en 3 gestes :<ol>'+etapesManuelles().map(function(s){return '<li>'+s+'</li>'}).join('')+'</ol><p style="margin:10px 0 0;font-size:13px;opacity:.8">Si vous êtes en <b>navigation privée</b>, ouvrez Nexora dans un onglet normal de Chrome : l’installation y est bloquée.</p>';
+    n.innerHTML=installee?'Cherchez l’icône <b>Nexora</b> sur votre écran d’accueil et ouvrez-la comme une application.':'<b>L’installation automatique n’est pas disponible ici.</b> Faites-la en 3 gestes :<ol>'+etapesManuelles().map(function(s){return '<li>'+s+'</li>'}).join('')+'</ol>'+boutonChrome()+'<p style="margin:10px 0 0;font-size:13px;opacity:.8">Si vous êtes en <b>navigation privée</b>, ouvrez Nexora dans un onglet normal de Chrome : l’installation y est bloquée.</p>';
     if(window.__nxPartageBlocV724){var ps=$('.nx-share-v724',ouvert);if(!ps)n.insertAdjacentHTML('afterend',window.__nxPartageBlocV724())}
     busy=false;
   }
