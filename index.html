@@ -24288,8 +24288,8 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function etapesInstall() {
     var pf = plateforme();
     if (pf === 'ios') return ['Ouvrez Nexora dans <b>Safari</b> (pas dans une autre application).', 'Touchez le bouton <b>Partager</b> (le carré avec une flèche vers le haut).', 'Choisissez <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.'];
-    if (pf === 'android-autre') return ['Ouvrez Nexora dans <b>Google Chrome</b> : nexora-plus-beta.vercel.app', 'Touchez les <b>⋮</b> en haut à droite.', 'Touchez <b>« Installer l’application »</b> ou <b>« Ajouter à l’écran d’accueil »</b>.'];
-    if (pf === 'android-chrome') return ['Touchez les <b>⋮</b> en haut à droite de Chrome.', 'Touchez <b>« Installer l’application »</b> (ou <b>« Ajouter à l’écran d’accueil »</b>).', 'Confirmez avec <b>Installer</b> : l’icône Nexora apparaît sur l’écran d’accueil.'];
+    if (pf === 'android-autre') return ['Ouvrez Nexora dans <b>Google Chrome</b> : nexora-plus-beta.vercel.app', 'Touchez les <b>⋮</b> en haut à droite.', 'Touchez <b>« Installer l’application »</b>. Évitez « Ajouter à l’écran d’accueil » : cela crée seulement un raccourci.'];
+    if (pf === 'android-chrome') return ['Touchez les <b>⋮</b> en haut à droite de Chrome.', 'Touchez <b>« Installer l’application »</b>. Évitez « Ajouter à l’écran d’accueil » ou « Créer un raccourci » : ce n’est qu’un raccourci.', 'Confirmez avec <b>Installer</b> : l’icône Nexora apparaît sur l’écran d’accueil.'];
     return ['Dans Chrome ou Edge, cliquez sur l’icône d’installation à droite de la barre d’adresse.', 'Ou ouvrez le menu ⋮ puis « Installer Nexora ».', 'Sur téléphone, ouvrez nexora-plus-beta.vercel.app dans Chrome.'];
   }
   function installer() {
@@ -25010,7 +25010,9 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
   function libelle(p){var t=ETAPES[0][1];for(var i=0;i<ETAPES.length;i++)if(p>=ETAPES[i][0])t=ETAPES[i][1];return t}
   function etapesManuelles(){
     if(pf()==='ios')return ['Ouvrez Nexora dans <b>Safari</b>.','Touchez <b>Partager</b> (carré avec une flèche vers le haut).','Choisissez <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.'];
-    return ['Dans <b>Google Chrome</b>, touchez les <b>⋮</b> en haut à droite.','Touchez <b>« Installer l’application »</b> (ou « Ajouter à l’écran d’accueil »).','Confirmez avec <b>Installer</b>.'];
+    var u=navigator.userAgent||'';
+    if(/FBAN|FBAV|Instagram|TikTok|musical_ly|Snapchat|Line\/|; wv\)|SamsungBrowser|OPR\/|Opera|UCBrowser|MiuiBrowser|HuaweiBrowser/i.test(u))return ['Vous êtes dans un navigateur intégré (WhatsApp, Facebook…) ou un autre navigateur : ouvrez <b>nexora-plus-beta.vercel.app</b> dans <b>Google Chrome</b> (⋮ puis « Ouvrir dans Chrome »).','Dans Chrome, touchez les <b>⋮</b> en haut à droite.','Touchez <b>« Installer l’application »</b>, pas « Ajouter à l’écran d’accueil » (ce n’est qu’un raccourci), puis <b>Installer</b>.'];
+    return ['Dans <b>Google Chrome</b>, touchez les <b>⋮</b> en haut à droite.','Touchez <b>« Installer l’application »</b>. Évitez « Ajouter à l’écran d’accueil » : ce n’est qu’un raccourci.','Confirmez avec <b>Installer</b>.'];
   }
   var affiche=0,ouvert=null;
   function maj(p){
