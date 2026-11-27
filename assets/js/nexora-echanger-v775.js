@@ -95,6 +95,8 @@
       '#nxEchV775 .e-classe{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px;color:#5B6776}' +
       '#nxEchV775 .e-classe select{flex:1;min-width:0;border:1px solid #BFCBD8;border-radius:8px;padding:7px;background:#fff;color:#16222E;font:inherit}' +
       '#nxEchV775 .e-saisie{display:flex;gap:8px;align-items:flex-end}' +
+      '#nxEchV775 textarea[disabled]{opacity:.7;cursor:not-allowed}#nxEchV775 .e-env[disabled]{opacity:.45}' +
+      '@supports(height:100dvh){#nxEchV775{height:100dvh}}' +
       '#nxEchV775 textarea{flex:1;min-width:0;resize:none;border:1px solid #BFCBD8;border-radius:22px;padding:12px 16px;font:15px/1.4 inherit;max-height:120px;background:#fff;color:#16222E}' +
       '#nxEchV775 .e-env{appearance:none;border:0;cursor:pointer;border-radius:50%;background:#16324F;color:#fff;width:46px;height:46px;font-size:19px;flex:0 0 46px}' +
       '#nxEchV775 .e-env[disabled]{opacity:.45;cursor:default}' +
@@ -142,10 +144,15 @@
     var e = etatApp.etat, r = racine.querySelector('[data-e-reste]');
     r.textContent = e && typeof e.restant_jour === 'number' ? e.restant_jour + ' message' + (e.restant_jour > 1 ? 's' : '') + ' restant' + (e.restant_jour > 1 ? 's' : '') + ' aujourd’hui' : '';
   }
-  function pied(visible) { racine.querySelector('[data-e-pied]').style.display = visible ? '' : 'none'; }
+  function pied(actif, raison) {
+    var ta = racine.querySelector('[data-e-texte]'), bt = racine.querySelector('[data-e-envoyer]');
+    etatApp.bloque = !actif;
+    ta.disabled = !actif; bt.disabled = !actif;
+    ta.placeholder = actif ? 'Pose ta question à Échanger…' : (raison || 'Écriture indisponible pour le moment');
+  }
 
   function porte(texte, bouton, action) {
-    pied(false);
+    pied(false, 'Connecte-toi ou abonne-toi pour écrire');
     var sg = corps().querySelector('.e-sugg'); if (sg) sg.remove();
     var g = document.createElement('div'); g.className = 'e-gate';
     g.innerHTML = '<p>' + esc(texte) + '</p><button class="e-btn" type="button">' + esc(bouton) + '</button>';
@@ -167,7 +174,7 @@
     if (!etatApp.messages.length) {
       corps().classList.add('e-vide');
       var a = document.createElement('div'); a.className = 'e-accueil';
-      a.innerHTML = '<span class="e-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><h2>Que veux-tu comprendre aujourd’hui ?</h2><p>Je peux te répondre sur tes cours, tes devoirs, le Brevet, le BAC et sur Nexora.</p>';
+      a.innerHTML = '<span class="e-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><h2>Il y a une leçon que tu n’as pas comprise ? Je peux t’expliquer.</h2><p>Cours, devoirs, Brevet, BAC, Nexora : écris ta question dans la zone en bas.</p>';
       corps().appendChild(a);
       var sg = document.createElement('div'); sg.className = 'e-sugg';
       SUGGESTIONS.forEach(function (q) {
@@ -208,7 +215,7 @@
         else if (d.code === 'connexion') { porte(d.message || 'Connecte-toi pour utiliser Échanger.', 'Me connecter', ouvrirConnexion); }
         else { note(d.message || 'Petit souci technique. Réessaie dans un instant.'); ta.value = q; }
       }
-    }).then(function () { etatApp.occupe = false; racine.querySelector('[data-e-envoyer]').disabled = false; defiler(); });
+    }).then(function () { etatApp.occupe = false; racine.querySelector('[data-e-envoyer]').disabled = !!etatApp.bloque; defiler(); });
   }
 
   function ouvrir() {
@@ -217,18 +224,18 @@
     if (sauve && Array.isArray(sauve.messages) && !etatApp.messages.length) { etatApp.messages = sauve.messages.filter(function (m) { return m && m.texte && (m.role === 'user' || m.role === 'assistant'); }); etatApp.classe = sauve.classe || ''; }
     racine.querySelector('[data-e-classe]').value = etatApp.classe;
     racine.hidden = false; document.documentElement.style.overflow = 'hidden';
-    pied(true); etatApp.pret = false; afficherHistorique(); majReste();
+    pied(false, 'Un instant…'); etatApp.pret = false; afficherHistorique(); majReste();
     appel('GET').then(function (r) {
       var d = r.data || {};
       if (r.status === 401 || d.code === 'connexion') return porte('Connecte-toi à ton compte Nexora pour poser tes questions.', 'Me connecter', ouvrirConnexion);
       if (r.status === 200 && d.success) {
         etatApp.etat = d.etat;
         if (d.etat && d.etat.abonne === false) return porte('Échanger est réservé aux abonnés Nexora. Abonne-toi pour poser toutes tes questions sur les cours.', 'S’abonner', ouvrirAbonnement);
-        if (d.disponible === false) { pied(false); return note('Échanger arrive très bientôt. Revenez dans quelques heures !'); }
-        etatApp.pret = true; majReste(); racine.querySelector('[data-e-texte]').focus();
+        if (d.disponible === false) { pied(false, 'Échanger arrive très bientôt'); return note('Échanger arrive très bientôt. Revenez dans quelques heures !'); }
+        etatApp.pret = true; pied(true); majReste(); racine.querySelector('[data-e-texte]').focus();
         return;
       }
-      pied(false); note(d.message || 'Échanger n’est pas disponible pour le moment. Réessaie dans un instant.');
+      pied(false, 'Échanger indisponible pour le moment'); note(d.message || 'Échanger n’est pas disponible pour le moment. Réessaie dans un instant.');
     });
   }
   function fermer() { if (racine) racine.hidden = true; document.documentElement.style.overflow = ''; }

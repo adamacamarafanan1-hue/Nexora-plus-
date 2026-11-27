@@ -1,1 +1,5 @@
-{"version": "V776", "message": "Nexora V776 : Échanger s’ouvre avec un message d’accueil au centre, comme une vraie discussion.", "critical": false}
+{
+  "version": "V777",
+  "message": "Nexora V777 : Échanger affiche ta phrase d’accueil et la zone de saisie reste toujours visible en bas.",
+  "critical": false
+}
