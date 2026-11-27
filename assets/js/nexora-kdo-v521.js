@@ -453,8 +453,20 @@
       '<div class="nx-individual-feedback" data-nx-individual-feedback aria-live="polite"></div></div></section>';
     page.hidden = false;
     document.body.classList.add('nx-individual-payment-open');
-    prefillRegistrationV375(row.id);
-    window.setTimeout(function () { var input = document.getElementById('nxIndividualFirstName'); if (input) input.focus(); }, 80);
+    var dejaJoue = !!(row.my_attempt_id || String(row.my_attempt_status || '').trim());
+    prefillRegistrationV375(row.id).then(function () {
+      /* V783 : nouvelle partie en un geste — si le joueur est déjà connu, on l'inscrit sans reposer les questions. */
+      if (!dejaJoue || selected !== row) return;
+      var btn = document.querySelector('[data-nx-individual-submit-payment]');
+      var fb = document.querySelector('[data-nx-individual-feedback]');
+      var f1 = fieldValueV375('nxIndividualFirstName'), f2 = fieldValueV375('nxIndividualLastName'), f3 = normalizePhoneV375(fieldValueV375('nxIndividualContact'));
+      if (btn && !btn.disabled && f1.length >= 2 && f2.length >= 2 && f3.length >= 8 && f3.length <= 15) {
+        if (fb) fb.textContent = 'Nouvelle partie : inscription automatique…';
+        btn.dataset.auto = '1';
+        submitPayment(btn);
+      }
+    });
+    window.setTimeout(function () { var input = document.getElementById('nxIndividualFirstName'); if (input && !String(input.value || '').trim()) input.focus(); }, 80);
   }
 
   function closePaymentPage() {
@@ -510,7 +522,7 @@
       button.textContent = 'Inscription envoyée avec succès';
       notify(successMessage);
       await refresh();
-      window.setTimeout(closePaymentPage, 3500);
+      window.setTimeout(closePaymentPage, button.dataset.auto === '1' ? 1200 : 3500);
     } catch (error) {
       if (feedback) feedback.textContent = String(error && error.message || error);
     } finally {
