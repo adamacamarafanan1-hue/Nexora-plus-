@@ -522,7 +522,17 @@
       button.textContent = 'Inscription envoyée avec succès';
       notify(successMessage);
       await refresh();
-      window.setTimeout(closePaymentPage, button.dataset.auto === '1' ? 1200 : 3500);
+      if (button.dataset.auto === '1') {
+        /* V784 : nouvelle partie directe — on enchaîne sur le choix de la matière. */
+        var idSuite = selected && selected.id;
+        window.setTimeout(function () {
+          closePaymentPage();
+          var suite = idSuite && findRow(idSuite);
+          if (suite) start(suite, null);
+        }, 700);
+      } else {
+        window.setTimeout(closePaymentPage, 3500);
+      }
     } catch (error) {
       if (feedback) feedback.textContent = String(error && error.message || error);
     } finally {
