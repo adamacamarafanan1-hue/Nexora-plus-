@@ -8216,6 +8216,7 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 <button class="nxo-create-main-v379" data-action="welcome-create" type="button">Créer mon compte<i aria-hidden="true">→</i></button>
 <button class="nxo-login-main-v379" data-action="welcome-login" type="button">J’ai déjà un compte</button>
 </div>
+<ul aria-label="Ce que contient Nexora" class="nx-gate-points-v769"><li><b>Maternelle → Terminale</b><span>Le programme scolaire guinéen</span></li><li><b>Brevet et BAC</b><span>Cours, sujets et corrections</span></li><li><b>22 formations professionnelles</b><span>Compétences, emploi, entrepreneuriat</span></li></ul>
 <div class="nx-install-v468" data-nx-install-block-v468="" hidden=""><span aria-hidden="true" class="nx-install-icon-v468">📲</span><div class="nx-install-copy-v468"><strong>Installer Nexora sur ce téléphone</strong><small data-nx-install-hint-v468="">Nexora s’ajoute à votre écran d’accueil et s’ouvre comme une application, en plein écran.</small></div><div class="nx-install-actions-v468"><button class="nx-install-btn-v468" data-nx-install-action-v468="" type="button">Installer Nexora</button><button class="nx-install-btn-v468 secondary" data-nx-install-help-v468="" type="button">Marche à suivre</button></div><ol class="nx-install-steps-v468" data-nx-install-steps-v468="" hidden=""></ol></div>
 <ul aria-label="Ce que contient Nexora" class="nx-gate-tags-v497">
 <li>Cours</li><li>Jeu Adams</li><li>Brevet</li><li>BAC</li><li>Orientation</li><li>Devoirs</li>
@@ -24961,6 +24962,11 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
 </script>
 <style id="nxGateStyleV720">
 #welcomeGate .nx-gate-proof-v497,#welcomeGate .nx-gate-legend-v343,#welcomeGate .nxo-single-head-v379,#welcomeGate .nx-install-v468,#welcomeGate .nx-gate-tags-v497,#welcomeGate .nx-gate-foot-v343{display:none!important}
+#welcomeGate .nx-gate-points-v769{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:0;border-top:1px solid rgba(22,50,79,.16)}
+#welcomeGate .nx-gate-points-v769 li{display:grid;gap:2px;padding:14px 2px;border-bottom:1px solid rgba(22,50,79,.16)}
+#welcomeGate .nx-gate-points-v769 b{font:800 16px/1.2 system-ui,sans-serif;color:#16324F;letter-spacing:-.01em}
+#welcomeGate .nx-gate-points-v769 span{font:500 13px/1.35 system-ui,sans-serif;color:#5B6776}
+@media (prefers-color-scheme:dark){#welcomeGate .nx-gate-points-v769,#welcomeGate .nx-gate-points-v769 li{border-color:rgba(232,238,246,.16)}#welcomeGate .nx-gate-points-v769 b{color:#e8eef6}#welcomeGate .nx-gate-points-v769 span{color:#9FB0C4}}
 #welcomeGate .nxo-single-account-v379{padding:6px 0 0!important;border:0!important;background:none!important;box-shadow:none!important}
 #welcomeGate .nxo-create-main-v379,#welcomeGate .nxo-login-main-v379{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:60px;border-radius:16px;font:800 17px/1 system-ui,sans-serif;cursor:pointer}
 #welcomeGate .nxo-create-main-v379{border:0;color:#fff;background:linear-gradient(135deg,#16324F 0%,#1E5FA9 100%);box-shadow:0 12px 26px rgba(22,50,79,.35)}
