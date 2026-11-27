@@ -8,7 +8,7 @@
   var API = '/api/echanger';
   var CLE = 'nx.echanger.v775';
   var CLASSES = ['Maternelle', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année', '8ème année', '9ème année', '10ème année (Brevet)', '11ème année', '12ème année', 'Terminale (BAC)'];
-  var SUGGESTIONS = ['Explique-moi une leçon simplement', 'Comment bien préparer le BAC ?', 'Comment fonctionne l’abonnement Nexora ?'];
+  var SUGGESTIONS = ['Explique-moi une leçon que je ne comprends pas', 'Comment bien préparer le BAC ?', 'Comment fonctionne l’abonnement Nexora ?'];
 
   var etatApp = { messages: [], classe: '', occupe: false, etat: null, pret: false };
 
@@ -84,8 +84,10 @@
       '#nxEchV775 .e-note{align-self:center;text-align:center;font-size:12.5px;color:#5B6776;max-width:92%}' +
       '#nxEchV775 .e-sugg{display:flex;flex-direction:column;gap:8px;margin-top:4px}' +
       '#nxEchV775 .e-sugg button{appearance:none;text-align:left;cursor:pointer;border:1px solid #BFCBD8;background:#fff;color:#16324F;border-radius:12px;padding:12px 13px;font:600 14.5px/1.3 inherit}' +
-      '#nxEchV775 .e-accueil{background:#fff;border:1px solid #D5DDE6;border-radius:14px;padding:16px}' +
-      '#nxEchV775 .e-accueil h2{margin:0 0 6px;font-size:18px;color:#16324F}#nxEchV775 .e-accueil p{margin:0;font-size:14.5px;line-height:1.55;color:#33404E}' +
+      '#nxEchV775 .e-vide{justify-content:center;padding-bottom:6vh}' +
+      '#nxEchV775 .e-accueil{text-align:center;padding:0 6px 6px}' +
+      '#nxEchV775 .e-logo{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 14px;border-radius:16px;background:#C9862F}#nxEchV775 .e-logo svg{width:30px;height:30px;stroke:#16324F;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}' +
+      '#nxEchV775 .e-accueil h2{margin:0 0 8px;font:700 25px/1.2 Georgia,"Times New Roman",serif;letter-spacing:-.01em;color:#16324F}#nxEchV775 .e-accueil p{margin:0 auto;max-width:320px;font-size:15px;line-height:1.55;color:#4A5766}' +
       '#nxEchV775 .e-gate{align-self:stretch;background:#fff;border:2px solid #C9862F;border-radius:14px;padding:16px;text-align:center}' +
       '#nxEchV775 .e-gate p{margin:0 0 12px;font-size:15px;line-height:1.5}' +
       '#nxEchV775 .e-btn{appearance:none;border:0;cursor:pointer;border-radius:12px;background:#E8B368;color:#16222E;font:800 16px/1 inherit;padding:15px 20px;width:100%}' +
@@ -93,15 +95,15 @@
       '#nxEchV775 .e-classe{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px;color:#5B6776}' +
       '#nxEchV775 .e-classe select{flex:1;min-width:0;border:1px solid #BFCBD8;border-radius:8px;padding:7px;background:#fff;color:#16222E;font:inherit}' +
       '#nxEchV775 .e-saisie{display:flex;gap:8px;align-items:flex-end}' +
-      '#nxEchV775 textarea{flex:1;min-width:0;resize:none;border:1px solid #BFCBD8;border-radius:12px;padding:11px 12px;font:15px/1.4 inherit;max-height:120px;background:#fff;color:#16222E}' +
-      '#nxEchV775 .e-env{appearance:none;border:0;cursor:pointer;border-radius:12px;background:#16324F;color:#fff;width:48px;height:46px;font-size:20px;flex:0 0 48px}' +
+      '#nxEchV775 textarea{flex:1;min-width:0;resize:none;border:1px solid #BFCBD8;border-radius:22px;padding:12px 16px;font:15px/1.4 inherit;max-height:120px;background:#fff;color:#16222E}' +
+      '#nxEchV775 .e-env{appearance:none;border:0;cursor:pointer;border-radius:50%;background:#16324F;color:#fff;width:46px;height:46px;font-size:19px;flex:0 0 46px}' +
       '#nxEchV775 .e-env[disabled]{opacity:.45;cursor:default}' +
       '#nxEchV775 .e-reste{font-size:11.5px;color:#5B6776;text-align:right;margin-top:6px}' +
       '#nxEchV775 .e-point{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7A8696;margin:0 2px;animation:nxEchP 1s infinite ease-in-out}' +
       '#nxEchV775 .e-point:nth-child(2){animation-delay:.15s}#nxEchV775 .e-point:nth-child(3){animation-delay:.3s}' +
       '@keyframes nxEchP{0%,80%,100%{opacity:.25}40%{opacity:1}}' +
       '@media (prefers-reduced-motion:reduce){#nxEchV775 .e-point{animation:none}}' +
-      '@media (prefers-color-scheme:dark){#nxEchV775{background:#10151B;color:#E6ECF2}#nxEchV775 .e-ia,#nxEchV775 .e-accueil,#nxEchV775 .e-gate,#nxEchV775 .e-pied,#nxEchV775 .e-sugg button,#nxEchV775 textarea,#nxEchV775 .e-classe select{background:#1A212A;color:#E6ECF2;border-color:#2C3745}#nxEchV775 .e-accueil h2,#nxEchV775 .e-sugg button{color:#E6ECF2}#nxEchV775 .e-accueil p{color:#C2CCD6}#nxEchV775 .e-note,#nxEchV775 .e-reste,#nxEchV775 .e-classe{color:#98A5B3}}';
+      '@media (prefers-color-scheme:dark){#nxEchV775{background:#10151B;color:#E6ECF2}#nxEchV775 .e-ia,#nxEchV775 .e-accueil,#nxEchV775 .e-gate,#nxEchV775 .e-pied,#nxEchV775 .e-sugg button,#nxEchV775 textarea,#nxEchV775 .e-classe select{background:#1A212A;color:#E6ECF2;border-color:#2C3745}#nxEchV775 .e-accueil h2,#nxEchV775 .e-sugg button{color:#E6ECF2}#nxEchV775 .e-accueil p{color:#C2CCD6}#nxEchV775 .e-accueil{background:none;border:0}#nxEchV775 .e-note,#nxEchV775 .e-reste,#nxEchV775 .e-classe{color:#98A5B3}}';
     document.head.appendChild(s);
   }
 
@@ -118,7 +120,7 @@
       '<div class="e-corps" data-e-corps aria-live="polite"></div>' +
       '<div class="e-pied" data-e-pied><label class="e-classe"><span>Ta classe</span><select data-e-classe><option value="">Facultatif</option>' +
       CLASSES.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('') + '</select></label>' +
-      '<div class="e-saisie"><textarea rows="1" maxlength="1500" placeholder="Écris ta question…" aria-label="Ta question" data-e-texte></textarea>' +
+      '<div class="e-saisie"><textarea rows="1" maxlength="1500" placeholder="Pose ta question à Échanger…" aria-label="Ta question" data-e-texte></textarea>' +
       '<button class="e-env" type="button" aria-label="Envoyer" data-e-envoyer>➤</button></div><div class="e-reste" data-e-reste></div></div>';
     document.body.appendChild(racine);
     racine.querySelector('[data-e-fermer]').addEventListener('click', fermer);
@@ -161,10 +163,11 @@
   }
 
   function afficherHistorique() {
-    corps().innerHTML = '';
+    corps().innerHTML = ''; corps().classList.remove('e-vide');
     if (!etatApp.messages.length) {
+      corps().classList.add('e-vide');
       var a = document.createElement('div'); a.className = 'e-accueil';
-      a.innerHTML = '<h2>Bonjour, je suis Échanger</h2><p>Je réponds à tes questions sur le programme scolaire guinéen, de la maternelle à la Terminale, et sur Nexora. Je t’explique la méthode pour que tu saches refaire seul.</p>';
+      a.innerHTML = '<span class="e-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><h2>Que veux-tu comprendre aujourd’hui ?</h2><p>Je peux te répondre sur tes cours, tes devoirs, le Brevet, le BAC et sur Nexora.</p>';
       corps().appendChild(a);
       var sg = document.createElement('div'); sg.className = 'e-sugg';
       SUGGESTIONS.forEach(function (q) {
@@ -184,7 +187,7 @@
     var ta = racine.querySelector('[data-e-texte]');
     var q = ta.value.replace(/\s+/g, ' ').trim();
     if (!q) return;
-    if (!etatApp.messages.length) corps().innerHTML = '';
+    if (!etatApp.messages.length) { corps().innerHTML = ''; corps().classList.remove('e-vide'); }
     etatApp.messages.push({ role: 'user', texte: q });
     bulle('user', esc(q));
     ta.value = ''; ta.style.height = 'auto';
