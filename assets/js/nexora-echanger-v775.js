@@ -10,7 +10,7 @@
   var CLASSES = ['Maternelle', '1ère année', '2ème année', '3ème année', '4ème année', '5ème année', '6ème année', '7ème année', '8ème année', '9ème année', '10ème année (Brevet)', '11ème année', '12ème année', 'Terminale (BAC)'];
   var SUGGESTIONS = ['Explique-moi une leçon que je ne comprends pas', 'Comment bien préparer le BAC ?', 'Comment fonctionne l’abonnement Nexora ?'];
 
-  var etatApp = { messages: [], classe: '', occupe: false, etat: null, pret: false };
+  var etatApp = { modeClaude: false, messages: [], classe: '', occupe: false, etat: null, pret: false };
 
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function lire() { try { return JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { return null; } }
@@ -194,6 +194,14 @@
     var ta = racine.querySelector('[data-e-texte]');
     var q = ta.value.replace(/\s+/g, ' ').trim();
     if (!q) return;
+    if (etatApp.modeClaude) {
+      var cl = etatApp.classe ? ' en classe de ' + etatApp.classe : '';
+      var txt = 'Tu es un professeur patient qui suit le programme officiel de la Guinée. Je suis un élève' + cl + '. Explique-moi simplement, étape par étape, avec des exemples tirés de la vie en Guinée, puis pose-moi une petite question pour vérifier que j’ai compris.\n\nMa question : ' + q.slice(0, 900);
+      var url = 'https://claude.ai/new?q=' + encodeURIComponent(txt);
+      ta.value = ''; ta.style.height = 'auto';
+      if (!window.open(url, '_blank', 'noopener')) location.href = url;
+      return;
+    }
     if (!etatApp.messages.length) { corps().innerHTML = ''; corps().classList.remove('e-vide'); }
     etatApp.messages.push({ role: 'user', texte: q });
     bulle('user', esc(q));
@@ -224,14 +232,19 @@
     if (sauve && Array.isArray(sauve.messages) && !etatApp.messages.length) { etatApp.messages = sauve.messages.filter(function (m) { return m && m.texte && (m.role === 'user' || m.role === 'assistant'); }); etatApp.classe = sauve.classe || ''; }
     racine.querySelector('[data-e-classe]').value = etatApp.classe;
     racine.hidden = false; document.documentElement.style.overflow = 'hidden';
-    pied(false, 'Un instant…'); etatApp.pret = false; afficherHistorique(); majReste();
+    etatApp.modeClaude = false; pied(false, 'Un instant…'); etatApp.pret = false; afficherHistorique(); majReste();
     appel('GET').then(function (r) {
       var d = r.data || {};
       if (r.status === 401 || d.code === 'connexion') return porte('Connecte-toi à ton compte Nexora pour poser tes questions.', 'Me connecter', ouvrirConnexion);
       if (r.status === 200 && d.success) {
         etatApp.etat = d.etat;
         if (d.etat && d.etat.abonne === false) return porte('Échanger est réservé aux abonnés Nexora. Abonne-toi pour poser toutes tes questions sur les cours.', 'S’abonner', ouvrirAbonnement);
-        if (d.disponible === false) { pied(false, 'Échanger arrive très bientôt'); return note('Échanger arrive très bientôt. Revenez dans quelques heures !'); }
+        if (d.disponible === false) {
+          etatApp.modeClaude = true; etatApp.pret = true;
+          pied(true, 'Écris ta question : elle s’ouvre dans Claude');
+          note('Ta question s’ouvre dans Claude, l’IA d’Anthropic, déjà préparée avec ton programme. Si besoin, crée ton compte Claude gratuit.');
+          racine.querySelector('[data-e-texte]').focus(); return;
+        }
         etatApp.pret = true; pied(true); majReste(); racine.querySelector('[data-e-texte]').focus();
         return;
       }
