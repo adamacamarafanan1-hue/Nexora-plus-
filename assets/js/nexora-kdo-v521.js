@@ -160,11 +160,9 @@
 
   function actionButton(row) {
     var status = normalizeAttemptStatus(row.my_attempt_status);
-    var noGift = Number(row.remaining_winners || 0) <= 0 || String(row.status) === 'completed';
     var replay = escapeHtml(replayLabel(row));
     var subReplay = escapeHtml(isFree(row) ? 'Nouvelle inscription' : 'Nouveau paiement et nouvelle validation');
-    if (noGift) return '<button type="button" class="btn nx-individual-enter" disabled>Cadeau terminé</button>';
-    if (status === 'won') return '<button type="button" class="btn nx-individual-enter" data-nx-individual-pay="' + escapeHtml(row.id) + '"><span>' + replay + '</span><small>' + subReplay + '</small></button>';
+        if (status === 'won') return '<button type="button" class="btn nx-individual-enter" data-nx-individual-pay="' + escapeHtml(row.id) + '"><span>' + replay + '</span><small>' + subReplay + '</small></button>';
     if (status === 'approved' || row.v273_can_start === true) {
       return '<button type="button" class="btn nx-individual-enter nx-individual-start-ready" data-nx-individual-start="' + escapeHtml(row.id) + '"><span>Commencer le défi</span><small>Choisissez 1 matière · ' + escapeHtml(String(Number(row.max_score || 50))) + ' questions</small></button>';
     }
@@ -173,38 +171,29 @@
     if (status === 'lost' || status === 'rejected' || status === 'cancelled') {
       return '<button type="button" class="btn nx-individual-enter" data-nx-individual-pay="' + escapeHtml(row.id) + '"><span>' + escapeHtml(isFree(row) ? 'Se réinscrire' : 'Se réinscrire — ' + feeLabel(row)) + '</span><small>Nouvelle tentative</small></button>';
     }
-    return '<button type="button" class="btn nx-individual-enter" data-nx-individual-pay="' + escapeHtml(row.id) + '"><span>' + escapeHtml(joinLabel(row)) + '</span><small>Validation obligatoire avant de jouer</small></button>';
+    return '<button type="button" class="btn nx-individual-enter" data-nx-individual-pay="' + escapeHtml(row.id) + '"><span>' + escapeHtml(joinLabel(row)) + '</span><small>Inscription rapide et gratuite</small></button>';
   }
 
   function giftAvailability(row) {
-    var remaining = Math.max(0, Number(row.remaining_winners || 0));
     var players = Math.max(0, Number(row.unique_players_count || 0));
     var attempts = Math.max(0, Number(row.total_attempts_count || 0));
-    var closed = remaining <= 0 || String(row.status || '') === 'completed';
-    if (closed) {
-      return '<div class="nx-individual-availability won"><b>Terminé</b><span>Participation fermée.</span></div>';
-    }
     if (players > 0) {
-      var attemptText = attempts > players ? ' · ' + attempts + ' tentatives' : '';
-      var winners = Math.max(0, Number(row.winners_count || 0));
-      var detail = winners > 0
-        ? remaining + ' gain' + (remaining > 1 ? 's' : '') + ' encore disponible' + (remaining > 1 ? 's' : '') + '.'
-        : 'Aucun gagnant pour le moment.';
-      return '<div class="nx-individual-availability available"><b>Disponible</b><span>' + players + ' joueur' + (players > 1 ? 's' : '') + attemptText + '. ' + detail + '</span></div>';
+      var attemptText = attempts > players ? ' · ' + attempts + ' parties jouées' : '';
+      return '<div class="nx-individual-availability available"><b>Ouvert</b><span>' + players + ' joueur' + (players > 1 ? 's' : '') + attemptText + '. Tu peux rejouer autant de fois que tu veux.</span></div>';
     }
-    return '<div class="nx-individual-availability available"><b>Disponible</b><span>Aucune partie enregistrée.</span></div>';
+    return '<div class="nx-individual-availability available"><b>Ouvert</b><span>Sois le premier à jouer. Tu peux rejouer autant de fois que tu veux.</span></div>';
   }
 
   function emptySlot(error) {
     var detail = String(error || 'Publication en attente.');
-    var heading = detail.indexOf('Connexion à Nexora') === 0 ? 'Connexion en cours' : detail.indexOf('Connexion internet') === 0 ? 'Connexion indisponible' : 'Aucun cadeau disponible';
+    var heading = detail.indexOf('Connexion à Nexora') === 0 ? 'Connexion en cours' : detail.indexOf('Connexion internet') === 0 ? 'Connexion indisponible' : 'Quiz indisponible';
     return '<div class="nx-adams-individual-gift nx-adams-individual-gift-empty">' +
-      '<div class="nx-adams-individual-gift-media" aria-hidden="true">KDO</div>' +
-      '<div class="nx-adams-individual-gift-copy"><small>KDO</small>' +
+      '<div class="nx-adams-individual-gift-media" aria-hidden="true">Quiz</div>' +
+      '<div class="nx-adams-individual-gift-copy"><small>Quiz</small>' +
       '<strong>' + escapeHtml(heading) + '</strong>' +
       '<span>' + escapeHtml(detail) + '</span></div></div>' +
       '<div class="nx-individual-target"><b>—</b><span>Objectif</span></div>' +
-      '<div class="nx-adams-individual-actions"><button type="button" class="btn nx-individual-enter" disabled><span>Indisponible</span><small>Aucun KDO</small></button></div>';
+      '<div class="nx-adams-individual-actions"><button type="button" class="btn nx-individual-enter" disabled><span>Indisponible</span><small>Aucun quiz</small></button></div>';
   }
 
   function render(data, error) {
@@ -228,20 +217,19 @@
       var sourceRow = byGame[key] || null;
       if (!sourceRow) { slot.innerHTML = emptySlot(error); return; }
       var row = key === 'kdo' ? Object.assign({}, sourceRow, { game_key:'kdo', game_name:'Défi Nexora KDO' }) : sourceRow;
-      var title = String(row.title || 'Cadeau Nexora');
-      var image = String(row.image_url || '').trim();
+      var title = 'Quiz Nexora';
+      var image = '';
       var target = Number(row.target_points || 45);
       var maxScore = Number(row.max_score || 50);
-      var remaining = Math.max(0, Number(row.remaining_winners || 0));
       var status = String(row.my_attempt_status || '');
       var message = statusText(row);
       slot.innerHTML = '<div class="nx-adams-individual-gift"><div class="nx-adams-individual-gift-media">' +
-        (image ? '<img loading="lazy" decoding="async" src="' + escapeHtml(image) + '" alt="' + escapeHtml(title) + '">' : 'KDO') +
-        '</div><div class="nx-adams-individual-gift-copy"><small>KDO</small><strong>' + escapeHtml(title) + '</strong>' +
+        'Quiz' +
+        '</div><div class="nx-adams-individual-gift-copy"><small>Quiz</small><strong>' + escapeHtml(title) + '</strong>' +
         '<span>' + escapeHtml(rulesLine(row)) + '</span>' +
-        '<div class="nx-adams-individual-gift-meta"><em>' + remaining + ' gain' + (remaining > 1 ? 's' : '') + ' disponible' + (remaining > 1 ? 's' : '') + '</em></div>' +
+        '<div class="nx-adams-individual-gift-meta"><em>Gratuit · rejouable</em></div>' +
         '</div></div>' + giftAvailability(row) +
-        '<div class="nx-individual-target"><b>' + target + '/' + maxScore + '</b><span>Objectif</span></div>' +
+        '<div class="nx-individual-target"><b>' + target + '/' + maxScore + '</b><span>Score à viser</span></div>' +
         (message ? '<div class="nx-individual-status ' + escapeHtml(status) + '" role="status">' + escapeHtml(message) + (status === 'payment_pending' ? '' : '') + '</div>' : '') +
         '<div class="nx-adams-individual-actions">' + actionButton(row) + '</div>';
     });
@@ -303,7 +291,7 @@
       subscribe();
     } catch (error) {
       logRefreshError(error);
-      render([], navigator.onLine === false ? 'Connexion internet indisponible.' : 'Aucun cadeau individuel n’est disponible pour le moment.');
+      render([], navigator.onLine === false ? 'Connexion internet indisponible.' : 'Le quiz n’est pas disponible pour le moment.');
       scheduleConnectionRetry(8000);
     } finally {
       loading = false;
@@ -381,7 +369,7 @@
     page.setAttribute('aria-modal', 'true');
     page.setAttribute('aria-label', 'Inscription et paiement KDO');
     page.innerHTML = '<header class="nx-individual-payment-head"><button type="button" class="nx-individual-payment-back" data-nx-individual-payment-close aria-label="Retour aux jeux">←</button>' +
-      '<div class="nx-individual-payment-head-copy"><small>KDO</small><strong data-nx-individual-payment-title>Inscription au défi KDO</strong></div></header>' +
+      '<div class="nx-individual-payment-head-copy"><small>Quiz</small><strong data-nx-individual-payment-title>Inscription au Quiz</strong></div></header>' +
       '<div class="nx-individual-payment-body"><div class="nx-individual-payment-shell" data-nx-individual-payment-content></div></div>';
     document.body.appendChild(page);
     return page;
@@ -432,12 +420,12 @@
   }
 
   function openPayment(row) {
-    if (!row) return notify('Ce cadeau individuel n’est pas disponible.');
+    if (!row) return notify('Ce quiz n’est pas disponible.');
     selected = row;
     var page = ensurePaymentPage();
     var content = page.querySelector('[data-nx-individual-payment-content]');
-    var gift = String(row.title || 'Cadeau Nexora');
-    var image = String(row.image_url || '').trim();
+    var gift = 'Quiz Nexora';
+    var image = '';
     var target = Number(row.target_points || 45);
     var maxScore = Number(row.max_score || 50);
     var fee = feeOf(row);
@@ -445,15 +433,15 @@
     content.innerHTML = '<div class="nx-individual-payment-progress" aria-label="Étapes pour participer">' +
       '<span class="active"><b>1</b>Inscription</span>' + (free ? '' : '<span><b>2</b>Paiement</span>') + '<span><b>' + (free ? '2' : '3') + '</b>Validation</span></div>' +
       '<section class="nx-individual-payment-gift"><div class="nx-individual-payment-gift-media">' +
-      (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(gift) + '">' : 'KDO') +
-      '</div><div class="nx-individual-payment-gift-copy"><small>KDO</small><strong>' + escapeHtml(gift) + '</strong>' +
-      '<span>Objectif : ' + target + '/' + maxScore + '. Une seule partie après validation.</span></div></section>' +
+      'Quiz' +
+      '</div><div class="nx-individual-payment-gift-copy"><small>Quiz</small><strong>' + escapeHtml(gift) + '</strong>' +
+      '<span>Score à viser : ' + target + '/' + maxScore + '. Tu peux rejouer autant de fois que tu veux.</span></div></section>' +
       '<section class="nx-individual-payment-card">' +
-      '<div class="nx-kdo-registration-intro-v375"><span>1</span><div><strong>Inscris-toi avant de tenter ta chance</strong><small>' + (free ? 'Le nom, le prénom et le contact permettent à l’administration d’identifier le joueur.' : 'Le nom, le prénom et le contact permettent à l’administration d’identifier le joueur et de valider son paiement.') + '</small></div></div>' +
+      '<div class="nx-kdo-registration-intro-v375"><span>1</span><div><strong>Inscris-toi avant de commencer</strong><small>' + (free ? 'Le nom, le prénom et le contact permettent à l’administration d’identifier le joueur.' : 'Le nom, le prénom et le contact permettent à l’administration d’identifier le joueur et de valider son paiement.') + '</small></div></div>' +
       '<div class="nx-kdo-registration-grid-v375">' +
       '<div class="nx-individual-field"><label for="nxIndividualFirstName">Prénom du joueur</label><input id="nxIndividualFirstName" autocomplete="given-name" maxlength="50" placeholder="Exemple : Mariama" type="text"><small>Écris le véritable prénom du joueur.</small></div>' +
       '<div class="nx-individual-field"><label for="nxIndividualLastName">Nom du joueur</label><input id="nxIndividualLastName" autocomplete="family-name" maxlength="50" placeholder="Exemple : Camara" type="text"><small>Écris le véritable nom du joueur.</small></div>' +
-      '<div class="nx-individual-field wide"><label for="nxIndividualContact">Contact du joueur</label><input id="nxIndividualContact" data-nx-kdo-phone-v375 inputmode="tel" autocomplete="tel" maxlength="18" placeholder="Exemple : 622 00 00 00" type="tel"><small>Ce contact servira pour la confirmation et, en cas de victoire, pour joindre le joueur.</small></div>' +
+      '<div class="nx-individual-field wide"><label for="nxIndividualContact">Contact du joueur</label><input id="nxIndividualContact" data-nx-kdo-phone-v375 inputmode="tel" autocomplete="tel" maxlength="18" placeholder="Exemple : 622 00 00 00" type="tel"><small>Ce contact sert à la confirmation de l’inscription.</small></div>' +
       '</div>' + (free ? '' : '<div class="nx-kdo-payment-separator-v375"></div>' +
       '<div class="nx-individual-payment-amount"><span>Montant obligatoire à payer</span><strong>' + escapeHtml(money(fee)) + '</strong></div>' +
       '<div class="nx-individual-merchant"><div><small>Numéro Orange Money officiel</small><strong data-nx-individual-merchant-number>' + escapeHtml(merchantText()) + '</strong></div><button type="button" data-nx-individual-copy-merchant>Copier</button></div>' +
@@ -681,20 +669,19 @@
     var score = Number(data && data.score || 0);
     var maxScore = Number(data && data.max_score || 50);
     var target = Number(data && data.target_points || 45);
-    var gift = String(data && data.title || 'le cadeau');
-    modal.dataset.challengeId = String(data && data.challenge_id || '');
+        modal.dataset.challengeId = String(data && data.challenge_id || '');
     modal.dataset.gameKey = String(data && data.game_key || '');
-    title.textContent = won ? 'Félicitations, vous avez gagné !' : 'Courage, continuez à progresser !';
+    title.textContent = won ? 'Bravo, objectif atteint !' : 'Courage, continue à progresser !';
     content.innerHTML = '<div class="nx-individual-result-card ' + (won ? 'won' : 'lost') + '">' +
       '<div class="nx-individual-result-icon" aria-hidden="true">' + (won ? '🏆' : '✓') + '</div>' +
-      '<strong>' + (won ? 'Bravo ! Vous avez gagné ' + escapeHtml(gift) : 'Vous n’avez pas gagné cette fois, mais votre progression compte') + '</strong>' +
+      '<strong>' + (won ? 'Bravo ! Tu as atteint le score à viser' : 'Pas encore le score à viser, mais ta progression compte') + '</strong>' +
       '<div class="nx-individual-result-score"><b>' + score + '</b><span>sur ' + maxScore + ' points</span></div>' +
       '<p>' + (won
-        ? 'Votre victoire est enregistrée et vérifiée par Nexora. L’administration vous contactera pour la remise du cadeau.'
-        : 'Vous avez obtenu ' + score + ' point' + (score > 1 ? 's' : '') + '. L’objectif était de ' + target + ' points. Continuez à vous entraîner : chaque nouvelle partie peut vous rapprocher de la victoire. ' + replaySentence(selected || {})) + '</p>' +
+        ? 'Ton score est enregistré et vérifié par Nexora. Rejoue pour faire encore mieux.'
+        : 'Vous avez obtenu ' + score + ' point' + (score > 1 ? 's' : '') + '. Le score à viser était de ' + target + ' points. Continue à t’entraîner : chaque nouvelle partie te rapproche de l’objectif. ' + replaySentence(selected || {})) + '</p>' +
       '</div><div class="nx-individual-result-actions-v394">' +
       '<button type="button" class="btn primary" data-nx-individual-result-pay>' + escapeHtml(replayLabel((selected || {}))) + '</button>' +
-      (won ? '<button type="button" class="btn nx-individual-secondary" data-nx-individual-view-gift>Voir le cadeau</button>' : '') +
+      
       '<button type="button" class="btn nx-individual-secondary" data-nx-individual-close>Fermer</button></div>';
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -1021,14 +1008,14 @@ async function requestClose(){if(state&&state.phase==='playing'){if(!confirm('En
 function ensure(){if(overlay)return overlay;overlay=document.createElement('section');overlay.className='nxq397';overlay.hidden=true;overlay.innerHTML='<header class="nxq397-head"><button class="nxq397-close" type="button" aria-label="Fermer">←</button><div class="nxq397-head-copy"><small>KDO — Défi Nexora</small><strong>15 secondes par question</strong></div></header><div class="nxq397-body"><div class="nxq397-shell"></div></div>';document.body.appendChild(overlay);overlay.querySelector('.nxq397-close').onclick=requestClose;return overlay}
 function open(){try{window.__NEXORA_FORCE_GAME_CLOSE=true;if(window.NexoraAdamsGames&&typeof window.NexoraAdamsGames.close==='function')window.NexoraAdamsGames.close()}catch(e){window.nxLog&&window.nxLog(e)}finally{window.__NEXORA_FORCE_GAME_CLOSE=false}document.querySelectorAll('#screen-access [data-nx-kdo-board-preview-v297],#screen-access .nx-kdo-board-section-v308,#screen-access .nx-kdo-board-frame-wrap-v297,#screen-access .nx-kdo-board-frame-v297,#screen-access [data-nx-board-preview-v432],#screen-access .nx-board-preview-v432,#screen-access [data-nx-adams-game-frame-wrap],#screen-access [data-nx-individual-game-slot] iframe,#screen-access [data-nx-individual-game-slot] .plateau').forEach(function(n){n.remove()});document.querySelectorAll('[data-nx-adams-game-modal],.nx-adams-game-modal').forEach(function(n){n.hidden=true;n.setAttribute('aria-hidden','true')});ensure().hidden=false;document.body.classList.add('nx-quiz-open-v399');document.body.style.overflow='hidden';try{navigator.wakeLock&&navigator.wakeLock.request('screen')}catch(e){window.nxLog&&window.nxLog(e)}}
 function subjectCounts(){return rpc('nexora_kdo_subjects_v445',{}).then(function(d){var m={};(Array.isArray(d)?d:[]).forEach(function(x){m[String(x.key)]=Number(x.questions||0)});return m}).catch(function(){return null})}
-function selectScreen(row,attempt){activeRow=row;activeAttempt=attempt;open();applySubjectAvailability();shell().innerHTML='<div class="nxq397-intro"><div style="font-size:46px">🎯</div><h2>Choisissez une matière</h2><p>Les questions et le score sont contrôlés par le serveur.</p><div class="nxq397-rules"><div class="nxq397-rule"><b>'+ruleTotal()+'</b><span>questions</span></div><div class="nxq397-rule"><b>15 s</b><span>par question</span></div><div class="nxq397-rule"><b>'+ruleTarget()+'/'+ruleTotal()+'</b><span>pour gagner</span></div></div><div class="nxq397-subjects">'+Object.keys(SUBJECTS).map(function(k){var b=SUBJECTS[k];return '<button type="button" class="nxq397-subject" data-subject="'+k+'"><i>'+b.icon+'</i><span>'+esc(b.name)+'</span><small>Ouvrir</small></button>'}).join('')+'</div></div>';shell().querySelectorAll('[data-subject]').forEach(function(b){b.onclick=function(){beginSubject(b.dataset.subject)}})}
+function selectScreen(row,attempt){activeRow=row;activeAttempt=attempt;open();applySubjectAvailability();shell().innerHTML='<div class="nxq397-intro"><div style="font-size:46px">🎯</div><h2>Choisissez une matière</h2><p>Les questions et le score sont contrôlés par le serveur.</p><div class="nxq397-rules"><div class="nxq397-rule"><b>'+ruleTotal()+'</b><span>questions</span></div><div class="nxq397-rule"><b>15 s</b><span>par question</span></div><div class="nxq397-rule"><b>'+ruleTarget()+'/'+ruleTotal()+'</b><span>à viser</span></div></div><div class="nxq397-subjects">'+Object.keys(SUBJECTS).map(function(k){var b=SUBJECTS[k];return '<button type="button" class="nxq397-subject" data-subject="'+k+'"><i>'+b.icon+'</i><span>'+esc(b.name)+'</span><small>Ouvrir</small></button>'}).join('')+'</div></div>';shell().querySelectorAll('[data-subject]').forEach(function(b){b.onclick=function(){beginSubject(b.dataset.subject)}})}
 function applySubjectAvailability(){var besoin=ruleTotal();subjectCounts().then(function(map){if(!map)return;var box=shell();if(!box)return;box.querySelectorAll('[data-subject]').forEach(function(b){var n=Number(map[b.dataset.subject]||0),small=b.querySelector('small');if(n>=besoin){if(small)small.textContent='Ouvrir';b.disabled=false;b.classList.remove('nxq397-subject-off');}else{if(small)small.textContent=n?('Bientôt — '+n+'/'+besoin+' questions'):'Bientôt disponible';b.disabled=true;b.classList.add('nxq397-subject-off');}})})}
 async function beginSubject(subject){if(busy)return;busy=true;shell().innerHTML='<div class="nxq397-result"><div class="icon">⏳</div><h2>Préparation du défi…</h2><p>Supabase sélectionne vos questions.</p></div>';try{var attemptId=activeAttempt&&activeAttempt.attempt_id||activeRow&&activeRow.my_attempt_id;if(!attemptId)throw new Error('Tentative introuvable.');var d=await rpc('nexora_kdo_quiz_start_v445',{p_attempt_id:attemptId,p_subject:subject});if(!d||d.success!==true)throw new Error(d&&d.message||'Démarrage impossible.');if(!Array.isArray(d.questions)||!d.questions.length)throw new Error('Les questions sécurisées ne sont pas disponibles. Exécutez le SQL du KDO dans Supabase.');state={attempt_id:attemptId,challenge_id:activeRow&&activeRow.id,subject:subject,session_id:d.session_id,questions:d.questions,pos:0,score:0,answers:[],phase:'playing',remaining:15,started_at:Date.now()};showQuestion()}catch(e){shell().innerHTML='<div class="nxq397-result"><div class="icon">⚠️</div><h2>Démarrage impossible</h2><p>'+esc(String(e&&e.message||e))+'</p><div class="nxq397-actions"><button class="nxq397-btn secondary" id="nxqBackSubjects">Retour aux matières</button></div></div>';var back=document.getElementById('nxqBackSubjects');if(back)back.onclick=function(){busy=false;selectScreen(activeRow,activeAttempt)};busy=false}}
 function resume(row,attemptId){activeRow=row;activeAttempt={attempt_id:attemptId};state={attempt_id:attemptId,challenge_id:row&&row.id,phase:'closed'};open();shell().innerHTML='<div class="nxq397-result"><div class="icon">🔒</div><h2>Partie terminée</h2><p>Une partie commencée ne peut pas être reprise. '+replayText()+'</p><div class="nxq397-actions"><button class="nxq397-btn" id="nxqNewPayClosed">'+(ruleIsFree()?'Nouvelle partie':'Nouvelle partie — payer '+feeText())+'</button><button class="nxq397-btn secondary" id="nxqCloseClosed">Fermer</button></div></div>';document.getElementById('nxqCloseClosed').onclick=closeLocal;document.getElementById('nxqNewPayClosed').onclick=function(){var challengeId=row&&row.id;closeLocal();if(window.NexoraIndividualChallenge&&window.NexoraIndividualChallenge.openPaymentByChallenge)window.NexoraIndividualChallenge.openPaymentByChallenge(challengeId)}}
 function showQuestion(){busy=false;if(timer)clearInterval(timer);var bank=SUBJECTS[state.subject],question=state.questions[state.pos],r=rnd(hash(state.session_id+':'+state.pos)),opts=shuffled(Array.isArray(question.o)?question.o:[],r);state.remaining=15;shell().innerHTML='<div class="nxq397-top"><div class="nxq397-pill">'+bank.icon+' '+esc(bank.name)+' · Question '+(state.pos+1)+'/'+ruleTotal()+'</div><div class="nxq397-pill score">Score provisoire : '+state.score+'/'+ruleTotal()+'</div><div class="nxq397-timer" id="nxq397Timer">15</div></div><div class="nxq397-progress"><span style="width:'+((state.pos)/Math.max(1,ruleTotal())*100)+'%"></span></div><div class="nxq397-card"><div class="nxq397-question">'+esc(question.q)+'</div><div class="nxq397-options">'+opts.map(function(o){return '<button type="button" class="nxq397-option" data-answer="'+esc(o)+'">'+esc(o)+'</button>'}).join('')+'</div><div class="nxq397-feedback"></div></div>';shell().querySelectorAll('[data-answer]').forEach(function(b){b.onclick=function(){submitAnswer(b.dataset.answer,b)}});timer=setInterval(function(){state.remaining--;var el=document.getElementById('nxq397Timer');if(el){el.textContent=state.remaining;el.classList.toggle('danger',state.remaining<=5)}if(state.remaining<=0)submitAnswer(null,null)},1000)}
 async function submitAnswer(value,button){if(busy)return;busy=true;if(timer)clearInterval(timer);timer=null;var question=state.questions[state.pos],buttons=shell().querySelectorAll('[data-answer]'),fb=shell().querySelector('.nxq397-feedback');buttons.forEach(function(b){b.disabled=true});if(fb)fb.textContent='Vérification de la réponse…';try{var d=await rpc('nexora_kdo_quiz_answer_v445',{p_attempt_id:state.attempt_id,p_session_id:state.session_id,p_question_id:question.id,p_answer:value,p_time_left:state.remaining});if(!d||d.success!==true)throw new Error(d&&d.message||'Réponse non enregistrée.');buttons.forEach(function(b){if(b.dataset.answer===String(d.correct_answer||''))b.classList.add('correct');else if(b===button&&!d.correct)b.classList.add('wrong')});if(d.correct===true)state.score++;state.answers.push({question_id:question.id,answer:value,correct:d.correct===true});if(fb)fb.textContent=value===null?'Temps écoulé. Bonne réponse : '+String(d.correct_answer||''):(d.correct?'Bonne réponse !':'Réponse incorrecte. Bonne réponse : '+String(d.correct_answer||''));setTimeout(function(){state.pos++;if(state.pos>=ruleTotal())finish();else showQuestion()},900)}catch(e){if(fb)fb.innerHTML='<span>'+esc(String(e&&e.message||e))+'</span><br><button type="button" class="nxq397-btn secondary" id="nxqAnswerRetry">Réessayer l’enregistrement</button>';var retry=document.getElementById('nxqAnswerRetry');if(retry)retry.onclick=function(){busy=false;submitAnswer(value,button)}}}
 async function finish(){state.phase='finishing';busy=true;if(timer)clearInterval(timer);timer=null;shell().innerHTML='<div class="nxq397-result"><div class="icon">⏳</div><h2>Calcul du résultat officiel…</h2><p>Le serveur vérifie vos réponses.</p></div>';try{var d=await rpc('nexora_kdo_quiz_finish_v445',{p_attempt_id:state.attempt_id,p_session_id:state.session_id,p_subject:state.subject});if(!d||d.success!==true)throw new Error(d&&d.message||'Résultat non enregistré.');state.phase='finished';result(d)}catch(e){state.phase='playing';busy=false;var msg=String(e&&e.message||e||'');shell().innerHTML='<div class="nxq397-result"><div class="icon">⚠️</div><h2>Résultat non enregistré</h2><p>'+esc(msg)+'</p><div class="nxq397-actions"><button class="nxq397-btn" id="nxqRetry">Réessayer</button></div></div>';document.getElementById('nxqRetry').onclick=finish}}
-function result(d){var won=d.won===true,score=Number(d.score||0);clear(state&&state.attempt_id);busy=false;shell().innerHTML='<div class="nxq397-result"><div class="icon">'+(won?'🏆':'👏')+'</div><h2>'+(won?'Félicitations, vous avez gagné !':'Courage, continuez à apprendre !')+'</h2><div class="nxq397-score">'+score+'/'+ruleTotal()+'</div><p>'+(won?'Le serveur a confirmé au moins '+ruleTarget()+' bonnes réponses sur '+ruleTotal()+'. Votre victoire est enregistrée.':'Le serveur a confirmé un score inférieur à '+ruleTarget()+'/'+ruleTotal()+'. '+replayText())+'</p><div class="nxq397-actions"><button class="nxq397-btn" id="nxqNewPay">'+(ruleIsFree()?'Nouvelle partie':'Nouvelle partie — payer '+feeText())+'</button><button class="nxq397-btn secondary" id="nxqClose">Fermer</button></div></div>';document.getElementById('nxqClose').onclick=function(){closeLocal();window.NexoraIndividualChallenge&&window.NexoraIndividualChallenge.refresh&&window.NexoraIndividualChallenge.refresh()};document.getElementById('nxqNewPay').onclick=function(){var challengeId=state&&state.challenge_id;closeLocal();if(window.NexoraIndividualChallenge&&window.NexoraIndividualChallenge.openPaymentByChallenge)window.NexoraIndividualChallenge.openPaymentByChallenge(challengeId)}}
+function result(d){var won=d.won===true,score=Number(d.score||0);clear(state&&state.attempt_id);busy=false;shell().innerHTML='<div class="nxq397-result"><div class="icon">'+(won?'🏆':'👏')+'</div><h2>'+(won?'Bravo, objectif atteint !':'Courage, continue à apprendre !')+'</h2><div class="nxq397-score">'+score+'/'+ruleTotal()+'</div><p>'+(won?'Le serveur a confirmé au moins '+ruleTarget()+' bonnes réponses sur '+ruleTotal()+'. Ton score est enregistré.':'Le serveur a confirmé un score inférieur à '+ruleTarget()+'/'+ruleTotal()+'. '+replayText())+'</p><div class="nxq397-actions"><button class="nxq397-btn" id="nxqNewPay">'+(ruleIsFree()?'Nouvelle partie':'Nouvelle partie — payer '+feeText())+'</button><button class="nxq397-btn secondary" id="nxqClose">Fermer</button></div></div>';document.getElementById('nxqClose').onclick=function(){closeLocal();window.NexoraIndividualChallenge&&window.NexoraIndividualChallenge.refresh&&window.NexoraIndividualChallenge.refresh()};document.getElementById('nxqNewPay').onclick=function(){var challengeId=state&&state.challenge_id;closeLocal();if(window.NexoraIndividualChallenge&&window.NexoraIndividualChallenge.openPaymentByChallenge)window.NexoraIndividualChallenge.openPaymentByChallenge(challengeId)}}
 window.NexoraKdoQuiz={startPrepared:function(row,attempt){selectScreen(row,attempt)},resume:resume,close:requestClose,banks:SUBJECTS};
 })();
 

@@ -8333,8 +8333,8 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 <h1 id="nxKdoTitleV308">KDO</h1>
 <p data-nx-kdo-intro-v443="">Choisissez une matière et relevez le défi.</p>
 </header>
-<section aria-label="Cadeau KDO" class="nx-kdo-section-v297 nx-kdo-gift-section-v308">
-<header class="nx-kdo-section-head-v297 nx-kdo-section-head-v308"><h2>Cadeau</h2><span data-nx-kdo-goal-v443="">Objectif du défi</span></header>
+<section aria-label="Quiz Nexora" class="nx-kdo-section-v297 nx-kdo-gift-section-v308">
+<header class="nx-kdo-section-head-v297 nx-kdo-section-head-v308"><h2>Quiz</h2><span data-nx-kdo-goal-v443="">Score à viser</span></header>
 <div class="nx-kdo-gift-slot-v297" data-nx-individual-game-slot="kdo"></div>
 </section>
 </div>
@@ -24194,7 +24194,7 @@ document.addEventListener('nx-screen-change',function(e){setCurrent(e&&e.detail?
     } else {
       h += action('📚', 'Choisir ma classe', 'Maternelle, primaire, collège, lycée', 'choisir', true);
     }
-    h += action('🎁', 'Jouer au KDO gratuit', '45 bonnes réponses sur 50 et vous gagnez le cadeau', 'kdo', false);
+    h += action('❓', 'Jouer au Quiz gratuit', '50 questions, 15 secondes chacune, rejouable', 'kdo', false);
     if (ctx.cree) h += action('🧭', 'Découvrir Nexora en 2 minutes', 'Le guide pour bien démarrer', 'guide', false);
     if (!estInstallee()) h += action('📲', 'Installer Nexora sur ce téléphone', 'Une icône sur l’écran d’accueil, comme une application', 'installer', false);
     h += '<div class="nxb695-pied">' +
