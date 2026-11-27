@@ -3187,8 +3187,7 @@ button,a,input,textarea,select{touch-action:manipulation}
 @media(max-width:430px){
   /* V767 : le nom « Nexora Académie » tient en entier ; la barre du bas affiche « Communauté » sans « … ». */
   .nx-brand-v58 .nx-brand-text-v58{max-width:132px!important;font-size:16px!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap}
-  .mobile-nav-inner .nav-btn>span:not(.nav-icon){font-size:10px!important;letter-spacing:-.02em;text-overflow:clip!important;max-width:none!important;overflow:visible!important}
-  .mobile-nav-inner .nav-btn{padding-left:1px;padding-right:1px}}
+  .mobile-nav-inner .nav-btn>span:not(.nav-icon){text-overflow:clip!important;max-width:none!important;overflow:visible!important}}
 
 /* ---- composant consolidé : nx-v73-premium-top-refinement ---- */
 /* V73 — finition premium de l’en-tête et des accès prioritaires */
@@ -7438,10 +7437,12 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 @media(max-width:860px){.mobile-nav{display:block}}
 
 .mobile-nav-inner{
-  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
   gap:0;width:100%;max-width:720px;margin:0 auto;
 }
 
+/* V771 : la barre du bas ne garde que Accueil, Communauté et KDO ; les espaces (Élèves, Pro, Jeu Adams) s'ouvrent depuis l'Accueil. */
+.mobile-nav-inner>.nav-btn[hidden]{display:none!important}
 .mobile-nav .nav-btn{
   position:relative;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
@@ -8711,8 +8712,8 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 </div>
 <nav aria-label="Navigation mobile" class="mobile-nav"><div class="mobile-nav-inner" data-nav-mobile="">
 <button aria-label="Accueil Nexora" class="nav-btn" data-action="go" data-screen="student-work-feed" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M12 2.9 1.8 11.2h2.9V21h5.1v-5.9h4.4V21h5.1v-9.8h2.9L12 2.9Z"/></svg></span><span>Accueil</span></button>
-<button aria-label="Espace des élèves" class="nav-btn" data-nx-nav-espace-v509="eleves" data-nx-space-entry-v507="student" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M12 3 1.2 8.3 12 13.6l10.8-5.3L12 3Zm-6.4 7.9v3.9c0 2 2.9 3.5 6.4 3.5s6.4-1.5 6.4-3.5v-3.9L12 14l-6.4-3.1Zm15.6-.6v5.4h1.6v-5.4h-1.6Z"/></svg></span><span>Élèves</span></button><button aria-label="Espace professionnel" class="nav-btn" data-nx-nav-espace-v509="pro" data-nx-space-entry-v507="professional" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M9.1 4.4A1.6 1.6 0 0 1 10.7 3h2.6a1.6 1.6 0 0 1 1.6 1.4V6h4.3A2.3 2.3 0 0 1 21.5 8.3v3H13.1v-1.5h-2.2v1.5H2.5v-3A2.3 2.3 0 0 1 4.8 6h4.3V4.4Zm1.9.4V6h2V4.8h-2ZM2.5 12.9h8.4v1.6h2.2v-1.6h8.4v5.4a2.3 2.3 0 0 1-2.3 2.3H4.8a2.3 2.3 0 0 1-2.3-2.3v-5.4Z"/></svg></span><span>Pro</span></button>
-<button class="nav-btn" data-action="go" data-screen="adams" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M5.4 2.8h13.2a2.6 2.6 0 0 1 2.6 2.6v13.2a2.6 2.6 0 0 1-2.6 2.6H5.4a2.6 2.6 0 0 1-2.6-2.6V5.4a2.6 2.6 0 0 1 2.6-2.6Zm2.9 3.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Zm7.4 0a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8ZM12 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Zm-3.7 4.2a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Zm7.4 0a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Z" fill-rule="evenodd"/></svg></span><span>Jeu Adams</span></button>
+<button hidden="" aria-label="Espace des élèves" class="nav-btn" data-nx-nav-espace-v509="eleves" data-nx-space-entry-v507="student" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M12 3 1.2 8.3 12 13.6l10.8-5.3L12 3Zm-6.4 7.9v3.9c0 2 2.9 3.5 6.4 3.5s6.4-1.5 6.4-3.5v-3.9L12 14l-6.4-3.1Zm15.6-.6v5.4h1.6v-5.4h-1.6Z"/></svg></span><span>Élèves</span></button><button hidden="" aria-label="Espace professionnel" class="nav-btn" data-nx-nav-espace-v509="pro" data-nx-space-entry-v507="professional" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M9.1 4.4A1.6 1.6 0 0 1 10.7 3h2.6a1.6 1.6 0 0 1 1.6 1.4V6h4.3A2.3 2.3 0 0 1 21.5 8.3v3H13.1v-1.5h-2.2v1.5H2.5v-3A2.3 2.3 0 0 1 4.8 6h4.3V4.4Zm1.9.4V6h2V4.8h-2ZM2.5 12.9h8.4v1.6h2.2v-1.6h8.4v5.4a2.3 2.3 0 0 1-2.3 2.3H4.8a2.3 2.3 0 0 1-2.3-2.3v-5.4Z"/></svg></span><span>Pro</span></button>
+<button hidden="" class="nav-btn" data-action="go" data-screen="adams" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M5.4 2.8h13.2a2.6 2.6 0 0 1 2.6 2.6v13.2a2.6 2.6 0 0 1-2.6 2.6H5.4a2.6 2.6 0 0 1-2.6-2.6V5.4a2.6 2.6 0 0 1 2.6-2.6Zm2.9 3.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Zm7.4 0a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8ZM12 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Zm-3.7 4.2a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Zm7.4 0a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Z" fill-rule="evenodd"/></svg></span><span>Jeu Adams</span></button>
 <button class="nav-btn" data-action="go" data-screen="network" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M9.2 11.8a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Zm7.6.2a2.9 2.9 0 1 0 0-5.8 2.9 2.9 0 0 0 0 5.8ZM2.3 19.3c0-3.1 3.1-5.4 6.9-5.4s6.9 2.3 6.9 5.4v1.1H2.3v-1.1Zm15.5-4c2.4.5 4 2.1 4 4v1.1h-3.6v-1.1c0-1.4-.4-2.7-1.2-3.8l.8-.2Z"/></svg></span><span>Communauté</span></button>
 <button aria-label="KDO Nexora" class="nav-btn nx-access-main-v165 nx-kdo-nav-v174 nx-kdo-first-v308" data-action="go" data-nx-kdo-priority="1" data-screen="access" type="button"><span aria-hidden="true" class="nav-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M11 21H5.3A2.8 2.8 0 0 1 2.5 18.2V13H11v8Zm2 0v-8h8.5v5.2A2.8 2.8 0 0 1 18.7 21H13ZM2 11.2V8.6A2 2 0 0 1 4 6.6h1.9A3 3 0 0 1 8.7 2.4c1.3 0 2.4.8 3.3 2 .9-1.2 2-2 3.3-2a3 3 0 0 1 2.8 4.2H20a2 2 0 0 1 2 2v2.6H2Zm6.7-6.8a1.1 1.1 0 0 0-1 1.6c.2.4.6.6 1.3.6h1.6c-.6-1.5-1.2-2.2-1.9-2.2Zm6.6 0c-.7 0-1.3.7-1.9 2.2H15c.7 0 1.1-.2 1.3-.6a1.1 1.1 0 0 0-1-1.6Z"/></svg></span><span>KDO</span></button>
 </div></nav>
