@@ -1110,7 +1110,7 @@
     s.textContent =
       '.nx-carte{position:fixed;inset:0;z-index:99991;display:flex;' +
       'align-items:center;justify-content:center;padding:20px;' +
-      'background:rgba(10,25,45,.55);backdrop-filter:blur(2px);' +
+      'background:rgba(10,25,45,.55);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);' +
       'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
       'opacity:0;transition:opacity .3s ease}' +
       '.nx-carte.nx-vu{opacity:1}' +
