@@ -5513,6 +5513,14 @@ html{scroll-behavior:smooth;text-size-adjust:100%}body{-webkit-tap-highlight-col
 }
 .nx-space-access-btn-v520:hover{filter:brightness(.96);transform:translateY(-1px)}
 .nx-space-access-btn-v520:focus-visible{outline:3px solid rgba(47,119,201,.25);outline-offset:3px}
+.nx-abo-bandeau-v763{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 18px;padding:14px 16px;border:1px solid rgba(232,179,104,.55);border-radius:12px;background:rgba(8,24,44,.42)}
+.nx-abo-texte-v763{min-width:0;display:grid;gap:3px}
+.nx-abo-texte-v763 b{color:#F4F8FC;font-size:15px;font-weight:900;line-height:1.25}
+.nx-abo-texte-v763 span{color:rgba(244,248,252,.78);font-size:12.5px;font-weight:600;line-height:1.4}
+.nx-abo-bouton-v763{flex:0 0 auto;min-height:46px;padding:11px 20px;border:0;border-radius:10px;background:#E8B368;color:#08182C;font-family:inherit;font-size:14px;font-weight:950;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.22)}
+.nx-abo-bouton-v763:hover{filter:brightness(.96)}
+.nx-abo-bouton-v763:focus-visible{outline:3px solid rgba(244,248,252,.55);outline-offset:3px}
+@media(max-width:560px){.nx-abo-bandeau-v763{flex-direction:column;align-items:stretch}.nx-abo-bouton-v763{width:100%}}
 .nx-modal-card-option-v520{
   display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
   margin-top:13px;padding-top:12px;border-top:1px solid #E0E6EC;color:#66717E;font-size:11.5px;font-weight:650
@@ -8209,7 +8217,7 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 </div>
 </div>
 <section class="screen active" data-screen-panel="student-work-feed" id="screen-student-work-feed">
-<section aria-labelledby="nxPortesTitreAccueil" class="nx-espaces-v510" data-nx-espaces-v510="accueil"><header class="nx-espaces-head-v510"><small>Nexora Académie</small><h2 id="nxPortesTitreAccueil">Choisissez votre espace</h2><p>Un compte, deux parcours. Ouvrez celui qui correspond à votre objectif.</p></header><div aria-label="Les deux espaces de Nexora" class="nx-espaces-grille-v510" role="group"><button class="nx-porte-v510" data-nx-porte-v510="eleves" data-nx-space-entry-v507="student" type="button"><span aria-hidden="true" class="nx-porte-rang-v510">01</span><span class="nx-porte-sur-v510">Espace</span><span class="nx-porte-nom-v510">Élèves</span><span class="nx-porte-note-v510">Cours · Brevet · BAC · Orientation</span><span aria-hidden="true" class="nx-porte-go-v510">Entrer dans l’espace</span></button><button class="nx-porte-v510" data-nx-porte-v510="pro" data-nx-space-entry-v507="professional" type="button"><span aria-hidden="true" class="nx-porte-rang-v510">02</span><span class="nx-porte-sur-v510">Espace</span><span class="nx-porte-nom-v510">Professionnel</span><span class="nx-porte-note-v510">22 modules · Compétences · Emploi · Entrepreneuriat</span><span aria-hidden="true" class="nx-porte-go-v510">Entrer dans l’espace</span></button></div></section>
+<section aria-labelledby="nxPortesTitreAccueil" class="nx-espaces-v510" data-nx-espaces-v510="accueil"><header class="nx-espaces-head-v510"><small>Nexora Académie</small><h2 id="nxPortesTitreAccueil">Choisissez votre espace</h2><p>Un seul abonnement ouvre tout Nexora. Choisissez l’espace qui correspond à votre objectif.</p></header><div class="nx-abo-bandeau-v763"><div class="nx-abo-texte-v763"><b>Accès complet à Nexora</b><span>Élèves, Professionnel : un seul abonnement. Une carte Nexora scannée ouvre l’accès directement.</span></div><button class="nx-abo-bouton-v763" data-nx-subscribe-home="1" type="button">S’abonner <span aria-hidden="true">→</span></button></div><div aria-label="Les deux espaces de Nexora" class="nx-espaces-grille-v510" role="group"><button class="nx-porte-v510" data-nx-porte-v510="eleves" data-nx-space-entry-v507="student" type="button"><span aria-hidden="true" class="nx-porte-rang-v510">01</span><span class="nx-porte-sur-v510">Espace</span><span class="nx-porte-nom-v510">Élèves</span><span class="nx-porte-note-v510">Cours · Brevet · BAC · Orientation</span><span aria-hidden="true" class="nx-porte-go-v510">Entrer dans l’espace</span></button><button class="nx-porte-v510" data-nx-porte-v510="pro" data-nx-space-entry-v507="professional" type="button"><span aria-hidden="true" class="nx-porte-rang-v510">02</span><span class="nx-porte-sur-v510">Espace</span><span class="nx-porte-nom-v510">Professionnel</span><span class="nx-porte-note-v510">22 modules · Compétences · Emploi · Entrepreneuriat</span><span aria-hidden="true" class="nx-porte-go-v510">Entrer dans l’espace</span></button></div></section>
 </section>
 <template data-nx-screen-template-v506="access"><section class="screen" data-screen-panel="access" id="screen-access">
 <div class="nx-kdo-v297 nx-kdo-v308" data-nx-kdo-new="">
@@ -23279,6 +23287,14 @@ function renderTeacherRequestCenter(db){
   function load(screen){var g=group(screen);if(!g)return Promise.resolve(true);return script('secure','./assets/js/nexora-secure-v522.js').then(function(){if(g==='kdo')return style('kdo','./assets/css/nexora-kdo-v518.0.css').then(function(){return script('kdo','./assets/js/nexora-kdo-v521.js');});if(g==='academy')return style('academy','./assets/css/nexora-academy-v529.css').then(function(){return script('academy','./assets/js/nexora-academy-v529.js');});if(g==='adams')return style('adams','./assets/css/nexora-adams-v518.0.css').then(function(){return script('adams','./assets/js/nexora-adams-v521.js');});return true;});}
   window.NexoraSecureReadyV506=function(){return !!ready.secure;};
   window.NexoraEnsureSecureV506=function(){return script('secure','./assets/js/nexora-secure-v522.js');};
+  document.addEventListener('click',function(ev){
+    var t=ev.target&&ev.target.closest?ev.target.closest('[data-nx-subscribe-home]'):null;if(!t)return;
+    ev.preventDefault();
+    window.NexoraEnsureSecureV506().then(function(){
+      var b=document.createElement('button');b.type='button';b.hidden=true;b.setAttribute('data-nx-subscribe-space','eleves');
+      document.body.appendChild(b);b.click();setTimeout(function(){try{b.remove();}catch(_e){}},0);
+    }).catch(function(){try{if(typeof window.toast==='function')window.toast('Connexion faible. Réessayez dans un instant.');}catch(_e){}});
+  });
   window.NexoraFeatureGroupReadyV506=function(screen){var g=group(screen);if(!g)return true;if(!ready.secure)return false;if(g==='kdo')return !!ready.kdo;if(g==='academy')return !!ready.academy;if(g==='adams')return !!ready.adams;return true;};
   window.NexoraLoadFeatureGroupV506=load;
   window.NexoraLoadFeedV506=function(){return script('feed','./assets/js/nexora-feed-v521.js');};
