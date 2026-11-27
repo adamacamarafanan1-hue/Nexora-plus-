@@ -73,13 +73,13 @@
       if (esp.querySelector('[data-nxi-asst]')) return;
       var a = document.createElement('button');
       a.type = 'button'; a.className = 'nxi-asst'; a.setAttribute('data-nxi-asst', '1'); a.setAttribute('data-nxi', '1');
-      a.setAttribute('aria-label', 'Ouvrir l’assistant Nexora');
+      a.setAttribute('aria-label', 'Ouvrir Échanger, l’IA de Nexora');
       var ph = new Image(); ph.className = 'nxi-asst-photo'; ph.alt = ''; ph.width = 76; ph.height = 76; ph.src = '/assets/img/adams-assistant.jpg';
       ph.onerror = function () { ph.style.visibility = 'hidden'; };
       var t = document.createElement('span'); t.className = 'nxi-asst-txt';
-      t.innerHTML = '<span class="nxi-asst-sur">Besoin d’aide ?</span><span class="nxi-asst-nom">Assistant Nexora</span><span class="nxi-asst-note">Posez vos questions : cours, prix, paiement, compte.</span><span class="nxi-asst-go">Poser ma question ›</span>';
+      t.innerHTML = '<span class="nxi-asst-sur">Besoin d’aide ?</span><span class="nxi-asst-nom">Échanger</span><span class="nxi-asst-note">Pose tes questions sur les cours et sur Nexora.</span><span class="nxi-asst-go">Poser ma question ›</span>';
       a.appendChild(ph); a.appendChild(t);
-      a.addEventListener('click', function () { var b = document.querySelector('.nxa-btn'); if (b) b.click(); });
+      a.setAttribute('data-nx-echanger', '1');
       var apres = esp.querySelector('[data-nxi-ja]') || g; apres.parentNode.insertBefore(a, apres.nextSibling);
     });
     document.querySelectorAll('[data-nx-cycle-v406]').forEach(function (sec) {
