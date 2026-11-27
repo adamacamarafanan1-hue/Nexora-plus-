@@ -1766,6 +1766,8 @@
 
 /* V740 — Cadeaux de la semaine : chargement du module (fichier séparé). */
 (function () {
+  /* V781 : plus de cadeaux — le module n'est plus chargé. */
+  return;
   if (window.__nxCadeauxChargeurV740) return;
   window.__nxCadeauxChargeurV740 = true;
   var s = document.createElement('script');
