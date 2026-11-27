@@ -8137,6 +8137,32 @@ button,a,[role="button"],summary,label{touch-action:manipulation}
 @media(max-width:620px){#screen-novels .nx-comments-head-v356{display:grid}#screen-novels .nx-comments-tools-v358{justify-content:stretch}#screen-novels .nx-comments-tools-v358 button{width:100%}#screen-novels .nx-publication-entry-v360{width:calc(100% - 24px);margin:10px 12px 0;grid-template-columns:40px minmax(0,1fr) 32px;padding:10px}#screen-novels .nx-publication-entry-avatar-v360{width:40px;height:40px}#screen-novels .nx-comment-compose-v356{margin:10px 12px 0;padding:13px}#screen-novels .nx-comment-compose-main-v356 textarea{min-height:112px;font-size:16px}#screen-novels .nx-comment-compose-actions-v356{align-items:stretch;flex-direction:column}#screen-novels .nx-comment-publish-v356{width:100%;min-height:44px}#screen-novels .nx-comment-photo-tools-v358{grid-template-columns:1fr}#screen-novels .nx-comment-photo-picker-v358{width:100%}#screen-novels .nx-comment-photo-preview-v358{grid-column:1}#screen-novels .nx-comment-text-v356{font-size:13.5px!important;line-height:1.65!important}#screen-novels .nx-comment-post-head-v359{padding:12px 12px 0}#screen-novels .nx-comment-post-body-v359{padding:0 12px 12px}#screen-novels .nx-comment-card-v356 .nx-comment-avatar-v356{width:42px;height:42px;flex-basis:42px}#screen-novels .nx-comment-media-v359{width:calc(100% + 24px);margin-left:-12px;margin-right:-12px}#screen-novels .nx-comment-media-v359 img{min-height:210px;max-height:72vh}#screen-novels .nx-comment-replies-v358{margin-left:3px;padding-left:9px}#screen-novels .nx-comment-reply-card-v358 .nx-comment-avatar-v356{width:34px;height:34px;flex-basis:34px}#screen-novels .nx-comment-reply-head-v359{padding:10px 10px 0}#screen-novels .nx-comment-reply-body-v359{padding:0 10px 10px}#screen-novels .nx-comment-reply-card-v358 .nx-comment-media-v359{width:calc(100% + 20px);margin-left:-10px;margin-right:-10px}#screen-novels .nx-comment-photo-preview-media-v359 img{min-height:210px;max-height:65vh}}
 @media(max-width:760px){#screen-novels .nx-subjects-list-v362{grid-template-columns:1fr}#screen-novels .nx-training-head-v362{grid-template-columns:49px minmax(0,1fr) auto;padding:15px}#screen-novels .nx-training-icon-v362{width:49px;height:49px;border-radius:6px}#screen-novels .nx-training-copy-v362 strong{font-size:17px}#screen-novels .nx-training-count-v362{min-width:60px}#screen-novels .nx-subject-main-v362{padding:13px}#screen-novels .nx-subject-compose-v362{padding:13px}#screen-novels .nx-subject-compose-v362 textarea{min-height:180px;font-size:16px}#screen-novels .nx-subject-photo-row-v362{grid-template-columns:1fr}#screen-novels .nx-subject-publish-v362{width:100%}#screen-novels .nx-subject-photo-preview-v362 img{max-height:68vh}#screen-novels .nx-attempt-media-v362 img{max-height:72vh}}
 @media(max-width:430px){#screen-novels .nx-training-head-v362{grid-template-columns:45px minmax(0,1fr)}#screen-novels .nx-training-count-v362{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;padding:8px}#screen-novels .nx-training-count-v362 b,#screen-novels .nx-training-count-v362 span{display:inline;margin:0}#screen-novels .nx-subjects-list-v362{padding:11px;gap:10px}}
+/* V774 : règles « téléphone » écrasées par des règles posées plus bas (lecteur de leçons, primaire, lycée, inscription KDO…). Priorité rétablie avec « body ». */
+@media(max-width:430px){body .nx-adams-result-actions{grid-template-columns:1fr}}
+@media(max-width:820px){body .nx-academy-viewer-body{grid-template-columns:1fr}}
+@media(max-width:820px){body .nx-academy-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media(max-width:640px){body .nx-primary-head-v145{grid-template-columns:43px minmax(0,1fr) auto}}
+@media(max-width:640px){body .nx-primary-grid-v145{grid-template-columns:1fr}}
+@media(max-width:640px){body .nx-primary-actions-v145{grid-template-columns:1fr}}
+@media(max-width:760px){body .nx-primary-class-grid-v158{grid-template-columns:1fr}}
+@media(max-width:640px){body .nx-primary-session-meta-v147{grid-template-columns:1fr}}
+@media(max-width:640px){body .nx-primary-mastery-v147{grid-template-columns:1fr}}
+@media(max-width:640px){body .nx-primary-step-v147{grid-template-columns:38px minmax(0,1fr)}}
+@media(max-width:760px){body .nx-teacher-request-grid-v337{grid-template-columns:1fr}}
+@media(max-width:900px){body .nx-primary-class-grid-v158{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){body .nx-primary-class-stats-v158{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){body .nx-primary-class-grid-v158{grid-template-columns:1fr}}
+@media(max-width:620px){body .nx-primary-class-stats-v158{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){body .nx-kdo-registration-grid-v375{grid-template-columns:1fr}}
+@media(max-width:560px){body .nx-kdo-registration-summary-v375{grid-template-columns:1fr}}
+@media(max-width:560px){body .nx-kdo-registration-intro-v375{grid-template-columns:42px minmax(0,1fr)}}
+@media(max-width:620px){body .nx-teacher-request-details-v377{grid-template-columns:1fr}}
+@media(max-width:700px){body .nx-eleventh-streams-v368{grid-template-columns:1fr}}
+@media(max-width:680px){body .nx-twelfth-streams-v369{grid-template-columns:1fr}}
+@media(max-width:680px){body .nx-twelfth-lesson-btn-v369{grid-template-columns:36px 1fr 22px}}
+@media(max-width:680px){body .nx-terminal-streams-v475{grid-template-columns:1fr}}
+@media(max-width:680px){body .nx-terminal-lesson-btn-v475{grid-template-columns:36px 1fr 22px}}
+@media(max-width:520px){body .nx-primary-domain-grid-v463{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .nx-exam-correct-v436{color:#2F7A4F;font-weight:700}
 
 [data-theme="dark"] .nx-course-correction{background:#121914;border-color:#2A2F36}
