@@ -3185,7 +3185,10 @@ button,a,input,textarea,select{touch-action:manipulation}
   .nx-brand-cluster-v72{gap:8px}
   .nx-top-profile-near-brand{border-radius:6px}}
 @media(max-width:430px){
-  .nx-brand-v58 .nx-brand-text-v58{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+  /* V767 : le nom « Nexora Académie » tient en entier ; la barre du bas affiche « Communauté » sans « … ». */
+  .nx-brand-v58 .nx-brand-text-v58{max-width:132px!important;font-size:16px!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap}
+  .mobile-nav-inner .nav-btn>span:not(.nav-icon){font-size:10px!important;letter-spacing:-.02em;text-overflow:clip!important;max-width:none!important;overflow:visible!important}
+  .mobile-nav-inner .nav-btn{padding-left:1px;padding-right:1px}}
 
 /* ---- composant consolidé : nx-v73-premium-top-refinement ---- */
 /* V73 — finition premium de l’en-tête et des accès prioritaires */
